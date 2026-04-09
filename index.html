@@ -203,6 +203,19 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#1a1917;color:#fff;font-size:13px;padding:8px 20px;border-radius:99px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
 .toast.show{opacity:1}
 
+/* ═══════ LOGIN SCREEN ═══════ */
+#login-screen{display:flex;position:fixed;inset:0;z-index:1000;background:var(--bg);align-items:center;justify-content:center;padding:1.5rem}
+#login-screen.hidden{display:none}
+.login-box{background:var(--surface);border:1px solid var(--border-md);border-radius:var(--radius-lg);padding:2rem 2rem 1.75rem;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.08)}
+.login-logo{font-size:15px;font-weight:700;color:var(--accent);margin-bottom:2px}
+.login-sub{font-size:12px;color:var(--text-3);margin-bottom:1.5rem}
+.login-field{margin-bottom:.85rem}
+.login-field label{font-size:11px;font-weight:600;color:var(--text-2);display:block;margin-bottom:.3rem;letter-spacing:.03em;text-transform:uppercase}
+.login-field input{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 12px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;transition:border-color .15s}
+.login-field input:focus{border-color:var(--accent)}
+.login-btn{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:10px;border:none;border-radius:var(--radius);background:var(--accent);color:#fff;cursor:pointer;margin-top:.25rem;transition:opacity .15s}
+.login-btn:hover{opacity:.87}
+.login-err{font-size:12px;color:#a32d2d;margin-top:.6rem;min-height:18px;text-align:center}
 /* ═══════ MOBILE (≤ 768px) ═══════ */
 @media(max-width:768px){
   header{padding:.6rem .75rem;flex-wrap:wrap;gap:8px}
@@ -349,6 +362,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
   <!-- Tools group -->
   <div class="hdr-reports">
     <button class="btn-hdr btn-hdr-ghost" onclick="openImplMgr()">👤 Implementors</button>
+    <button class="btn-hdr btn-hdr-ghost" onclick="openModsMgr()">⚙ Modules</button>
     <button class="btn-hdr btn-hdr-ghost" onclick="exportPDF()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
       PDF
@@ -365,6 +379,39 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
     <button class="btn-hdr btn-hdr-primary" onclick="openAdd()">+ New Client</button>
   </div>
 </header>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">A.V.PremierSoft</div>
+    <div class="login-sub">Client Monitor — Sign in to continue</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input id="login-user" type="text" placeholder="Username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input id="login-pass" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign in</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- Manage Modules Modal -->
+<div class="modal-bg" id="mods-modal" onclick="bgClick(event,'mods-modal')">
+  <div class="modal" style="width:340px">
+    <h3>⚙ Manage Modules</h3>
+    <div id="mods-list" style="margin-bottom:.85rem"></div>
+    <div style="display:flex;gap:8px">
+      <input id="mod-input" type="text" placeholder="Module name" style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none" onkeydown="if(event.key==='Enter')addMod()">
+      <button class="btn-primary" onclick="addMod()">Add</button>
+    </div>
+    <div class="modal-btns" style="margin-top:1rem">
+      <button class="btn-cancel" onclick="closeModal('mods-modal')">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- VAT WEEK REMINDER BANNER -->
 <div id="vat-banner" class="no-print">
@@ -451,10 +498,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
           <div class="dd-panel" id="fm-panel">
             <div class="dd-item" data-val="" onclick="fmToggle(event,'')"><div class="dd-check" id="fmdc-all">✓</div> All modules</div>
             <hr class="dd-divider">
-            <div class="dd-item" data-val="Payroll"    onclick="fmToggle(event,'Payroll')"><div class="dd-check" id="fmdc-Payroll"></div> Payroll</div>
-            <div class="dd-item" data-val="Accounting" onclick="fmToggle(event,'Accounting')"><div class="dd-check" id="fmdc-Accounting"></div> Accounting</div>
-            <div class="dd-item" data-val="Invoicing"  onclick="fmToggle(event,'Invoicing')"><div class="dd-check" id="fmdc-Invoicing"></div> Invoicing</div>
-            <div class="dd-item" data-val="Stock"      onclick="fmToggle(event,'Stock')"><div class="dd-check" id="fmdc-Stock"></div> Stock</div>
+            <div id="fm-items"></div>
           </div>
         </div>
 
@@ -499,12 +543,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
       <select id="m-status"><option>Active</option><option>Not started</option><option>Dormant</option><option>Completed</option></select>
     </div>
     <div class="mf"><label class="lbl">Modules</label>
-      <div class="mods-check" id="mods-check">
-        <label onclick="tMod(this)"><input type="checkbox" value="Payroll"> Payroll</label>
-        <label onclick="tMod(this)"><input type="checkbox" value="Accounting"> Accounting</label>
-        <label onclick="tMod(this)"><input type="checkbox" value="Invoicing"> Invoicing</label>
-        <label onclick="tMod(this)"><input type="checkbox" value="Stock"> Stock</label>
-      </div>
+      <div class="mods-check" id="mods-check"></div>
     </div>
     <div class="mf"><label class="lbl">Grade</label>
       <div class="mgstars" id="m-grade">
@@ -643,7 +682,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 const KEY='avps_v5';
 const IMPL_KEY='avps_implementors';
 const CFG_KEY='avps_gist_cfg';
-const ALL_MODS=['Payroll','Accounting','Invoicing','Stock'];
+let ALL_MODS=['Payroll','Accounting','Invoicing','Stock'];
 const S_ORDER=['Active','Not started','Dormant','Completed'];
 
 let clients=[],nextId=1,mGrade=0;
@@ -692,7 +731,7 @@ async function gistPush(){
   setSyncMsg('Saving to GitHub…');
   try{
     const {gistId}=getCfg();
-    const content=JSON.stringify({c:clients,n:nextId,impl:implementors},null,2);
+    const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS},null,2);
     await gistRequest('PATCH',`/gists/${gistId}`,{files:{'client_monitor.json':{content}}});
     setSyncStatus('ok','Gist synced ✓');
     setSyncMsg('✓ Saved to GitHub Gist.','#1a6b4a');
@@ -718,7 +757,8 @@ async function gistPull(){
       clients=parsed.c;
       nextId=parsed.n||clients.length+1;
       implementors=parsed.impl||[];
-      localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors}));
+      if(parsed.mods&&parsed.mods.length)ALL_MODS=parsed.mods;
+      localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS}));
       setSyncStatus('ok','Gist synced ✓');
       setSyncMsg('✓ Loaded from GitHub Gist.','#1a6b4a');
       render();buildVatBanner();buildStkBanner();
@@ -742,7 +782,7 @@ async function gistSaveSettings(){
     let gistId=existingId;
     if(!gistId){
       // create a new private gist
-      const content=JSON.stringify({c:clients,n:nextId,impl:implementors},null,2);
+      const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS},null,2);
       const res=await fetch('https://api.github.com/gists',{
         method:'POST',
         headers:{
@@ -776,7 +816,7 @@ async function gistSaveSettings(){
 
 /* ── SAVE (local + debounced Gist push) ── */
 function save(){
-  localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors}));
+  localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS}));
   if(!hasCfg())return;
   clearTimeout(syncTimer);
   setSyncStatus('spin','Saving…');
@@ -785,7 +825,7 @@ function save(){
 
 /* ── EXPORT / IMPORT ── */
 function exportJSON(){
-  const data=JSON.stringify({c:clients,n:nextId,impl:implementors},null,2);
+  const data=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS},null,2);
   const blob=new Blob([data],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -840,11 +880,12 @@ async function load(){
     clients=p.c||[];
     nextId=p.n||clients.length+1;
     implementors=p.impl||[];
+    if(p.mods&&p.mods.length)ALL_MODS=p.mods;
   } else {
     clients=defaultClients;
     nextId=7;
     implementors=[];
-    localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors}));
+    localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS}));
   }
   setSyncStatus(hasCfg()?'err':'','Local only');
   render();buildVatBanner();buildStkBanner();
@@ -895,7 +936,7 @@ async function gistSaveSettings(){
     let gistId=existingId;
     if(!gistId){
       // create a new private gist
-      const content=JSON.stringify({c:clients,n:nextId,impl:implementors},null,2);
+      const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS},null,2);
       const res=await fetch('https://api.github.com/gists',{
         method:'POST',
         headers:{
@@ -1057,18 +1098,14 @@ function fmToggle(e,val){
   updateFMUI();render();
 }
 function updateFMUI(){
+  const itemsEl=document.getElementById('fm-items');
+  if(itemsEl){itemsEl.innerHTML=ALL_MODS.map(m=>`<div class="dd-item" data-val="${m}" onclick="fmToggle(event,'${m}')"><div class="dd-check" id="fmdc-${m}">${selMods.has(m)?'✓':''}</div> ${m}</div>`).join('');}
   const none=selMods.size===0;
   const allEl=document.getElementById('fmdc-all');
   if(allEl){allEl.textContent=none?'✓':'';document.querySelector('#fm-panel [data-val=""]')?.classList.toggle('checked',none);}
-  ALL_MODS.forEach(m=>{
-    const el=document.getElementById('fmdc-'+m);
-    const item=document.querySelector(`#fm-panel [data-val="${m}"]`);
-    if(el)el.textContent=selMods.has(m)?'✓':'';
-    if(item)item.classList.toggle('checked',selMods.has(m));
-  });
   const lbl=document.getElementById('fm-label');
   const btn=document.getElementById('fm-btn');
-  if(none){lbl.textContent='All modules';btn.classList.remove('has-sel');}
+  if(none){lbl.textContent='Module';btn.classList.remove('has-sel');}
   else if(selMods.size===1){lbl.textContent=[...selMods][0];btn.classList.add('has-sel');}
   else{lbl.textContent=selMods.size+' modules';btn.classList.add('has-sel');}
 }
@@ -1433,7 +1470,9 @@ function toggleModEdit(id){
 }
 function delClient(id){
   const c=clients.find(x=>x.id===id);
-  if(!confirm(`Delete "${c.name}"? Cannot be undone.`))return;
+  const pwd=prompt(`Enter password to delete "${c.name}":`);
+  if(pwd===null)return;
+  if(pwd!=='0000'){toast('Incorrect password.');return;}
   clients=clients.filter(x=>x.id!==id);expanded.delete(id);save();render();toast('Client deleted.');
 }
 
@@ -1624,7 +1663,10 @@ function openAdd(){
   const ld=document.getElementById('m-livedate');if(ld)ld.value='';
   const mImpl=document.getElementById('m-impl');
   if(mImpl)mImpl.innerHTML=implOptions('');
-  document.querySelectorAll('.mods-check label').forEach(l=>{l.querySelector('input').checked=false;l.classList.remove('checked');});
+  // populate module checkboxes dynamically
+  const mc=document.getElementById('mods-check');
+  if(mc){mc.innerHTML=ALL_MODS.map(m=>`<label onclick="tMod(this)"><input type="checkbox" value="${m}"> ${m}</label>`).join('');}
+  document.querySelectorAll('.mods-check label').forEach(l=>{l.classList.remove('checked');});
   setMG(0);
   document.getElementById('add-modal').classList.add('open');
   setTimeout(()=>document.getElementById('m-name').focus(),80);
@@ -1948,14 +1990,69 @@ function scrollToClient(id){
   },80);
 }
 
+/* ── LOGIN ── */
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-err');
+  if(u==='Admin'&&p==='1993'){
+    document.getElementById('login-screen').classList.add('hidden');
+    err.textContent='';
+    load();
+  } else {
+    err.textContent='Incorrect username or password.';
+    document.getElementById('login-pass').value='';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+/* ── MODULES MANAGEMENT ── */
+function openModsMgr(){
+  renderModsList();
+  document.getElementById('mod-input').value='';
+  document.getElementById('mods-modal').classList.add('open');
+}
+function renderModsList(){
+  const el=document.getElementById('mods-list');
+  if(!ALL_MODS.length){el.innerHTML='<div style="font-size:13px;color:var(--text-3)">No modules.</div>';return;}
+  el.innerHTML=ALL_MODS.map((m,i)=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:13px;font-weight:500">${m}</span>
+      <button onclick="removeMod(${i})" style="font-size:11px;padding:2px 8px;border:1px solid #f7c1c1;border-radius:5px;background:transparent;color:#a32d2d;cursor:pointer;font-family:'DM Sans',sans-serif">Remove</button>
+    </div>`).join('');
+}
+function addMod(){
+  const val=document.getElementById('mod-input').value.trim();
+  if(!val||ALL_MODS.includes(val))return;
+  ALL_MODS.push(val);
+  save();renderModsList();render();
+  document.getElementById('mod-input').value='';
+  toast(`Module "${val}" added.`);
+}
+function removeMod(i){
+  const name=ALL_MODS[i];
+  const pwd=prompt(`Enter password to remove module "${name}":`);
+  if(pwd===null)return;
+  if(pwd!=='0000'){toast('Incorrect password.');return;}
+  ALL_MODS.splice(i,1);
+  // remove module from all clients
+  clients.forEach(c=>{c.modules=c.modules.filter(m=>m!==name);});
+  save();render();renderModsList();
+  toast(`Module "${name}" removed.`);
+}
+
 /* ── INIT ── */
 ['search','f-mgr','f-city'].forEach(id=>{
   const el=document.getElementById(id);
   if(el)el.addEventListener('input',()=>{render();buildVatBanner();buildStkBanner();});
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal('add-modal');closeModal('vat-modal');closeModal('stk-modal');closeModal('settings-modal');closeModal('impl-modal');}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeModal('add-modal');closeModal('vat-modal');closeModal('stk-modal');closeModal('settings-modal');closeModal('impl-modal');closeModal('mods-modal');}
+  if(e.key==='Enter'&&!document.getElementById('login-screen').classList.contains('hidden'))doLogin();
+});
 updateSFUI();updateFIUI();updateFMUI();
-load();
+// App starts at login screen — load() called after successful sign-in
+document.getElementById('login-user').focus();
 buildVatBanner();buildStkBanner();
 </script>
 </body>
