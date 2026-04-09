@@ -18,8 +18,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 .btn-primary:hover{opacity:.87}
 .btn-outline{background:transparent;color:var(--text-2);border:1px solid var(--border-md);border-radius:var(--radius);padding:7px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
 .btn-outline:hover{background:var(--surface2);color:var(--text)}
-.btn-vat{background:#fef2f2;color:#a32d2d;border:1px solid #f7c1c1;border-radius:var(--radius);padding:7px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
-.btn-vat:hover{background:#fce8e8}
+.btn-vat{background:#eff6ff;color:#1a5a8a;border:1px solid #bfdbfe;border-radius:var(--radius);padding:7px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
+.btn-vat:hover{background:#dbeeff}
 /* VAT REMINDER BANNER */
 #vat-banner{display:none;background:#eff6ff;border-bottom:1px solid #bfdbfe;padding:.6rem 1rem;position:sticky;top:57px;z-index:49}
 .vat-banner-inner{max-width:1400px;margin:0 auto;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
@@ -43,13 +43,12 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .cb-divider{width:1px;height:22px;background:var(--border-md);flex-shrink:0;margin:0 4px}
 .filters-group{display:flex;align-items:center;gap:6px;flex:1;flex-wrap:wrap}
 /* STAT PILLS */
-.stat{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.4rem .85rem;cursor:pointer;transition:all .15s;white-space:nowrap}
+.stat{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.55rem 1rem;cursor:pointer;transition:all .15s;white-space:nowrap}
 .stat:hover{border-color:var(--border-md);background:var(--surface2)}
 .stat.af{border-color:var(--accent);background:#e4f2eb}
-.stat.af .stat-n{color:#1a6b4a}
-.stat.af .stat-l{color:#1a6b4a}
-.stat-n{font-size:15px;font-weight:700;line-height:1}
-.stat-l{font-size:11px;color:var(--text-3);font-weight:400}
+.stat.af .stat-n,.stat.af .stat-l{color:#1a6b4a}
+.stat-n{font-size:22px;font-weight:700;line-height:1}
+.stat-l{font-size:12px;color:var(--text-3);font-weight:400}
 .sn-active{color:#1a6b4a}.sn-dormant{color:#8a5a1a}.sn-completed{color:#555}.sn-ns{color:#888}
 /* TOOLBAR (inside filters-group) */
 .toolbar{display:contents}
@@ -204,6 +203,45 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#1a1917;color:#fff;font-size:13px;padding:8px 20px;border-radius:99px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
 .toast.show{opacity:1}
 
+/* ═══════ MOBILE (≤ 768px) ═══════ */
+@media(max-width:768px){
+  header{padding:.6rem .75rem;flex-wrap:wrap;gap:8px}
+  .hdr-brand .logo{font-size:13px}
+  .hdr-divider{display:none}
+  .hdr-reports{gap:4px}
+  .btn-hdr{font-size:11px;padding:5px 8px}
+  .hdr-actions{gap:5px;margin-left:0;flex:1;justify-content:flex-end}
+  #search{width:120px!important}
+  #search:focus{width:155px!important}
+  #vat-banner,#stk-banner{padding:.45rem .75rem;position:relative;top:auto}
+  main{padding:.6rem .5rem}
+  .control-bar{flex-direction:column;gap:7px;align-items:stretch}
+  .stats-group{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:100%}
+  .stat{flex-direction:column;gap:2px;padding:.3rem .35rem;text-align:center;justify-content:center}
+  .stat-n{font-size:17px}
+  .stat-l{font-size:9px}
+  .cb-divider{display:none}
+  .filters-group{width:100%}
+  .toolbar{display:flex!important;flex-wrap:wrap;gap:5px;width:100%}
+  .toolbar input{flex:1;min-width:120px}
+  .dd-btn{min-width:0;padding:5px 8px;font-size:12px}
+  .row-header{grid-template-columns:1fr auto auto!important;gap:5px!important;padding:.35rem .55rem!important}
+  .rh-modules,.rh-grade,.rh-impl,.rh-mgr{display:none!important}
+  .expand-panel{padding:.45rem .55rem}
+  .xgrid{grid-template-columns:1fr 1fr!important;gap:.35rem .5rem!important}
+  .print-row{grid-template-columns:1fr!important}
+  .todo-box{margin-top:.4rem}
+  .modal{width:96vw!important;max-height:88vh;padding:1rem}
+  .modal-wide{width:96vw!important}
+}
+@media(max-width:480px){
+  .hdr-reports .btn-hdr{font-size:10px;padding:4px 7px}
+  .stat-l{display:none}
+  .stat-n{font-size:15px}
+  .xgrid{grid-template-columns:1fr!important}
+  #search{width:100px!important}
+}
+
 /* PRINT — ultra-compact table-style layout */
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}
@@ -259,6 +297,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 .btn-hdr-ghost:hover{background:var(--surface2);color:var(--text)}
 .btn-hdr-red{background:#fef2f2;color:#a32d2d;border:1px solid #f7c1c1}
 .btn-hdr-red:hover{background:#fce8e8}
+.btn-hdr-blue{background:#eff6ff;color:#1a5a8a;border:1px solid #bfdbfe}
+.btn-hdr-blue:hover{background:#dbeeff}
+.btn-hdr-blue{background:#eff6ff;color:#1a5a8a;border:1px solid #bfdbfe}
+.btn-hdr-blue:hover{background:#dbeeff}
 .btn-hdr-yellow{background:#fffbeb;color:#7a6500;border:1px solid #e8d87a}
 .btn-hdr-yellow:hover{background:#fef9c3}
 .btn-hdr-primary{background:var(--accent);color:#fff;border:none}
@@ -298,7 +340,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 
   <!-- Reports group -->
   <div class="hdr-reports">
-    <button class="btn-hdr btn-hdr-red" onclick="openVatReport()">⚑ VAT Report</button>
+    <button class="btn-hdr btn-hdr-blue" onclick="openVatReport()">⚑ VAT</button>
     <button class="btn-hdr btn-hdr-yellow" onclick="openStkReport()">📦 Stock Take</button>
   </div>
 
@@ -425,7 +467,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
           </div>
           <div class="dd-panel" id="sort-panel">
             <div class="dd-item checked" data-sort="status" onclick="setSort(event,'status','Status')"><div class="dd-radio" id="sr-status"></div> By status</div>
-            <div class="dd-item" data-sort="mgr"   onclick="setSort(event,'mgr','Manager')"><div class="dd-radio" id="sr-mgr"></div> By manager</div>
+            <div class="dd-item" data-sort="mgr" onclick="setSort(event,'mgr','Manager')"><div class="dd-radio" id="sr-mgr"></div> By manager</div>
+            <div class="dd-item" data-sort="impl" onclick="setSort(event,'impl','Implementor')"><div class="dd-radio" id="sr-impl"></div> By implementor</div>
+            <div class="dd-item" data-sort="impl"  onclick="setSort(event,'impl','Implementor')"><div class="dd-radio" id="sr-impl"></div> By implementor</div>
             <div class="dd-item" data-sort="name"  onclick="setSort(event,'name','Name A–Z')"><div class="dd-radio" id="sr-name"></div> By name (A–Z)</div>
             <div class="dd-item" data-sort="grade" onclick="setSort(event,'grade','Grade')"><div class="dd-radio" id="sr-grade"></div> By grade</div>
             <div class="dd-item" data-sort="city"  onclick="setSort(event,'city','City')"><div class="dd-radio" id="sr-city"></div> By city</div>
@@ -1065,6 +1109,12 @@ function sortList(list){
   if(sortMode==='mgr'){
     return [...list].sort((a,b)=>a.mgr.localeCompare(b.mgr)||a.name.localeCompare(b.name));
   }
+  if(sortMode==='impl'){
+    return [...list].sort((a,b)=>(a.implementor||'').localeCompare(b.implementor||'')||a.name.localeCompare(b.name));
+  }
+  if(sortMode==='impl'){
+    return [...list].sort((a,b)=>(a.implementor||'').localeCompare(b.implementor||'')||a.name.localeCompare(b.name));
+  }
   if(sortMode==='name'){
     return [...list].sort((a,b)=>a.name.localeCompare(b.name));
   }
@@ -1148,6 +1198,14 @@ function render(){
     mgrs.forEach(mg=>{
       const g=list.filter(c=>c.mgr===mg);
       html+=`<div class="group-label">Manager: ${mg} <span style="font-weight:400;color:var(--text-3)">(${g.length})</span></div>`;
+      g.forEach(c=>{html+=buildRow(c);});
+    });
+  } else if(sortMode==='impl'){
+    // group by implementor
+    const impls=[...new Set(list.map(c=>c.implementor||'—'))].sort();
+    impls.forEach(imp=>{
+      const g=list.filter(c=>(c.implementor||'—')===imp);
+      html+=`<div class="group-label">Implementor: ${imp} <span style="font-weight:400;color:var(--text-3)">(${g.length})</span></div>`;
       g.forEach(c=>{html+=buildRow(c);});
     });
   } else {
@@ -1547,10 +1605,13 @@ function addImpl(){
 }
 function removeImpl(i){
   const name=implementors[i];
-  if(!confirm(`Remove "${name}"? Clients assigned to this implementor will be cleared.`))return;
+  const pwd=prompt(`Enter password to remove "${name}":`)
+  if(pwd===null)return;
+  if(pwd!=='0000'){toast('Incorrect password.');return;}
   implementors.splice(i,1);
   clients.forEach(c=>{if(c.implementor===name)c.implementor='';});
   save();render();renderImplList();populateImplFilter();
+  toast(`"${name}" removed.`);
 }
 
 /* ── ADD MODAL ── */
