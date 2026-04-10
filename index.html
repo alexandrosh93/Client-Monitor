@@ -21,7 +21,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 .btn-vat{background:#eff6ff;color:#1a5a8a;border:1px solid #bfdbfe;border-radius:var(--radius);padding:7px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
 .btn-vat:hover{background:#dbeeff}
 /* VAT REMINDER BANNER */
-#vat-banner{display:none;background:#eff6ff;border-bottom:1px solid #bfdbfe;padding:.6rem 1rem;position:sticky;top:57px;z-index:49}
+#vat-banner{display:none;background:#eff6ff;border-bottom:1px solid #bfdbfe;padding:.5rem 1rem}
 .vat-banner-inner{max-width:1400px;margin:0 auto;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .vat-banner-icon{font-size:15px;flex-shrink:0;margin-top:1px}
 .vat-banner-text{flex:1;min-width:0}
@@ -63,7 +63,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .dd-btn.has-sel{border-color:var(--accent);background:#e4f2eb;color:#1a6b4a}
 .dd-arrow{font-size:10px;color:var(--text-3);transition:transform .15s}
 .dd-btn.open .dd-arrow{transform:rotate(180deg)}
-.dd-panel{position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border-md);border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:200;min-width:175px;padding:6px 0;display:none}
+.dd-panel{position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border-md);border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:600;min-width:175px;padding:6px 0;display:none}
 .dd-panel.open{display:block}
 .dd-item{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;font-size:13px;color:var(--text-2);transition:background .1s;user-select:none}
 .dd-item:hover{background:var(--surface2);color:var(--text)}
@@ -138,7 +138,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .stk-cell .xdate{border-color:#e8d87a;color:#7a6500}
 .stk-cell .xdate:focus{border-color:#b8a000}
 /* STOCK TAKE BANNER */
-#stk-banner{display:none;background:#fffbeb;border-bottom:1px solid #e8d87a;padding:.6rem 1rem;position:sticky;top:57px;z-index:48}
+#stk-banner{display:none;background:#fffbeb;border-bottom:1px solid #e8d87a;padding:.5rem 1rem}
 .stk-banner-inner{max-width:1400px;margin:0 auto;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .stk-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;background:#fef9c3;border:1px solid #e8d87a;border-radius:99px;padding:2px 10px;color:#7a6500;cursor:pointer;transition:background .12s}
 .stk-chip:hover{background:#fef08a}
@@ -231,6 +231,14 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .view-btn:not(.active):hover{background:var(--surface2)}
 #login-screen{display:flex;position:fixed;inset:0;z-index:1000;background:var(--bg);align-items:center;justify-content:center;padding:1.5rem}
 #login-screen.hidden{display:none}
+/* FLOATING ACTION BUTTON */
+.fab{position:fixed;bottom:1.5rem;right:1.5rem;z-index:400;background:var(--accent);color:#fff;border:none;border-radius:99px;padding:.7rem 1.3rem;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 4px 18px rgba(26,107,74,.35);display:flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap}
+.fab:hover{opacity:.9;box-shadow:0 6px 24px rgba(26,107,74,.45);transform:translateY(-1px)}
+.fab:active{transform:translateY(0)}
+@media(max-width:480px){.fab{padding:.65rem 1.1rem;font-size:13px;bottom:1rem;right:1rem}}
+#audit-table tr:hover td{background:var(--surface2)}
+#audit-table td{vertical-align:middle}
+#hdr-user-badge:hover{opacity:.8}
 .login-box{background:var(--surface);border:1px solid var(--border-md);border-radius:var(--radius-lg);padding:2rem 2rem 1.75rem;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.08)}
 .login-logo{font-size:15px;font-weight:700;color:var(--accent);margin-bottom:2px}
 .login-sub{font-size:12px;color:var(--text-3);margin-bottom:1.5rem}
@@ -251,7 +259,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
   .hdr-actions{gap:5px;margin-left:0;flex:1;justify-content:flex-end}
   #search{width:120px!important}
   #search:focus{width:155px!important}
-  #vat-banner,#stk-banner{padding:.45rem .75rem;position:relative;top:auto}
+  #vat-banner,#stk-banner{padding:.45rem .75rem;position:relative;top:auto!important}
   main{padding:.6rem .5rem}
   .control-bar{flex-direction:column;gap:7px;align-items:stretch}
   .stats-group{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:100%}
@@ -322,15 +330,15 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
   .pdf-notes-lbl{font-size:7px!important;font-weight:700!important;letter-spacing:.05em!important;text-transform:uppercase!important;color:#aaa!important;margin-bottom:1px!important}
 }
 /* HEADER REDESIGN */
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:.6rem 1.25rem;display:flex;align-items:center;gap:1.5rem;position:sticky;top:0;z-index:50}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:.6rem 1rem;display:flex;align-items:center;gap:.6rem;position:sticky;top:0;z-index:50}
 .hdr-brand{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
 .hdr-brand .logo{font-size:14px;font-weight:700;letter-spacing:.01em;color:var(--accent)}
 .hdr-brand .logo span{color:var(--text-2);font-weight:400}
 .hdr-brand .hdr-user{font-size:11px;color:var(--text-3);font-weight:400}
-.hdr-divider{width:1px;height:28px;background:var(--border-md);flex-shrink:0}
-.hdr-reports{display:flex;gap:6px;align-items:center}
-.hdr-actions{display:flex;gap:6px;align-items:center;margin-left:auto}
-.btn-hdr{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 11px;border-radius:var(--radius);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap;font-weight:500}
+.hdr-divider{width:1px;height:24px;background:var(--border-md);flex-shrink:0}
+.hdr-reports{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.hdr-actions{display:flex;gap:5px;align-items:center;margin-left:auto;flex-shrink:0}
+.btn-hdr{font-family:'DM Sans',sans-serif;font-size:12px;padding:4px 9px;border-radius:var(--radius);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px;white-space:nowrap;font-weight:500}
 .btn-hdr-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border-md)}
 .btn-hdr-ghost:hover{background:var(--surface2);color:var(--text)}
 .btn-hdr-red{background:#fef2f2;color:#a32d2d;border:1px solid #f7c1c1}
@@ -386,16 +394,25 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 
   <!-- Tools group -->
   <div class="hdr-reports">
-    <button class="btn-hdr btn-hdr-ghost" onclick="openImplMgr()">👤 Implementors</button>
+    <button class="btn-hdr btn-hdr-ghost" id="btn-users" onclick="openUsersPanel()" style="display:none">👥 Users</button>
+    <button class="btn-hdr btn-hdr-ghost" onclick="openAuditTrail()">📋 Audit</button>
+    <button class="btn-hdr btn-hdr-ghost" onclick="openImplMgr()">👤 Impl.</button>
     <button class="btn-hdr btn-hdr-ghost" onclick="openModsMgr()">⚙ Modules</button>
-    <button class="btn-hdr btn-hdr-ghost" onclick="exportPDF()">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-      PDF
-    </button>
-    <button class="btn-hdr btn-hdr-ghost" onclick="exportExcel()">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-      Excel
-    </button>
+    <div class="dd-wrap" id="export-wrap">
+      <div class="btn-hdr btn-hdr-ghost" onclick="toggleDD('export')" style="cursor:pointer">
+        ⬇ Export <span class="dd-arrow">▼</span>
+      </div>
+      <div class="dd-panel" id="export-panel" style="right:0;left:auto;min-width:140px">
+        <div class="dd-item" onclick="exportPDF();toggleDD('export')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Export as PDF
+        </div>
+        <div class="dd-item" onclick="exportExcel();toggleDD('export')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          Export as Excel
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Right-aligned actions -->
@@ -405,13 +422,19 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
       <button class="view-btn" id="vbtn-dash" onclick="setView('dash')">⊞ Dashboard</button>
     </div>
     <input type="text" id="search" placeholder="🔍 Search clients…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 11px;border:1px solid var(--border-md);border-radius:99px;background:var(--surface2);color:var(--text);outline:none;width:200px;transition:all .2s" onfocus="this.style.width='260px';this.style.background='var(--surface)';this.style.borderColor='var(--accent)'" onblur="this.style.width='200px';this.style.background='var(--surface2)';this.style.borderColor='var(--border-md)'">
+    <span id="hdr-user-badge" style="display:none;font-size:11px;color:var(--text-2);align-items:center;gap:4px;padding:4px 8px;border-radius:var(--radius);background:var(--surface2);cursor:pointer" onclick="openChangePassword()" title="Change your password"></span>
     <span class="sync-label no-print" onclick="openSettings()" title="Cloud sync settings">
       <span class="sync-dot" id="sync-dot"></span>
       <span id="sync-label">Local only</span>
     </span>
-    <button class="btn-hdr btn-hdr-primary" onclick="openAdd()">+ New Client</button>
   </div>
 </header>
+
+<!-- FLOATING NEW CLIENT BUTTON -->
+<button class="fab no-print" onclick="openAdd()">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  New Client
+</button>
 
 <!-- LOGIN SCREEN -->
 <div id="login-screen">
@@ -428,6 +451,68 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
     </div>
     <button class="login-btn" onclick="doLogin()">Sign in</button>
     <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- Users Modal -->
+<div class="modal-bg" id="users-modal" onclick="bgClick(event,'users-modal')">
+  <div class="modal" style="width:420px">
+    <h3>👥 User Management</h3>
+    <div id="users-list" style="margin-bottom:1rem"></div>
+    <div style="border-top:1px solid var(--border);padding-top:.85rem;margin-top:.5rem">
+      <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Add New User</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="new-user-name" type="text" placeholder="Username" style="flex:1;min-width:100px;font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
+        <input id="new-user-pass" type="password" placeholder="Password" style="flex:1;min-width:100px;font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
+        <select id="new-user-role" style="font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button class="btn-primary" onclick="addUser()">Add</button>
+      </div>
+    </div>
+    <div class="modal-btns"><button class="btn-cancel" onclick="closeModal('users-modal')">Close</button></div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal-bg" id="chpwd-modal" onclick="bgClick(event,'chpwd-modal')">
+  <div class="modal" style="width:340px">
+    <h3>🔑 Change Password</h3>
+    <div id="chpwd-target-info" style="font-size:12px;color:var(--text-2);margin-bottom:.85rem"></div>
+    <input type="hidden" id="chpwd-target-user">
+    <div class="mf"><label class="lbl">New password</label><input id="chpwd-new" type="password" placeholder="New password"></div>
+    <div class="mf"><label class="lbl">Confirm password</label><input id="chpwd-confirm" type="password" placeholder="Confirm password"></div>
+    <div id="chpwd-err" style="font-size:12px;color:#a32d2d;min-height:16px;margin-bottom:.5rem"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('chpwd-modal')">Cancel</button>
+      <button class="btn-primary" onclick="doChangePassword()">Save Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- Audit Trail Modal -->
+<div class="modal-bg" id="audit-modal" onclick="bgClick(event,'audit-modal')">
+  <div class="modal modal-wide" style="max-width:700px">
+    <h3>📋 Audit Trail</h3>
+    <div style="display:flex;gap:8px;margin-bottom:.85rem;flex-wrap:wrap">
+      <select id="audit-f-user" onchange="renderAuditTable()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
+        <option value="">All users</option>
+      </select>
+      <select id="audit-f-action" onchange="renderAuditTable()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
+        <option value="">All actions</option>
+        <option>Login</option>
+        <option>Create</option>
+        <option>Edit</option>
+        <option>Delete</option>
+        <option>Password</option>
+        <option>User</option>
+      </select>
+      <input id="audit-f-search" type="text" placeholder="Search client…" oninput="renderAuditTable()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;flex:1;min-width:120px">
+      <button class="btn-outline" style="font-size:11px;padding:4px 10px" onclick="exportAuditCSV()">⬇ CSV</button>
+    </div>
+    <div id="audit-table" style="max-height:420px;overflow-y:auto"></div>
+    <div class="modal-btns"><button class="btn-cancel" onclick="closeModal('audit-modal')">Close</button></div>
   </div>
 </div>
 
@@ -457,8 +542,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
     <span class="vat-banner-dismiss" onclick="dismissBanner()" title="Dismiss until tomorrow">×</span>
   </div>
 </div>
-
-<!-- STOCK TAKE BANNER -->
 <div id="stk-banner" class="no-print">
   <div class="stk-banner-inner">
     <span style="font-size:15px;flex-shrink:0;margin-top:1px">📦</span>
@@ -712,18 +795,43 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 <div class="toast" id="toast"></div>
 
 <script>
-const KEY='avps_v5';
+const KEY='avps_v6';
 const IMPL_KEY='avps_implementors';
 const CFG_KEY='avps_gist_cfg';
+const USERS_KEY='avps_users';
 let ALL_MODS=['Payroll','Accounting','Invoicing','Stock'];
 const S_ORDER=['Active','Not started','Dormant','Completed'];
 
 let clients=[],nextId=1,mGrade=0;
 let implementors=[];
+let auditLog=[];   // [{ts, user, action, target, detail}]
+let currentUser=''; // set on login
 const expanded=new Set();
 let selStatuses=new Set();
 let sortMode='status';
 let syncTimer=null;
+
+/* ── USERS ── */
+function getUsers(){
+  try{
+    const stored=JSON.parse(localStorage.getItem(USERS_KEY));
+    if(stored&&stored.length)return stored;
+    const def=defaultUsers();
+    saveUsers(def);
+    return def;
+  }catch(e){return defaultUsers();}
+}
+function defaultUsers(){
+  return [{username:'Admin',password:'1993',role:'admin',createdAt:new Date().toISOString()}];
+}
+function saveUsers(users){localStorage.setItem(USERS_KEY,JSON.stringify(users));}
+
+/* ── AUDIT ── */
+function audit(action,target,detail){
+  if(!currentUser)return;
+  auditLog.push({ts:new Date().toISOString(),user:currentUser,action,target:target||'',detail:detail||''});
+  if(auditLog.length>500)auditLog=auditLog.slice(-500);
+}
 
 /* ── SYNC STATUS UI ── */
 function setSyncStatus(state,label){
@@ -764,7 +872,7 @@ async function gistPush(){
   setSyncMsg('Saving to GitHub…');
   try{
     const {gistId}=getCfg();
-    const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS},null,2);
+    const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog},null,2);
     await gistRequest('PATCH',`/gists/${gistId}`,{files:{'client_monitor.json':{content}}});
     setSyncStatus('ok','Gist synced ✓');
     setSyncMsg('✓ Saved to GitHub Gist.','#1a6b4a');
@@ -791,7 +899,8 @@ async function gistPull(){
       nextId=parsed.n||clients.length+1;
       implementors=parsed.impl||[];
       if(parsed.mods&&parsed.mods.length)ALL_MODS=parsed.mods;
-      localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS}));
+      if(parsed.audit)auditLog=parsed.audit;
+      localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog}));
       setSyncStatus('ok','Gist synced ✓');
       setSyncMsg('✓ Loaded from GitHub Gist.','#1a6b4a');
       render();buildVatBanner();buildStkBanner();
@@ -815,7 +924,7 @@ async function gistSaveSettings(){
     let gistId=existingId;
     if(!gistId){
       // create a new private gist
-      const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS},null,2);
+      const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog},null,2);
       const res=await fetch('https://api.github.com/gists',{
         method:'POST',
         headers:{
@@ -849,7 +958,7 @@ async function gistSaveSettings(){
 
 /* ── SAVE (local + debounced Gist push) ── */
 function save(){
-  localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS}));
+  localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog}));
   if(!hasCfg())return;
   clearTimeout(syncTimer);
   setSyncStatus('spin','Saving…');
@@ -858,7 +967,7 @@ function save(){
 
 /* ── EXPORT / IMPORT ── */
 function exportJSON(){
-  const data=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS},null,2);
+  const data=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog},null,2);
   const blob=new Blob([data],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -914,11 +1023,12 @@ async function load(){
     nextId=p.n||clients.length+1;
     implementors=p.impl||[];
     if(p.mods&&p.mods.length)ALL_MODS=p.mods;
+    if(p.audit)auditLog=p.audit;
   } else {
     clients=defaultClients;
     nextId=7;
     implementors=[];
-    localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS}));
+    localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog}));
   }
   setSyncStatus(hasCfg()?'err':'','Local only');
   render();buildVatBanner();buildStkBanner();
@@ -969,7 +1079,7 @@ async function gistSaveSettings(){
     let gistId=existingId;
     if(!gistId){
       // create a new private gist
-      const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS},null,2);
+      const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog},null,2);
       const res=await fetch('https://api.github.com/gists',{
         method:'POST',
         headers:{
@@ -1023,7 +1133,7 @@ function starsHtml(n,size){
 }
 
 /* ── DROPDOWNS ── */
-const openDD={sf:false,sort:false,fi:false,fm:false};
+const openDD={sf:false,sort:false,fi:false,fm:false,export:false};
 function toggleDD(key){
   const wasOpen=openDD[key];
   Object.keys(openDD).forEach(k=>{
@@ -1502,8 +1612,17 @@ function toggle(id){
 /* ── FIELD UPDATES ── */
 function fld(id,k,v){
   const c=clients.find(x=>x.id===id);if(!c)return;
-  c[k]=v;save();
-  // always re-render so row header stays in sync
+  const old=c[k];
+  c[k]=v;
+  // audit readable field names
+  const fieldNames={name:'Name',contact:'Contact',city:'City',mgr:'Manager',implementor:'Implementor',
+    status:'Status',grade:'Grade',comment:'Comments',todo:'To-do',liveDate:'Live Date',
+    mtgDate:'Meeting date',mtgSet:'Meeting scheduled',vatDate:'VAT date',vatDone:'VAT done',
+    stkDate:'Stock Take date',stkDone:'Stock Take done',progress:'Progress'};
+  const label=fieldNames[k]||k;
+  const display=v===true?'Yes':v===false?'No':v||'(cleared)';
+  audit('Edit',c.name,label+' → '+display);
+  save();
   const was=expanded.has(id);render();if(was)expanded.add(id);
   buildVatBanner();buildStkBanner();
 }
@@ -1590,6 +1709,7 @@ function delClient(id){
   const pwd=prompt(`Enter password to delete "${c.name}":`);
   if(pwd===null)return;
   if(pwd!=='0000'){toast('Incorrect password.');return;}
+  audit('Delete',c.name,'Client deleted');
   clients=clients.filter(x=>x.id!==id);expanded.delete(id);save();render();toast('Client deleted.');
 }
 
@@ -1654,24 +1774,12 @@ function openVatReport(){
   html+=`<span class="vat-pill" style="background:#fff3cd;color:#856404">${thisWeek.length} this week</span>
     <span class="vat-pill vp-pending">${previous.length} overdue</span>
     <span class="vat-pill" style="background:#e8f0fe;color:#1a5a8a">${next.length} upcoming</span>
-    <span class="vat-pill vp-nodate">${noDate.length} no date</span>
     <span class="vat-pill vp-done">${done.length} completed</span>
   </div>`;
 
   html+=section('This week','#856404','#fff3cd',thisWeek);
   html+=section('Overdue','#a32d2d','#feecec',previous);
   html+=section('Upcoming','#1a5a8a','#e8f0fe',next);
-
-  if(noDate.length){
-    html+=`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#6b6960;background:#f0efe9;border-radius:6px;padding:4px 10px;margin:.85rem 0 .4rem;display:inline-block">No date set (${noDate.length})</div>
-    <table class="vat-report-table">
-      <thead><tr><th>Client</th><th>Contact</th><th>Manager</th>${showImpl?'<th>Implementor</th>':''}<th>City</th><th>Status</th></tr></thead>
-      <tbody>${noDate.map(c=>{
-        const implCell=showImpl?`<td>${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:'—'}</td>`:'';
-        return `<tr>${nameCell(c)}<td>${c.contact||'—'}</td><td><span class="rh-mgr">${c.mgr}</span></td>${implCell}<td>${c.city}</td><td><span class="rh-status s-${c.status.replace(/ /g,'-')}">${c.status}</span></td></tr>`;
-      }).join('')}</tbody>
-    </table>`;
-  }
   if(done.length){
     html+=`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#1a6b4a;background:#e4f2eb;border-radius:6px;padding:4px 10px;margin:.85rem 0 .4rem;display:inline-block">Completed (${done.length})</div>
     <table class="vat-report-table">
@@ -1806,7 +1914,9 @@ function saveNew(){
     liveDate:document.getElementById('m-livedate')?document.getElementById('m-livedate').value:'',
     progress:0,todo:''
   });
-  save();closeModal('add-modal');render();toast('Client added.');
+  save();closeModal('add-modal');render();
+  audit('Create',clients[clients.length-1].name,'New client added');
+  toast('Client added.');
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function bgClick(e,id){if(e.target===document.getElementById(id))closeModal(id);}
@@ -1864,13 +1974,11 @@ function buildStkBanner(){
     return d<=weekEnd;
   });
 
-  const hits=dismissed?allHits.filter(c=>c.stkDate<todayISO):allHits;
+  if(!allHits.length){document.getElementById('stk-banner').style.display='none';return;}
 
-  if(!hits.length){document.getElementById('stk-banner').style.display='none';return;}
+  allHits.sort((a,b)=>a.stkDate.localeCompare(b.stkDate));
 
-  hits.sort((a,b)=>a.stkDate.localeCompare(b.stkDate));
-
-  const chips=hits.map(c=>{
+  const chips=allHits.map(c=>{
     const isToday=c.stkDate===todayISO;
     const isOverdue=c.stkDate<todayISO;
     const d=new Date(c.stkDate+'T00:00:00');
@@ -1884,8 +1992,8 @@ function buildStkBanner(){
     </span>`;
   }).join('');
 
-  const overdueCnt=hits.filter(c=>c.stkDate<todayISO).length;
-  const thisWeekCnt=hits.filter(c=>c.stkDate>=todayISO).length;
+  const overdueCnt=allHits.filter(c=>c.stkDate<todayISO).length;
+  const thisWeekCnt=allHits.filter(c=>c.stkDate>=todayISO).length;
   const implSuffix=implFilter?` — ${implFilter.join(', ')}`:'';
   let title='Stock Take reminders'+implSuffix+':';
   if(overdueCnt&&thisWeekCnt) title=`${overdueCnt} overdue + ${thisWeekCnt} this week${implSuffix}:`;
@@ -1900,6 +2008,7 @@ function buildStkBanner(){
 function dismissStkBanner(){
   localStorage.setItem('stk_banner_dismiss',new Date().toDateString());
   document.getElementById('stk-banner').style.display='none';
+  
 }
 
 /* ── STOCK TAKE REPORT ── */
@@ -1962,23 +2071,12 @@ function openStkReport(){
   html+=`<span class="vat-pill" style="background:#fef9c3;color:#7a6500">${thisWeek.length} this week</span>
     <span class="vat-pill" style="background:#fef3c7;color:#92400e">${previous.length} overdue</span>
     <span class="vat-pill" style="background:#e8f0fe;color:#1a5a8a">${next.length} upcoming</span>
-    <span class="vat-pill vp-nodate">${noDate.length} no date</span>
     <span class="vat-pill vp-done">${done.length} completed</span>
   </div>`;
 
   html+=section('This week','#7a6500','#fef9c3',thisWeek);
   html+=section('Overdue','#92400e','#fef3c7',previous);
   html+=section('Upcoming','#1a5a8a','#e8f0fe',next);
-
-  if(noDate.length){
-    const implCol=showImpl?'<th>Implementor</th>':'';
-    const implColData=c=>showImpl?`<td>${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:'—'}</td>`:'';
-    html+=`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#6b6960;background:#f0efe9;border-radius:6px;padding:4px 10px;margin:.85rem 0 .4rem;display:inline-block">No date set (${noDate.length})</div>
-    <table class="vat-report-table">
-      <thead><tr><th>Client</th><th>Contact</th><th>Manager</th>${implCol}<th>City</th><th>Status</th></tr></thead>
-      <tbody>${noDate.map(c=>`<tr>${nameCell(c)}<td>${c.contact||'—'}</td><td><span class="rh-mgr">${c.mgr}</span></td>${implColData(c)}<td>${c.city}</td><td><span class="rh-status s-${c.status.replace(/ /g,'-')}">${c.status}</span></td></tr>`).join('')}</tbody>
-    </table>`;
-  }
   if(done.length){
     const implCol=showImpl?'<th>Implementor</th>':'';
     const implColData=c=>showImpl?`<td>${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:'—'}</td>`:'';
@@ -2057,15 +2155,11 @@ function buildVatBanner(){
     return d<=weekEnd;
   });
 
-  const hits=dismissed
-    ? allHits.filter(c=>c.vatDate<todayISO)
-    : allHits;
+  if(!allHits.length){document.getElementById('vat-banner').style.display='none';return;}
 
-  if(!hits.length){document.getElementById('vat-banner').style.display='none';return;}
+  allHits.sort((a,b)=>a.vatDate.localeCompare(b.vatDate));
 
-  hits.sort((a,b)=>a.vatDate.localeCompare(b.vatDate));
-
-  const chips=hits.map(c=>{
+  const chips=allHits.map(c=>{
     const isToday=c.vatDate===todayISO;
     const isOverdue=c.vatDate<todayISO;
     const d=new Date(c.vatDate+'T00:00:00');
@@ -2079,8 +2173,8 @@ function buildVatBanner(){
     </span>`;
   }).join('');
 
-  const overdueCnt=hits.filter(c=>c.vatDate<todayISO).length;
-  const thisWeekCnt=hits.filter(c=>c.vatDate>=todayISO).length;
+  const overdueCnt=allHits.filter(c=>c.vatDate<todayISO).length;
+  const thisWeekCnt=allHits.filter(c=>c.vatDate>=todayISO).length;
   const implSuffix=implFilter?` — ${implFilter.join(', ')}`:'';
   let title='VAT reminders'+implSuffix+':';
   if(overdueCnt&&thisWeekCnt) title=`${overdueCnt} overdue + ${thisWeekCnt} this week${implSuffix}:`;
@@ -2095,6 +2189,7 @@ function buildVatBanner(){
 function dismissBanner(){
   localStorage.setItem('vat_banner_dismiss',new Date().toDateString());
   document.getElementById('vat-banner').style.display='none';
+  
 }
 
 function scrollToClient(id){
@@ -2256,14 +2351,155 @@ function exportExcel(){
   toast('Excel file downloaded.');
 }
 
+/* ── USERS PANEL ── */
+function openUsersPanel(){
+  renderUsersList();
+  document.getElementById('new-user-name').value='';
+  document.getElementById('new-user-pass').value='';
+  document.getElementById('users-modal').classList.add('open');
+}
+function renderUsersList(){
+  const users=getUsers();
+  const el=document.getElementById('users-list');
+  el.innerHTML=users.map((u,i)=>{
+    const isMe=u.username===currentUser;
+    const isSuperAdmin=u.username==='Admin'&&u.role==='admin';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">'
+      +'<span style="flex:1;font-size:13px;font-weight:500">'+u.username+'</span>'
+      +'<span style="font-size:10px;padding:2px 7px;border-radius:99px;background:'+(u.role==='admin'?'#ede9fe':'var(--surface2)')+';color:'+(u.role==='admin'?'#4c1d95':'var(--text-3)')+'">'+u.role+'</span>'
+      +(isMe?'<span style="font-size:10px;color:var(--text-3)">(you)</span>':'' )
+      +'<button onclick="openChangePasswordFor(\''+u.username+'\')" style="font-size:11px;padding:2px 8px;border:1px solid var(--border-md);border-radius:5px;background:transparent;color:var(--text-2);cursor:pointer;font-family:\'DM Sans\',sans-serif">🔑 Reset</button>'
+      +(!isSuperAdmin&&!isMe?'<button onclick="deleteUser(\''+u.username+'\')" style="font-size:11px;padding:2px 8px;border:1px solid #f7c1c1;border-radius:5px;background:transparent;color:#a32d2d;cursor:pointer;font-family:\'DM Sans\',sans-serif">Remove</button>':'')
+      +'</div>';
+  }).join('');
+}
+function addUser(){
+  const name=document.getElementById('new-user-name').value.trim();
+  const pass=document.getElementById('new-user-pass').value;
+  const role=document.getElementById('new-user-role').value;
+  if(!name||!pass){toast('Enter username and password.');return;}
+  const users=getUsers();
+  if(users.find(u=>u.username===name)){toast('Username already exists.');return;}
+  users.push({username:name,password:pass,role,createdAt:new Date().toISOString()});
+  saveUsers(users);
+  audit('User','Users','Added user: '+name+' ('+role+')');
+  renderUsersList();
+  document.getElementById('new-user-name').value='';
+  document.getElementById('new-user-pass').value='';
+  toast('User "'+name+'" added.');
+}
+function deleteUser(username){
+  if(!confirm('Remove user "'+username+'"?'))return;
+  const users=getUsers().filter(u=>u.username!==username);
+  saveUsers(users);
+  audit('User','Users','Removed user: '+username);
+  renderUsersList();
+  toast('User "'+username+'" removed.');
+}
+function openChangePassword(){
+  openChangePasswordFor(currentUser);
+}
+function openChangePasswordFor(username){
+  const isAdmin=getUsers().find(u=>u.username===currentUser)?.role==='admin';
+  if(username!==currentUser&&!isAdmin){toast('Permission denied.');return;}
+  document.getElementById('chpwd-target-user').value=username;
+  document.getElementById('chpwd-target-info').textContent='Changing password for: '+username;
+  document.getElementById('chpwd-new').value='';
+  document.getElementById('chpwd-confirm').value='';
+  document.getElementById('chpwd-err').textContent='';
+  closeModal('users-modal');
+  document.getElementById('chpwd-modal').classList.add('open');
+}
+function doChangePassword(){
+  const target=document.getElementById('chpwd-target-user').value;
+  const np=document.getElementById('chpwd-new').value;
+  const cp=document.getElementById('chpwd-confirm').value;
+  const err=document.getElementById('chpwd-err');
+  if(np.length<4){err.textContent='Password must be at least 4 characters.';return;}
+  if(np!==cp){err.textContent='Passwords do not match.';return;}
+  const users=getUsers();
+  const u=users.find(x=>x.username===target);
+  if(!u){err.textContent='User not found.';return;}
+  u.password=np;
+  saveUsers(users);
+  audit('Password',target,'Password changed for: '+target);
+  closeModal('chpwd-modal');
+  toast('Password updated.');
+}
+
+/* ── AUDIT TRAIL ── */
+function openAuditTrail(){
+  // populate user filter
+  const users=[...new Set(auditLog.map(e=>e.user))].sort();
+  const sel=document.getElementById('audit-f-user');
+  sel.innerHTML='<option value="">All users</option>'+users.map(u=>'<option>'+u+'</option>').join('');
+  document.getElementById('audit-f-action').value='';
+  document.getElementById('audit-f-search').value='';
+  renderAuditTable();
+  document.getElementById('audit-modal').classList.add('open');
+}
+function renderAuditTable(){
+  const fu=document.getElementById('audit-f-user').value;
+  const fa=document.getElementById('audit-f-action').value;
+  const fs=document.getElementById('audit-f-search').value.toLowerCase();
+  let entries=[...auditLog].reverse();
+  if(fu)entries=entries.filter(e=>e.user===fu);
+  if(fa)entries=entries.filter(e=>e.action===fa);
+  if(fs)entries=entries.filter(e=>(e.target+e.detail+e.user).toLowerCase().includes(fs));
+  const el=document.getElementById('audit-table');
+  if(!entries.length){el.innerHTML='<div style="font-size:13px;color:var(--text-3);padding:1rem 0">No entries found.</div>';return;}
+  const actionColor={Login:'#1a5a8a',Create:'#1a6b4a',Edit:'#6b6960',Delete:'#a32d2d',Password:'#7c3aed',User:'#92400e'};
+  el.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:12px">'
+    +'<thead><tr style="border-bottom:2px solid var(--border)">'
+    +'<th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text-3);text-transform:uppercase;white-space:nowrap">When</th>'
+    +'<th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text-3);text-transform:uppercase">User</th>'
+    +'<th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text-3);text-transform:uppercase">Action</th>'
+    +'<th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text-3);text-transform:uppercase">Client</th>'
+    +'<th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text-3);text-transform:uppercase">Detail</th>'
+    +'</tr></thead><tbody>'
+    +entries.map(e=>{
+      const d=new Date(e.ts);
+      const when=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      const col=actionColor[e.action]||'var(--text-2)';
+      return '<tr style="border-bottom:1px solid var(--border)">'
+        +'<td style="padding:5px 8px;color:var(--text-3);white-space:nowrap">'+when+'</td>'
+        +'<td style="padding:5px 8px;font-weight:500">'+e.user+'</td>'
+        +'<td style="padding:5px 8px"><span style="font-size:10px;padding:2px 7px;border-radius:99px;background:'+col+'22;color:'+col+';font-weight:600">'+e.action+'</span></td>'
+        +'<td style="padding:5px 8px">'+e.target+'</td>'
+        +'<td style="padding:5px 8px;color:var(--text-2)">'+e.detail+'</td>'
+        +'</tr>';
+    }).join('')
+    +'</tbody></table>';
+}
+function exportAuditCSV(){
+  const cols=['When','User','Action','Client','Detail'];
+  const rows=auditLog.map(e=>[new Date(e.ts).toLocaleString('en-GB'),e.user,e.action,e.target,e.detail]);
+  const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const csv='\uFEFF'+[cols,...rows].map(r=>r.map(esc).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='audit_trail_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();URL.revokeObjectURL(a.href);
+  toast('Audit log exported.');
+}
+
 /* ── LOGIN ── */
 function doLogin(){
   const u=document.getElementById('login-user').value.trim();
   const p=document.getElementById('login-pass').value;
   const err=document.getElementById('login-err');
-  if(u==='Admin'&&p==='1993'){
+  const users=getUsers();
+  const match=users.find(x=>x.username===u&&x.password===p);
+  if(match){
+    currentUser=u;
     document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('hdr-user-badge').textContent='👤 '+u;
+    document.getElementById('hdr-user-badge').style.display='flex';
+    // show/hide admin-only items
+    if(match.role==='admin'){document.getElementById('btn-users').style.display='flex';}
     err.textContent='';
+    audit('Login',u,'Signed in');
     load();
   } else {
     err.textContent='Incorrect username or password.';
@@ -2313,10 +2549,11 @@ function removeMod(i){
   if(el)el.addEventListener('input',()=>{render();buildVatBanner();buildStkBanner();});
 });
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeModal('add-modal');closeModal('vat-modal');closeModal('stk-modal');closeModal('settings-modal');closeModal('impl-modal');closeModal('mods-modal');}
+  if(e.key==='Escape'){closeModal('add-modal');closeModal('vat-modal');closeModal('stk-modal');closeModal('settings-modal');closeModal('impl-modal');closeModal('mods-modal');closeModal('users-modal');closeModal('chpwd-modal');closeModal('audit-modal');}
   if(e.key==='Enter'&&!document.getElementById('login-screen').classList.contains('hidden'))doLogin();
 });
 updateSFUI();updateFIUI();updateFMUI();
+
 // App starts at login screen — load() called after successful sign-in
 document.getElementById('login-user').focus();
 buildVatBanner();buildStkBanner();
