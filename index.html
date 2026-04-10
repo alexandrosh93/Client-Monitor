@@ -1418,8 +1418,11 @@ function buildRow(c){
       <div class="xgrid" style="margin-top:.45rem;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">
         <div>
           <div class="xlbl">Live Date</div>
-          <input type="date" class="xdate" value="${c.liveDate||''}" onchange="fld(${c.id},'liveDate',this.value)">
-          ${c.liveDate?`<div style="font-size:9px;color:#1a5a8a;margin-top:2px">📅 ${fmt(c.liveDate)}</div>`:''}
+          <label class="inline-check" style="margin-bottom:3px">
+            <input type="checkbox" id="ldc-${c.id}" ${c.liveDate?'checked':''} onchange="tLiveDate(${c.id},this.checked)">
+            Date set
+          </label>
+          <input type="date" class="xdate" id="ld-${c.id}" value="${c.liveDate||''}" ${!c.liveDate?'disabled':''} onchange="fld(${c.id},'liveDate',this.value)">
         </div>
         <div>
           <div class="xlbl">Next Meeting</div>
@@ -1547,6 +1550,12 @@ function tMtg(id,on){
   c.mtgSet=on;save();
   const di=document.getElementById('md-'+id);if(di)di.disabled=!on;
   const was=expanded.has(id);render();if(was)expanded.add(id);
+}
+function tLiveDate(id,on){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  if(!on){c.liveDate='';save();}
+  const di=document.getElementById('ld-'+id);
+  if(di){di.disabled=!on;if(!on)di.value='';}
 }
 function toggleModEdit(id){
   const view=document.getElementById('mod-view-'+id);
