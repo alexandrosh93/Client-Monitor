@@ -82,7 +82,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .client-row:hover{border-color:var(--border-md);box-shadow:0 1px 8px rgba(0,0,0,.05)}
 .client-row.expanded{border-color:rgba(26,107,74,.22);box-shadow:0 2px 12px rgba(0,0,0,.06)}
 /* grid: name | stars | modules | mgr | impl | status | chevron */
-.row-header{display:grid;grid-template-columns:1fr auto auto auto auto auto auto;align-items:center;gap:8px;padding:.45rem .9rem;cursor:pointer;user-select:none}
+.row-header{display:grid;grid-template-columns:1fr auto auto auto auto auto auto auto;align-items:center;gap:8px;padding:.45rem .9rem;cursor:pointer;user-select:none}
 .rh-name{font-size:14px;font-weight:500;color:var(--text)}
 .rh-sub{font-size:12px;color:var(--text-3);margin-top:1px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .rh-contact{color:var(--text-2)}
@@ -105,7 +105,11 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .s-Completed{background:#e8e8e8;color:#444}
 .chevron{color:var(--text-3);font-size:10px;transition:transform .2s}
 .client-row.expanded .chevron{transform:rotate(180deg)}
-/* EXPAND PANEL */
+/* PROGRESS BAR on row */
+.rh-progress{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.progress-track{width:52px;height:5px;background:var(--surface2);border-radius:99px;overflow:hidden;flex-shrink:0}
+.progress-fill{height:100%;border-radius:99px;transition:width .3s ease}
+.progress-pct{font-size:10px;font-weight:600;color:var(--text-3);min-width:24px}
 .expand-panel{display:none;border-top:1px solid var(--border);padding:.55rem .85rem;background:#fafaf8}
 .client-row.expanded .expand-panel{display:block;animation:sd .18s ease}
 @keyframes sd{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
@@ -887,12 +891,12 @@ function importJSON(input){
 /* ── LOAD ── */
 async function load(){
   const defaultClients=[
-    {id:1,name:'Alpha Traders Ltd',contact:'Nikos Papadopoulos',city:'Limassol',mgr:'VT',status:'Active',modules:['Payroll','Accounting'],grade:4,comment:'Good relationship. Renewal due Q3.',mtgSet:true,mtgDate:'2025-09-15',vatDate:'',vatDone:false,stkDate:'',stkDone:false,liveDate:'2025-07-01',todo:''},
-    {id:2,name:'Beta Services Ltd',contact:'Maria Ioannou',city:'Paphos',mgr:'AK',status:'Active',modules:['Invoicing','Stock'],grade:3,comment:'Some issues with stock module config.',mtgSet:false,mtgDate:'',vatDate:'',vatDone:false,stkDate:'',stkDone:false,liveDate:'',todo:''},
-    {id:3,name:'Gamma Retail Co',contact:'Andreas Georgiou',city:'Limassol',mgr:'VT',status:'Dormant',modules:['Accounting'],grade:2,comment:'No contact since January. Follow up.',mtgSet:false,mtgDate:'',vatDate:'',vatDone:true,stkDate:'',stkDone:false,liveDate:'',todo:''},
-    {id:4,name:'Delta Foods Ltd',contact:'Elena Stavrou',city:'Paphos',mgr:'AK',status:'Not started',modules:['Payroll','Invoicing'],grade:0,comment:'Contract signed, awaiting go-live.',mtgSet:true,mtgDate:'2025-10-03',vatDate:'',vatDone:false,stkDate:'',stkDone:false,liveDate:'2025-11-01',todo:''},
-    {id:5,name:'Epsilon Tech',contact:'Christos Petrou',city:'Limassol',mgr:'AK',status:'Not started',modules:['Payroll','Accounting','Invoicing'],grade:0,comment:'Demo done. Waiting on IT team.',mtgSet:false,mtgDate:'',vatDate:'',vatDone:false,stkDate:'',stkDone:false,liveDate:'',todo:''},
-    {id:6,name:'Zeta Imports Ltd',contact:'Sofia Nicolaou',city:'Paphos',mgr:'VT',status:'Completed',modules:['Accounting','Invoicing','Stock'],grade:5,comment:'Full implementation done.',mtgSet:false,mtgDate:'',vatDate:'',vatDone:true,stkDate:'',stkDone:true,liveDate:'2025-05-15',todo:''},
+    {id:1,name:'Alpha Traders Ltd',contact:'Nikos Papadopoulos',city:'Limassol',mgr:'VT',status:'Active',modules:['Payroll','Accounting'],grade:4,comment:'Good relationship. Renewal due Q3.',mtgSet:true,mtgDate:'2025-09-15',vatDate:'',vatDone:false,stkDate:'',stkDone:false,liveDate:'2025-07-01',progress:0,todo:''},
+    {id:2,name:'Beta Services Ltd',contact:'Maria Ioannou',city:'Paphos',mgr:'AK',status:'Active',modules:['Invoicing','Stock'],grade:3,comment:'Some issues with stock module config.',mtgSet:false,mtgDate:'',vatDate:'',vatDone:false,stkDate:'',stkDone:false,liveDate:'',progress:0,todo:''},
+    {id:3,name:'Gamma Retail Co',contact:'Andreas Georgiou',city:'Limassol',mgr:'VT',status:'Dormant',modules:['Accounting'],grade:2,comment:'No contact since January. Follow up.',mtgSet:false,mtgDate:'',vatDate:'',vatDone:true,stkDate:'',stkDone:false,liveDate:'',progress:0,todo:''},
+    {id:4,name:'Delta Foods Ltd',contact:'Elena Stavrou',city:'Paphos',mgr:'AK',status:'Not started',modules:['Payroll','Invoicing'],grade:0,comment:'Contract signed, awaiting go-live.',mtgSet:true,mtgDate:'2025-10-03',vatDate:'',vatDone:false,stkDate:'',stkDone:false,liveDate:'2025-11-01',progress:0,todo:''},
+    {id:5,name:'Epsilon Tech',contact:'Christos Petrou',city:'Limassol',mgr:'AK',status:'Not started',modules:['Payroll','Accounting','Invoicing'],grade:0,comment:'Demo done. Waiting on IT team.',mtgSet:false,mtgDate:'',vatDate:'',vatDone:false,stkDate:'',stkDone:false,liveDate:'',progress:0,todo:''},
+    {id:6,name:'Zeta Imports Ltd',contact:'Sofia Nicolaou',city:'Paphos',mgr:'VT',status:'Completed',modules:['Accounting','Invoicing','Stock'],grade:5,comment:'Full implementation done.',mtgSet:false,mtgDate:'',vatDate:'',vatDone:true,stkDate:'',stkDone:true,liveDate:'2025-05-15',progress:100,todo:''},
   ];
 
   // try Gist first if configured
@@ -1290,6 +1294,12 @@ function render(){
   }
 }
 
+function clientProgress(c){
+  const pct=c.progress||0;
+  const color=pct===100?'#1a6b4a':pct>=67?'#4ade80':pct>=34?'#f59e0b':'#f87171';
+  return {pct,color};
+}
+
 function buildRow(c){
   const sc='s-'+c.status.replace(/ /g,'-');
   const mods=ALL_MODS.filter(m=>c.modules.includes(m)).map(m=>`<span class="mod on">${m}</span>`).join('');
@@ -1297,8 +1307,14 @@ function buildRow(c){
     ?`<span class="mtg-tag">📅 ${fmt(c.mtgDate)}</span>`
     :`<span class="mtg-tag-none">No meeting set</span>`;
   const contactLine=c.contact?`<span class="rh-contact">👤 ${c.contact}</span>`:'';
-  // grade on row header — always visible
   const gradeOnRow=`<div class="rh-grade">${starsHtml(c.grade||0,12)}</div>`;
+
+  // progress
+  const prog=clientProgress(c);
+  const progressBar=`<div class="rh-progress" title="${prog.done}/${prog.total} milestones complete">
+    <div class="progress-track"><div class="progress-fill" style="width:${prog.pct}%;background:${prog.color}"></div></div>
+    <span class="progress-pct" style="color:${prog.color}">${prog.pct}%</span>
+  </div>`;
 
   const hasAcc=c.modules.includes('Accounting');
 
@@ -1345,6 +1361,7 @@ function buildRow(c){
         <div class="rh-name">${c.name}${contactLine?`<span class="rh-contact" style="font-size:11px;font-weight:400;color:var(--text-3);margin-left:8px">👤 ${c.contact}</span>`:''}${c.mtgSet?`<span class="mtg-tag" style="margin-left:6px;vertical-align:middle">📅 ${fmt(c.mtgDate)}</span>`:''}</div>
       </div>
       ${gradeOnRow}
+      ${progressBar}
       <div class="rh-modules">${mods}</div>
       <span class="rh-mgr">${c.mgr}</span>
       ${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:''}
@@ -1456,7 +1473,15 @@ function buildRow(c){
           <textarea class="xtarea" style="min-height:80px" placeholder="List what needs to be done…" onchange="fld(${c.id},'todo',this.value)">${c.todo||''}</textarea>
         </div>
       </div>
-      <div class="xactions no-print">
+      <div class="xactions no-print" style="justify-content:space-between;align-items:center">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+          <span style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Progress</span>
+          <input type="range" min="0" max="100" step="5" value="${c.progress||0}"
+            style="flex:1;min-width:80px;max-width:220px;accent-color:${prog.color};cursor:pointer"
+            oninput="updateProgress(${c.id},this.value,this)"
+          >
+          <span id="prog-lbl-${c.id}" style="font-size:13px;font-weight:700;color:${prog.color};min-width:36px">${prog.pct}%</span>
+        </div>
         <button class="btn-del-sm" onclick="delClient(${c.id})">Delete client</button>
       </div>
     </div>
@@ -1533,6 +1558,24 @@ function toggleModEdit(id){
   edit.style.display=isEditing?'none':'flex';
   if(lnk)lnk.textContent=isEditing?'edit':'done';
 }
+function updateProgress(id,val,slider){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  c.progress=parseInt(val);
+  save();
+  const pct=c.progress;
+  const color=pct===100?'#1a6b4a':pct>=67?'#4ade80':pct>=34?'#f59e0b':'#f87171';
+  // update label
+  const lbl=document.getElementById('prog-lbl-'+id);
+  if(lbl){lbl.textContent=pct+'%';lbl.style.color=color;}
+  // update slider accent
+  if(slider)slider.style.accentColor=color;
+  // update row bar quietly
+  const row=document.querySelector('.client-row[data-id="'+id+'"] .progress-fill');
+  const rowPct=document.querySelector('.client-row[data-id="'+id+'"] .progress-pct');
+  if(row){row.style.width=pct+'%';row.style.background=color;}
+  if(rowPct){rowPct.textContent=pct+'%';rowPct.style.color=color;}
+}
+
 function delClient(id){
   const c=clients.find(x=>x.id===id);
   const pwd=prompt(`Enter password to delete "${c.name}":`);
@@ -1752,7 +1795,7 @@ function saveNew(){
     comment:document.getElementById('m-comment').value.trim(),
     mtgSet:false,mtgDate:'',vatDate:'',vatDone:false,stkDate:'',stkDone:false,
     liveDate:document.getElementById('m-livedate')?document.getElementById('m-livedate').value:'',
-    todo:''
+    progress:0,todo:''
   });
   save();closeModal('add-modal');render();toast('Client added.');
 }
