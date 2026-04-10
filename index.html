@@ -150,12 +150,12 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .star-edit{display:flex;gap:3px;margin-top:4px}
 .star-edit span{font-size:20px;cursor:pointer;color:#d0cec7;transition:color .1s;user-select:none;line-height:1}
 .star-edit span.lit{color:#e8a020}
-/* TODO BOX */
-.todo-box{background:#fffdf0;border:1px solid #e8d87a;border-radius:8px;padding:.65rem .9rem;margin-top:.65rem}
-.todo-title{font-size:10px;font-weight:700;color:#7a6500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.4rem;display:flex;align-items:center;gap:5px}
-.todo-textarea{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 7px;border:1px solid #e8d87a;border-radius:6px;background:#fff;color:#1a1917;outline:none;width:100%;resize:none;line-height:1.55;min-height:60px}
-.todo-textarea:focus{border-color:#b8a000}
-.todo-textarea::placeholder{color:#c4b44a}
+/* TODO BOX — plain */
+.todo-box{background:var(--surface);border:1px solid var(--border-md);border-radius:8px;padding:.65rem .9rem;margin-top:.65rem}
+.todo-title{font-size:10px;font-weight:700;color:var(--text-2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.4rem;display:flex;align-items:center;gap:5px}
+.todo-textarea{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 7px;border:1px solid var(--border-md);border-radius:6px;background:var(--bg);color:#1a1917;outline:none;width:100%;resize:none;line-height:1.55;min-height:60px}
+.todo-textarea:focus{border-color:var(--accent)}
+.todo-textarea::placeholder{color:var(--text-3)}
 .xactions{display:flex;justify-content:flex-end;margin-top:.9rem}
 .btn-del-sm{font-size:12px;font-family:'DM Sans',sans-serif;padding:5px 12px;border:1px solid #f7c1c1;border-radius:7px;background:transparent;color:#a32d2d;cursor:pointer}
 .btn-del-sm:hover{background:#fef2f2}
@@ -513,7 +513,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
             <div class="dd-item checked" data-sort="status" onclick="setSort(event,'status','Status')"><div class="dd-radio" id="sr-status"></div> By status</div>
             <div class="dd-item" data-sort="mgr" onclick="setSort(event,'mgr','Manager')"><div class="dd-radio" id="sr-mgr"></div> By manager</div>
             <div class="dd-item" data-sort="impl" onclick="setSort(event,'impl','Implementor')"><div class="dd-radio" id="sr-impl"></div> By implementor</div>
-            <div class="dd-item" data-sort="impl"  onclick="setSort(event,'impl','Implementor')"><div class="dd-radio" id="sr-impl"></div> By implementor</div>
             <div class="dd-item" data-sort="name"  onclick="setSort(event,'name','Name A–Z')"><div class="dd-radio" id="sr-name"></div> By name (A–Z)</div>
             <div class="dd-item" data-sort="grade" onclick="setSort(event,'grade','Grade')"><div class="dd-radio" id="sr-grade"></div> By grade</div>
             <div class="dd-item" data-sort="city"  onclick="setSort(event,'city','City')"><div class="dd-radio" id="sr-city"></div> By city</div>
@@ -1308,7 +1307,7 @@ function buildRow(c){
   const activeModsDisplay=c.modules.length
     ?c.modules.map(m=>`<span class="mod on">${m}</span>`).join('')
     :`<span style="font-size:11px;color:var(--text-3)">None</span>`;
-  const allModToggles=ALL_MODS.map(m=>`<label class="mod-toggle${c.modules.includes(m)?' on':''}"><input type="checkbox"${c.modules.includes(m)?' checked':''} onchange="tModFld(${c.id},'${m}',this.checked)">${m}</label>`).join('');
+  const allModToggles=ALL_MODS.map(m=>`<label class="mod-toggle${c.modules.includes(m)?' on':''}" data-mod="${m}"><input type="checkbox"${c.modules.includes(m)?' checked':''} onchange="tModFld(${c.id},'${m}',this.checked)">${m}</label>`).join('');
 
   return `<div class="client-row" data-id="${c.id}">
     <div class="row-header" onclick="toggle(${c.id})">
@@ -1360,44 +1359,71 @@ function buildRow(c){
           </select>
         </div>
         <div>
-          <div class="xlbl">Live Date</div>
-          <input type="date" class="xdate" value="${c.liveDate||''}" onchange="fld(${c.id},'liveDate',this.value)" title="Planned go-live date">
-          ${c.liveDate?`<div style="font-size:10px;color:#1a5a8a;margin-top:3px">📅 ${fmt(c.liveDate)}</div>`:''}
-        </div>
-        <div>
           <div class="xlbl">Grade</div>
-          <div style="font-size:12px;color:var(--text-3);margin-bottom:3px">${c.grade?c.grade+' / 5':'Not graded'}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:2px">${c.grade?c.grade+' / 5':'Not graded'}</div>
           <div class="star-edit" id="se-${c.id}">
             ${[1,2,3,4,5].map(v=>`<span class="${(c.grade||0)>=v?'lit':''}" onmouseenter="previewGrade(${c.id},${v})" onmouseleave="unpreviewGrade(${c.id})" onclick="setGrd(${c.id},${v})">★</span>`).join('')}
           </div>
         </div>
+      </div>
+
+      <!-- DATES ROW -->
+      <div class="xgrid" style="margin-top:.45rem;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">
         <div>
-          <div class="xlbl" style="display:flex;align-items:center;justify-content:space-between">
-            Modules
-            <span class="no-print" onclick="toggleModEdit(${c.id})" id="med-lnk-${c.id}" style="font-size:10px;font-weight:500;color:var(--accent);cursor:pointer;text-transform:none;letter-spacing:0">edit</span>
-          </div>
-          <div id="mod-view-${c.id}" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px">${activeModsDisplay}</div>
-          <div id="mod-edit-${c.id}" class="mod-toggle-row" style="display:none;margin-top:4px">${allModToggles}</div>
+          <div class="xlbl">Live Date</div>
+          <input type="date" class="xdate" value="${c.liveDate||''}" onchange="fld(${c.id},'liveDate',this.value)">
+          ${c.liveDate?`<div style="font-size:9px;color:#1a5a8a;margin-top:2px">📅 ${fmt(c.liveDate)}</div>`:''}
         </div>
         <div>
           <div class="xlbl">Next Meeting</div>
-          <label class="inline-check">
+          <label class="inline-check" style="margin-bottom:3px">
             <input type="checkbox" id="mc-${c.id}" ${c.mtgSet?'checked':''} onchange="tMtg(${c.id},this.checked)">
-            Meeting scheduled
+            Scheduled
           </label>
           <input type="date" class="xdate" id="md-${c.id}" value="${c.mtgDate||''}" ${!c.mtgSet?'disabled':''} onchange="fld(${c.id},'mtgDate',this.value)">
         </div>
-        ${vatReminderCell}
-        ${stkReminderCell}
-      </div>
-      <div class="print-row">
-        <div style="margin-top:.85rem">
-          <div class="xlbl">Comments</div>
-          <textarea class="xtarea" onchange="fld(${c.id},'comment',this.value)">${c.comment||''}</textarea>
+        <div class="vat-cell">
+          <div class="xlbl">VAT Reminder</div>
+          <input type="date" class="xdate" value="${c.vatDate||''}" onchange="fld(${c.id},'vatDate',this.value)" style="border-color:#bfdbfe;color:#1a5a8a;margin-bottom:3px">
+          <label class="inline-check" style="color:#1a5a8a;margin-bottom:0">
+            <input type="checkbox" ${c.vatDone?'checked':''} onchange="fld(${c.id},'vatDone',this.checked)">
+            Completed
+          </label>
+          ${c.vatDone?`<div style="font-size:9px;color:#1a6b4a;margin-top:2px">✓ Done</div>`:''}
         </div>
-        <div class="todo-box" style="margin-top:.85rem">
-          <div class="todo-title">📋 To-do before next meeting</div>
-          <textarea class="todo-textarea" placeholder="List what needs to be done before the next meeting…" onchange="fld(${c.id},'todo',this.value)">${c.todo||''}</textarea>
+        <div class="stk-cell">
+          <div class="xlbl">Stock Take</div>
+          <input type="date" class="xdate" value="${c.stkDate||''}" onchange="fld(${c.id},'stkDate',this.value)" style="border-color:#e8d87a;color:#7a6500;margin-bottom:3px">
+          <label class="inline-check" style="color:#7a6500;margin-bottom:0">
+            <input type="checkbox" ${c.stkDone?'checked':''} onchange="fld(${c.id},'stkDone',this.checked)">
+            Completed
+          </label>
+          ${c.stkDone?`<div style="font-size:9px;color:#1a6b4a;margin-top:2px">✓ Done</div>`:''}
+        </div>
+
+        <!-- MODULES inline after dates -->
+        <div>
+          <div class="xlbl" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.2rem">
+            Modules
+            <span class="no-print" onclick="toggleModEdit(${c.id})" id="med-lnk-${c.id}" style="font-size:10px;font-weight:500;color:var(--accent);cursor:pointer;text-transform:none;letter-spacing:0">edit</span>
+          </div>
+          <div id="mod-view-${c.id}" style="display:flex;flex-wrap:wrap;gap:4px">${activeModsDisplay}</div>
+          <div id="mod-edit-${c.id}" style="display:none;margin-top:4px">
+            <div class="mod-toggle-row">${allModToggles}</div>
+            <button onclick="toggleModEdit(${c.id})" style="margin-top:5px;font-family:'DM Sans',sans-serif;font-size:11px;padding:3px 12px;border:none;border-radius:5px;background:var(--accent);color:#fff;cursor:pointer;font-weight:500">done</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMMENTS + TODO — same style, tall boxes -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem">
+        <div>
+          <div class="xlbl">Comments</div>
+          <textarea class="xtarea" style="min-height:80px" onchange="fld(${c.id},'comment',this.value)">${c.comment||''}</textarea>
+        </div>
+        <div>
+          <div class="xlbl">📋 To-do before meeting</div>
+          <textarea class="xtarea" style="min-height:80px" placeholder="List what needs to be done…" onchange="fld(${c.id},'todo',this.value)">${c.todo||''}</textarea>
         </div>
       </div>
       <div class="xactions no-print">
@@ -1450,7 +1476,16 @@ function tModFld(id,m,on){
   const c=clients.find(x=>x.id===id);if(!c)return;
   if(on&&!c.modules.includes(m))c.modules.push(m);
   else c.modules=c.modules.filter(x=>x!==m);
-  save();const was=expanded.has(id);render();if(was)expanded.add(id);
+  save();
+  // update the mod-toggle visual without full re-render
+  const lbl=document.querySelector(`#mod-edit-${id} .mod-toggle[data-mod="${m}"]`);
+  if(lbl)lbl.classList.toggle('on',on);
+  // update the row header module pills quietly
+  const rhMods=document.querySelector(`.client-row[data-id="${id}"] .rh-modules`);
+  if(rhMods)rhMods.innerHTML=ALL_MODS.filter(x=>c.modules.includes(x)).map(x=>`<span class="mod on">${x}</span>`).join('');
+  // update mod-view (collapsed view)
+  const mv=document.getElementById('mod-view-'+id);
+  if(mv)mv.innerHTML=c.modules.length?c.modules.map(x=>`<span class="mod on">${x}</span>`).join(''):`<span style="font-size:11px;color:var(--text-3)">None</span>`;
 }
 function tMtg(id,on){
   const c=clients.find(x=>x.id===id);if(!c)return;
