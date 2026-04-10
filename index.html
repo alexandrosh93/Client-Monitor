@@ -203,7 +203,28 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#1a1917;color:#fff;font-size:13px;padding:8px 20px;border-radius:99px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
 .toast.show{opacity:1}
 
-/* ═══════ LOGIN SCREEN ═══════ */
+/* ═══════ DASHBOARD ═══════ */
+#dashboard{display:none;padding:.5rem 0}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:1.25rem}
+.dash-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem}
+.dash-card-title{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);margin-bottom:.75rem}
+.dash-kpi{font-size:32px;font-weight:700;color:var(--text);line-height:1}
+.dash-kpi-sub{font-size:12px;color:var(--text-3);margin-top:4px}
+.dash-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.dash-bar-label{font-size:12px;color:var(--text-2);width:90px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dash-bar-track{flex:1;height:7px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.dash-bar-fill{height:100%;border-radius:99px;background:var(--accent);transition:width .4s ease}
+.dash-bar-val{font-size:11px;color:var(--text-3);width:24px;text-align:right;flex-shrink:0}
+.dash-status-grid{display:flex;gap:6px;flex-wrap:wrap}
+.dash-status-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.4rem .7rem;border-radius:8px;border:1px solid var(--border);min-width:60px;cursor:pointer;transition:all .15s}
+.dash-status-pill:hover{border-color:var(--border-md)}
+.dash-status-pill .dsn{font-size:20px;font-weight:700}
+.dash-status-pill .dsl{font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+/* VIEW TOGGLE */
+.view-toggle{display:flex;gap:0;border:1px solid var(--border-md);border-radius:var(--radius);overflow:hidden;flex-shrink:0}
+.view-btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 12px;border:none;background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.view-btn.active{background:var(--accent);color:#fff}
+.view-btn:not(.active):hover{background:var(--surface2)}
 #login-screen{display:flex;position:fixed;inset:0;z-index:1000;background:var(--bg);align-items:center;justify-content:center;padding:1.5rem}
 #login-screen.hidden{display:none}
 .login-box{background:var(--surface);border:1px solid var(--border-md);border-radius:var(--radius-lg);padding:2rem 2rem 1.75rem;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.08)}
@@ -367,10 +388,18 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
       PDF
     </button>
+    <button class="btn-hdr btn-hdr-ghost" onclick="exportExcel()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      Excel
+    </button>
   </div>
 
   <!-- Right-aligned actions -->
   <div class="hdr-actions">
+    <div class="view-toggle">
+      <button class="view-btn active" id="vbtn-list" onclick="setView('list')">☰ List</button>
+      <button class="view-btn" id="vbtn-dash" onclick="setView('dash')">⊞ Dashboard</button>
+    </div>
     <input type="text" id="search" placeholder="🔍 Search clients…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 11px;border:1px solid var(--border-md);border-radius:99px;background:var(--surface2);color:var(--text);outline:none;width:200px;transition:all .2s" onfocus="this.style.width='260px';this.style.background='var(--surface)';this.style.borderColor='var(--accent)'" onblur="this.style.width='200px';this.style.background='var(--surface2)';this.style.borderColor='var(--border-md)'">
     <span class="sync-label no-print" onclick="openSettings()" title="Cloud sync settings">
       <span class="sync-dot" id="sync-dot"></span>
@@ -526,6 +555,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
   </div>
 
   <div id="list"></div>
+  <div id="dashboard"></div>
 </main>
 
 <!-- Add Client Modal -->
@@ -2023,6 +2053,155 @@ function scrollToClient(id){
     const row=document.querySelector(`.client-row[data-id="${id}"]`);
     if(row)row.scrollIntoView({behavior:'smooth',block:'center'});
   },80);
+}
+
+/* ── VIEW TOGGLE ── */
+let currentView='list';
+function setView(v){
+  currentView=v;
+  const listEl=document.getElementById('list');
+  const dashEl=document.getElementById('dashboard');
+  const ctrlBar=document.querySelector('.control-bar');
+  if(listEl)listEl.style.display=v==='list'?'block':'none';
+  if(dashEl)dashEl.style.display=v==='dash'?'block':'none';
+  if(ctrlBar)ctrlBar.style.display=v==='list'?'flex':'none';
+  document.getElementById('vbtn-list').classList.toggle('active',v==='list');
+  document.getElementById('vbtn-dash').classList.toggle('active',v==='dash');
+  if(v==='dash')renderDashboard();
+}
+
+/* ── DASHBOARD ── */
+function renderDashboard(){
+  const el=document.getElementById('dashboard');
+  if(!el)return;
+  const total=clients.length;
+  const byStatus=function(s){return clients.filter(function(c){return c.status===s;}).length;};
+  const graded=clients.filter(function(c){return c.grade>0;});
+  const avgGrade=graded.length?(graded.reduce(function(a,c){return a+c.grade;},0)/graded.length).toFixed(1):'-';
+  const today=new Date().toISOString().slice(0,10);
+  const vatOverdue=clients.filter(function(c){return !c.vatDone&&c.vatDate&&c.vatDate<today;}).length;
+  const stkOverdue=clients.filter(function(c){return !c.stkDone&&c.stkDate&&c.stkDate<today;}).length;
+
+  const implMap={};
+  clients.forEach(function(c){var k=c.implementor||'Unassigned';implMap[k]=(implMap[k]||0)+1;});
+  const implSorted=Object.entries(implMap).sort(function(a,b){return b[1]-a[1];});
+  const maxImpl=implSorted.length?implSorted[0][1]:1;
+
+  const cityMap={};
+  clients.forEach(function(c){var k=c.city||'Unknown';cityMap[k]=(cityMap[k]||0)+1;});
+  const citySorted=Object.entries(cityMap).sort(function(a,b){return b[1]-a[1];});
+  const maxCity=citySorted.length?citySorted[0][1]:1;
+
+  const modMap={};
+  ALL_MODS.forEach(function(m){modMap[m]=clients.filter(function(c){return c.modules.includes(m);}).length;});
+  const modSorted=Object.entries(modMap).sort(function(a,b){return b[1]-a[1];});
+
+  const gradeDist=[1,2,3,4,5].map(function(g){return {g:g,n:clients.filter(function(c){return c.grade===g;}).length};});
+  const maxGrade=Math.max.apply(null,gradeDist.map(function(x){return x.n;}).concat([1]));
+
+  const soon=new Date();soon.setDate(soon.getDate()+60);
+  const soonStr=soon.toISOString().slice(0,10);
+  const goingLive=clients.filter(function(c){return c.liveDate&&c.liveDate>=today&&c.liveDate<=soonStr;})
+    .sort(function(a,b){return a.liveDate.localeCompare(b.liveDate);}).slice(0,6);
+
+  function bar(label,val,max,color){
+    color=color||'var(--accent)';
+    const pct=max>0?Math.round(val/max*100):0;
+    return '<div class="dash-bar-row">'
+      +'<div class="dash-bar-label" title="'+label+'">'+label+'</div>'
+      +'<div class="dash-bar-track"><div class="dash-bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div>'
+      +'<div class="dash-bar-val">'+val+'</div></div>';
+  }
+
+  // STATUS CARD
+  var html='<div class="dash-grid">';
+  html+='<div class="dash-card"><div class="dash-card-title">Status overview</div><div class="dash-status-grid">';
+  html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(null)" style="background:#f7f6f3"><div class="dsn">'+total+'</div><div class="dsl">All</div></div>';
+  html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Active\')" style="background:#e4f2eb"><div class="dsn" style="color:#1a6b4a">'+byStatus('Active')+'</div><div class="dsl">Active</div></div>';
+  html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Not started\')" style="background:#f0efe9"><div class="dsn" style="color:#888">'+byStatus('Not started')+'</div><div class="dsl">Not started</div></div>';
+  html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Dormant\')" style="background:#fdf0db"><div class="dsn" style="color:#8a5a1a">'+byStatus('Dormant')+'</div><div class="dsl">Dormant</div></div>';
+  html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Completed\')" style="background:#e8e8e8"><div class="dsn" style="color:#555">'+byStatus('Completed')+'</div><div class="dsl">Done</div></div>';
+  html+='</div></div>';
+
+  // KPI CARD
+  html+='<div class="dash-card"><div class="dash-card-title">Key numbers</div>'
+    +'<div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap">'
+    +'<div><div class="dash-kpi" style="color:#1a5a8a">'+vatOverdue+'</div><div class="dash-kpi-sub">⚑ VAT overdue</div></div>'
+    +'<div><div class="dash-kpi" style="color:#7a6500">'+stkOverdue+'</div><div class="dash-kpi-sub">📦 Stock Take overdue</div></div>'
+    +'<div><div class="dash-kpi" style="color:#e8a020">'+avgGrade+'</div><div class="dash-kpi-sub">★ Avg grade</div></div>'
+    +'<div><div class="dash-kpi">'+total+'</div><div class="dash-kpi-sub">Total clients</div></div>'
+    +'</div></div>';
+
+  // IMPLEMENTOR CARD
+  html+='<div class="dash-card"><div class="dash-card-title">Clients by implementor</div>';
+  if(implSorted.length){implSorted.forEach(function(e){html+=bar(e[0],e[1],maxImpl);});}
+  else{html+='<div style="font-size:12px;color:var(--text-3)">No implementors assigned</div>';}
+  html+='</div>';
+
+  // CITY CARD
+  html+='<div class="dash-card"><div class="dash-card-title">Clients by city</div>';
+  citySorted.forEach(function(e){html+=bar(e[0],e[1],maxCity,'#1a5a8a');});
+  html+='</div>';
+
+  // MODULE CARD
+  html+='<div class="dash-card"><div class="dash-card-title">Module adoption</div>';
+  modSorted.forEach(function(e){html+=bar(e[0],e[1],total,'#7a6500');});
+  html+='</div>';
+
+  // GRADE CARD
+  html+='<div class="dash-card"><div class="dash-card-title">Grade distribution</div>';
+  gradeDist.forEach(function(d){html+=bar('★'.repeat(d.g),d.n,maxGrade,'#e8a020');});
+  html+='<div style="font-size:11px;color:var(--text-3);margin-top:6px">'+clients.filter(function(c){return !c.grade;}).length+' clients not graded</div>';
+  html+='</div>';
+
+  // LIVE DATES CARD
+  html+='<div class="dash-card" style="grid-column:span 2"><div class="dash-card-title">Going live in the next 60 days</div>';
+  if(goingLive.length){
+    html+='<table style="width:100%;border-collapse:collapse;font-size:12px">'
+      +'<thead><tr style="border-bottom:1px solid var(--border)">'
+      +'<th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text-3);font-weight:600;text-transform:uppercase">Client</th>'
+      +'<th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text-3);font-weight:600;text-transform:uppercase">Status</th>'
+      +'<th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text-3);font-weight:600;text-transform:uppercase">Implementor</th>'
+      +'<th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text-3);font-weight:600;text-transform:uppercase">Live Date</th>'
+      +'</tr></thead><tbody>';
+    goingLive.forEach(function(c){
+      html+='<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="setView(\'list\');scrollToClient('+c.id+')">'
+        +'<td style="padding:6px 8px;font-weight:500">'+c.name+'</td>'
+        +'<td style="padding:6px 8px"><span class="rh-status s-'+c.status.replace(/ /g,'-')+'">'+c.status+'</span></td>'
+        +'<td style="padding:6px 8px;color:var(--text-2)">'+(c.implementor||'—')+'</td>'
+        +'<td style="padding:6px 8px;font-weight:500;color:#1a5a8a">📅 '+fmt(c.liveDate)+'</td>'
+        +'</tr>';
+    });
+    html+='</tbody></table>';
+  } else {
+    html+='<div style="font-size:12px;color:var(--text-3);padding:.5rem 0">No clients going live in the next 60 days.</div>';
+  }
+  html+='</div>';
+
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+/* ── EXCEL EXPORT ── */
+function exportExcel(){
+  // Build CSV with BOM for Excel UTF-8 compatibility
+  const cols=['Name','Contact','City','Manager','Implementor','Status','Modules','Grade','Live Date','Next Meeting','VAT Date','VAT Done','Stock Take Date','Stock Take Done','Comments','To-do'];
+  const rows=clients.map(c=>[
+    c.name,c.contact||'',c.city,c.mgr,c.implementor||'',c.status,
+    c.modules.join('; '),c.grade||'',c.liveDate||'',
+    c.mtgSet&&c.mtgDate?c.mtgDate:'',
+    c.vatDate||'',c.vatDone?'Yes':'No',
+    c.stkDate||'',c.stkDone?'Yes':'No',
+    c.comment||'',c.todo||''
+  ]);
+  const esc=v=>`"${String(v).replace(/"/g,'""')}"`;
+  const csv='\uFEFF'+[cols,...rows].map(r=>r.map(esc).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`clients_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();URL.revokeObjectURL(url);
+  toast('Excel file downloaded.');
 }
 
 /* ── LOGIN ── */
