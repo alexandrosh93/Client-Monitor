@@ -765,23 +765,42 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 
     <!-- EXPORT/IMPORT PANEL -->
     <div id="panel-export" style="display:none">
-      <div style="font-size:13px;color:var(--text-2);margin-bottom:1rem;line-height:1.6">
-        Export your data as a <strong>.json</strong> file and save it to OneDrive, Google Drive, or any shared folder. On another device, import that same file to load your data.
+
+      <!-- LAST BACKUP STATUS -->
+      <div id="backup-status-bar" style="background:var(--surface2);border:1px solid var(--border-md);border-radius:var(--radius);padding:.65rem 1rem;margin-bottom:.85rem;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:2px">Last backup</div>
+          <div id="last-backup-label" style="font-size:13px;font-weight:500;color:var(--text)">Never</div>
+        </div>
+        <div id="last-backup-gist" style="font-size:11px;color:var(--text-3)"></div>
       </div>
+
       <div style="display:flex;flex-direction:column;gap:10px">
+
+        <!-- DOWNLOAD BACKUP -->
         <div style="border:1px solid var(--border-md);border-radius:var(--radius);padding:.85rem 1rem">
-          <div style="font-size:13px;font-weight:500;margin-bottom:4px">Export — save your data</div>
-          <div style="font-size:12px;color:var(--text-2);margin-bottom:.6rem">Downloads a backup file. Save it to your OneDrive or any synced folder.</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:3px">⬇ Download backup</div>
+          <div style="font-size:12px;color:var(--text-2);margin-bottom:.65rem;line-height:1.5">Downloads a <strong>.json</strong> file with all your clients, modules, implementors and audit log. Save it to iCloud, OneDrive or Google Drive.</div>
           <button class="btn-sync" onclick="exportJSON()">⬇ Download backup file</button>
         </div>
+
+        <!-- RESTORE FROM FILE -->
         <div style="border:1px solid var(--border-md);border-radius:var(--radius);padding:.85rem 1rem">
-          <div style="font-size:13px;font-weight:500;margin-bottom:4px">Import — load your data</div>
-          <div style="font-size:12px;color:var(--text-2);margin-bottom:.6rem">Select the backup file you exported earlier. This will replace all current data.</div>
-          <label style="display:inline-block;padding:6px 14px;background:var(--surface2);border:1px solid var(--border-md);border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">
+          <div style="font-size:13px;font-weight:600;margin-bottom:3px">⬆ Restore from file</div>
+          <div style="font-size:12px;color:var(--text-2);margin-bottom:.65rem;line-height:1.5">Select a previously downloaded backup file to restore all data. <strong style="color:#a32d2d">This will replace all current data.</strong></div>
+          <label style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--surface2);border:1px solid var(--border-md);border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">
             ⬆ Choose backup file
             <input type="file" accept=".json" style="display:none" onchange="importJSON(this)">
           </label>
         </div>
+
+        <!-- GITHUB GIST SYNC -->
+        <div style="border:1px solid #bfdbfe;border-radius:var(--radius);padding:.85rem 1rem;background:#eff6ff">
+          <div style="font-size:13px;font-weight:600;color:#1a5a8a;margin-bottom:3px">☁ GitHub Gist (recommended)</div>
+          <div style="font-size:12px;color:#1a5a8a;margin-bottom:.65rem;line-height:1.5">Automatically syncs every time you save. Works on iPhone and PC simultaneously. Switch to the <strong>Sync</strong> tab to connect.</div>
+          <button class="btn-cancel" onclick="switchTab('gist')">Go to Sync settings →</button>
+        </div>
+
       </div>
       <div class="modal-btns" style="margin-top:1rem">
         <button class="btn-cancel" onclick="closeModal('settings-modal')">Close</button>
@@ -876,6 +895,7 @@ async function gistPush(){
     await gistRequest('PATCH',`/gists/${gistId}`,{files:{'client_monitor.json':{content}}});
     setSyncStatus('ok','Gist synced ✓');
     setSyncMsg('✓ Saved to GitHub Gist.','#1a6b4a');
+    stampBackup('gist');
     return true;
   }catch(e){
     setSyncStatus('err','Sync failed');
@@ -966,6 +986,35 @@ function save(){
 }
 
 /* ── EXPORT / IMPORT ── */
+const BACKUP_KEY='avps_last_backup';
+
+function updateBackupStatus(){
+  const el=document.getElementById('last-backup-label');
+  const gistEl=document.getElementById('last-backup-gist');
+  if(!el)return;
+  const stored=localStorage.getItem(BACKUP_KEY);
+  if(!stored){el.textContent='Never';el.style.color='#a32d2d';return;}
+  try{
+    const {ts,type}=JSON.parse(stored);
+    const d=new Date(ts);
+    const now=new Date();
+    const diffMs=now-d;
+    const diffMins=Math.floor(diffMs/60000);
+    const diffHrs=Math.floor(diffMs/3600000);
+    const diffDays=Math.floor(diffMs/86400000);
+    let ago=diffMins<1?'Just now':diffMins<60?diffMins+'m ago':diffHrs<24?diffHrs+'h ago':diffDays+'d ago';
+    const full=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    el.textContent=full+' ('+ago+')';
+    el.style.color=diffDays>=7?'#a32d2d':diffDays>=3?'#8a5a1a':'#1a6b4a';
+    if(gistEl)gistEl.textContent=type==='gist'?'☁ Auto-synced via GitHub Gist':type==='file'?'📁 Manual file backup':'';
+  }catch(e){el.textContent='Unknown';}
+}
+
+function stampBackup(type){
+  localStorage.setItem(BACKUP_KEY,JSON.stringify({ts:new Date().toISOString(),type:type||'file'}));
+  updateBackupStatus();
+}
+
 function exportJSON(){
   const data=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog},null,2);
   const blob=new Blob([data],{type:'application/json'});
@@ -973,7 +1022,11 @@ function exportJSON(){
   a.href=URL.createObjectURL(blob);
   a.download='client_monitor_backup_'+new Date().toISOString().slice(0,10)+'.json';
   a.click();
+  URL.revokeObjectURL(a.href);
+  stampBackup('file');
+  audit('Backup','System','Manual backup file downloaded');
   setSyncMsg('✓ Backup file downloaded.','#1a6b4a');
+  toast('Backup downloaded.');
 }
 
 function importJSON(input){
@@ -984,14 +1037,18 @@ function importJSON(input){
     try{
       const data=JSON.parse(e.target.result);
       if(!Array.isArray(data.c))throw new Error('Invalid format');
-      if(!confirm(`Import ${data.c.length} clients? This will replace all current data.`))return;
+      if(!confirm('Restore '+data.c.length+' clients from backup?\n\nThis will replace ALL current data. This cannot be undone.'))return;
       clients=data.c;
       nextId=data.n||clients.length+1;
-      save();
-      render();buildVatBanner();buildStkBanner();
+      implementors=data.impl||[];
+      if(data.mods&&data.mods.length)ALL_MODS=data.mods;
+      if(data.audit)auditLog=data.audit;
+      save();render();buildVatBanner();buildStkBanner();
+      stampBackup('file');
+      audit('Restore','System','Data restored from backup file: '+file.name);
       closeModal('settings-modal');
-      toast('Data imported successfully.');
-    }catch{setSyncMsg('Invalid backup file.','#a32d2d');}
+      toast('Data restored from backup.');
+    }catch(e){setSyncMsg('Invalid backup file — could not restore.','#a32d2d');}
   };
   reader.readAsText(file);
   input.value='';
@@ -1067,6 +1124,7 @@ function switchTab(tab){
   document.getElementById('tab-gist').style.color=tab==='gist'?'#fff':'var(--text-2)';
   document.getElementById('tab-export').style.background=tab==='export'?'var(--accent)':'var(--surface2)';
   document.getElementById('tab-export').style.color=tab==='export'?'#fff':'var(--text-2)';
+  if(tab==='export')updateBackupStatus();
 }
 
 async function gistSaveSettings(){
