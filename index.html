@@ -1543,6 +1543,8 @@ function render(){
     const allExp=allIds.length>0&&allIds.every(id=>expanded.has(id));
     btn.textContent=allExp?'⊟ Collapse all':'⊞ Expand all';
   }
+  // if dashboard is active, refresh it too so filters apply
+  if(currentView==='dash')renderDashboard();
 }
 
 function clientProgress(c){
@@ -2114,7 +2116,7 @@ function buildStkBanner(){
     if(!c.stkDate)return false;
     if(implFilter&&!implFilter.includes(c.implementor||''))return false;
     const d=new Date(c.stkDate+'T00:00:00');
-    return d<=weekEnd;
+    return d>=todayStart && d<=weekEnd;
   });
 
   if(!allHits.length){document.getElementById('stk-banner').style.display='none';return;}
@@ -2123,25 +2125,20 @@ function buildStkBanner(){
 
   const chips=allHits.map(c=>{
     const isToday=c.stkDate===todayISO;
-    const isOverdue=c.stkDate<todayISO;
     const d=new Date(c.stkDate+'T00:00:00');
     const dayName=d.toLocaleDateString('en-GB',{weekday:'short'});
     const dateShort=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
-    const label=isToday?'TODAY':isOverdue?'OVERDUE · '+dateShort:dayName+' '+dateShort;
+    const label=isToday?'TODAY':dayName+' '+dateShort;
     const implTag=c.implementor?`<span style="font-size:10px;opacity:.75"> · ${c.implementor}</span>`:'';
-    return `<span class="stk-chip${isToday?' today':isOverdue?' overdue':''}" onclick="scrollToClient(${c.id})" title="Click to jump to client">
+    return `<span class="stk-chip${isToday?' today':''}" onclick="scrollToClient(${c.id})" title="Click to jump to client">
       <span class="vc-name">${c.name}${implTag}</span>
       <span class="vc-date">${label}</span>
     </span>`;
   }).join('');
 
-  const overdueCnt=allHits.filter(c=>c.stkDate<todayISO).length;
-  const thisWeekCnt=allHits.filter(c=>c.stkDate>=todayISO).length;
+  const thisWeekCnt=allHits.length;
   const implSuffix=implFilter?` — ${implFilter.join(', ')}`:'';
-  let title='Stock Take reminders'+implSuffix+':';
-  if(overdueCnt&&thisWeekCnt) title=`${overdueCnt} overdue + ${thisWeekCnt} this week${implSuffix}:`;
-  else if(overdueCnt) title=`${overdueCnt} overdue stock take reminder${overdueCnt>1?'s':''}${implSuffix}:`;
-  else title=`${thisWeekCnt} stock take reminder${thisWeekCnt>1?'s':''} this week${implSuffix}:`;
+  const title=thisWeekCnt===1?`1 Stock Take reminder this week${implSuffix}:`:`${thisWeekCnt} Stock Take reminders this week${implSuffix}:`;
 
   document.getElementById('stk-banner-title').textContent=title;
   document.getElementById('stk-banner-items').innerHTML=chips;
@@ -2295,7 +2292,7 @@ function buildVatBanner(){
     if(!c.vatDate)return false;
     if(implFilter&&!implFilter.includes(c.implementor||''))return false;
     const d=new Date(c.vatDate+'T00:00:00');
-    return d<=weekEnd;
+    return d>=todayStart && d<=weekEnd;
   });
 
   if(!allHits.length){document.getElementById('vat-banner').style.display='none';return;}
@@ -2304,25 +2301,20 @@ function buildVatBanner(){
 
   const chips=allHits.map(c=>{
     const isToday=c.vatDate===todayISO;
-    const isOverdue=c.vatDate<todayISO;
     const d=new Date(c.vatDate+'T00:00:00');
     const dayName=d.toLocaleDateString('en-GB',{weekday:'short'});
     const dateShort=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
-    const label=isToday?'TODAY':isOverdue?'OVERDUE · '+dateShort:dayName+' '+dateShort;
+    const label=isToday?'TODAY':dayName+' '+dateShort;
     const implTag=c.implementor?`<span style="font-size:10px;opacity:.75"> · ${c.implementor}</span>`:'';
-    return `<span class="vat-chip${isToday?' today':isOverdue?' overdue':''}" onclick="scrollToClient(${c.id})" title="Click to jump to client">
+    return `<span class="vat-chip${isToday?' today':''}" onclick="scrollToClient(${c.id})" title="Click to jump to client">
       <span class="vc-name">${c.name}${implTag}</span>
       <span class="vc-date">${label}</span>
     </span>`;
   }).join('');
 
-  const overdueCnt=allHits.filter(c=>c.vatDate<todayISO).length;
-  const thisWeekCnt=allHits.filter(c=>c.vatDate>=todayISO).length;
+  const thisWeekCnt=allHits.length;
   const implSuffix=implFilter?` — ${implFilter.join(', ')}`:'';
-  let title='VAT reminders'+implSuffix+':';
-  if(overdueCnt&&thisWeekCnt) title=`${overdueCnt} overdue + ${thisWeekCnt} this week${implSuffix}:`;
-  else if(overdueCnt) title=`${overdueCnt} overdue VAT reminder${overdueCnt>1?'s':''}${implSuffix}:`;
-  else title=`${thisWeekCnt} VAT reminder${thisWeekCnt>1?'s':''} this week${implSuffix}:`;
+  const title=thisWeekCnt===1?`1 VAT reminder this week${implSuffix}:`:`${thisWeekCnt} VAT reminders this week${implSuffix}:`;
 
   document.getElementById('vat-banner-title').textContent=title;
   document.getElementById('vat-banner-items').innerHTML=chips;
@@ -2351,10 +2343,8 @@ function setView(v){
   currentView=v;
   const listEl=document.getElementById('list');
   const dashEl=document.getElementById('dashboard');
-  const ctrlBar=document.querySelector('.control-bar');
   if(listEl)listEl.style.display=v==='list'?'block':'none';
   if(dashEl)dashEl.style.display=v==='dash'?'block':'none';
-  if(ctrlBar)ctrlBar.style.display=v==='list'?'flex':'none';
   document.getElementById('vbtn-list').classList.toggle('active',v==='list');
   document.getElementById('vbtn-dash').classList.toggle('active',v==='dash');
   if(v==='dash')renderDashboard();
@@ -2364,35 +2354,51 @@ function setView(v){
 function renderDashboard(){
   const el=document.getElementById('dashboard');
   if(!el)return;
-  const total=clients.length;
-  const byStatus=function(s){return clients.filter(function(c){return c.status===s;}).length;};
-  const graded=clients.filter(function(c){return c.grade>0;});
+  const filtered=getFiltered();
+  const total=filtered.length;
+  const byStatus=function(s){return filtered.filter(function(c){return c.status===s;}).length;};
+  const graded=filtered.filter(function(c){return c.grade>0;});
   const avgGrade=graded.length?(graded.reduce(function(a,c){return a+c.grade;},0)/graded.length).toFixed(1):'-';
   const today=new Date().toISOString().slice(0,10);
-  const vatOverdue=clients.filter(function(c){return !c.vatDone&&c.vatDate&&c.vatDate<today;}).length;
-  const stkOverdue=clients.filter(function(c){return !c.stkDone&&c.stkDate&&c.stkDate<today;}).length;
+  const vatOverdue=filtered.filter(function(c){return !c.vatDone&&c.vatDate&&c.vatDate<today;}).length;
+  const stkOverdue=filtered.filter(function(c){return !c.stkDone&&c.stkDate&&c.stkDate<today;}).length;
 
   const implMap={};
-  clients.forEach(function(c){var k=c.implementor||'Unassigned';implMap[k]=(implMap[k]||0)+1;});
+  filtered.forEach(function(c){var k=c.implementor||'Unassigned';implMap[k]=(implMap[k]||0)+1;});
   const implSorted=Object.entries(implMap).sort(function(a,b){return b[1]-a[1];});
   const maxImpl=implSorted.length?implSorted[0][1]:1;
 
   const cityMap={};
-  clients.forEach(function(c){var k=c.city||'Unknown';cityMap[k]=(cityMap[k]||0)+1;});
+  filtered.forEach(function(c){var k=c.city||'Unknown';cityMap[k]=(cityMap[k]||0)+1;});
   const citySorted=Object.entries(cityMap).sort(function(a,b){return b[1]-a[1];});
   const maxCity=citySorted.length?citySorted[0][1]:1;
 
   const modMap={};
-  ALL_MODS.forEach(function(m){modMap[m]=clients.filter(function(c){return c.modules.includes(m);}).length;});
+  ALL_MODS.forEach(function(m){modMap[m]=filtered.filter(function(c){return c.modules.includes(m);}).length;});
   const modSorted=Object.entries(modMap).sort(function(a,b){return b[1]-a[1];});
 
-  const gradeDist=[1,2,3,4,5].map(function(g){return {g:g,n:clients.filter(function(c){return c.grade===g;}).length};});
+  const gradeDist=[1,2,3,4,5].map(function(g){return {g:g,n:filtered.filter(function(c){return c.grade===g;}).length};});
   const maxGrade=Math.max.apply(null,gradeDist.map(function(x){return x.n;}).concat([1]));
 
   const soon=new Date();soon.setDate(soon.getDate()+60);
   const soonStr=soon.toISOString().slice(0,10);
-  const goingLive=clients.filter(function(c){return c.liveDate&&c.liveDate>=today&&c.liveDate<=soonStr;})
+  const goingLive=filtered.filter(function(c){return c.liveDate&&c.liveDate>=today&&c.liveDate<=soonStr;})
     .sort(function(a,b){return a.liveDate.localeCompare(b.liveDate);}).slice(0,6);
+
+  // Build active filter summary
+  const activeFilters=[];
+  const mg=document.getElementById('f-mgr')?document.getElementById('f-mgr').value:'';
+  const ci=document.getElementById('f-city')?document.getElementById('f-city').value:'';
+  const sr=document.getElementById('search')?document.getElementById('search').value:'';
+  if(sr) activeFilters.push('Search: "'+sr+'"');
+  if(mg) activeFilters.push('Manager: '+mg);
+  if(ci) activeFilters.push('City: '+ci);
+  if(selStatuses.size>0) activeFilters.push('Status: '+[...selStatuses].join(', '));
+  if(selImpls.size>0) activeFilters.push('Implementor: '+[...selImpls].join(', '));
+  if(selMods.size>0) activeFilters.push('Module: '+[...selMods].join(', '));
+  const filterNote=activeFilters.length>0
+    ? '<div style="font-size:11px;color:var(--text-2);margin-bottom:.85rem;padding:.45rem .75rem;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border-md)">🔍 Showing <strong>'+total+'</strong> of <strong>'+clients.length+'</strong> clients · '+activeFilters.join(' · ')+'</div>'
+    : '';
 
   function bar(label,val,max,color){
     color=color||'var(--accent)';
@@ -2404,7 +2410,7 @@ function renderDashboard(){
   }
 
   // STATUS CARD
-  var html='<div class="dash-grid">';
+  var html=filterNote+'<div class="dash-grid">';
   html+='<div class="dash-card"><div class="dash-card-title">Status overview</div><div class="dash-status-grid">';
   html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(null)" style="background:#f7f6f3"><div class="dsn">'+total+'</div><div class="dsl">All</div></div>';
   html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Active\')" style="background:#e4f2eb"><div class="dsn" style="color:#1a6b4a">'+byStatus('Active')+'</div><div class="dsl">Active</div></div>';
