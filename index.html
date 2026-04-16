@@ -2114,7 +2114,7 @@ function buildStkBanner(){
     if(!c.stkDate)return false;
     if(implFilter&&!implFilter.includes(c.implementor||''))return false;
     const d=new Date(c.stkDate+'T00:00:00');
-    return d>=todayStart && d<=weekEnd;
+    return d<=weekEnd;
   });
 
   if(!allHits.length){document.getElementById('stk-banner').style.display='none';return;}
@@ -2290,7 +2290,7 @@ function buildVatBanner(){
     if(!c.vatDate)return false;
     if(implFilter&&!implFilter.includes(c.implementor||''))return false;
     const d=new Date(c.vatDate+'T00:00:00');
-    return d>=todayStart && d<=weekEnd;
+    return d<=weekEnd;
   });
 
   if(!allHits.length){document.getElementById('vat-banner').style.display='none';return;}
