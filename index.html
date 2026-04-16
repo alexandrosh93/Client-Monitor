@@ -481,9 +481,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
       <button class="view-btn" id="vbtn-dash" onclick="setView('dash')">⊞ Dashboard</button>
     </div>
     <input type="text" id="search" placeholder="🔍 Search clients…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 11px;border:1px solid var(--border-md);border-radius:99px;background:var(--surface2);color:var(--text);outline:none;width:200px;transition:all .2s" onfocus="this.style.width='260px';this.style.background='var(--surface)';this.style.borderColor='var(--accent)'" onblur="this.style.width='200px';this.style.background='var(--surface2)';this.style.borderColor='var(--border-md)'">
-    <span id="hdr-user-badge" style="display:none"></span>
-    <span id="sync-dot" style="display:none"></span>
-    <span id="sync-label" style="display:none"></span>
+    <span id="hdr-user-badge" style="display:none;font-size:11px;color:var(--text-2);align-items:center;gap:4px;padding:4px 8px;border-radius:var(--radius);background:var(--surface2);cursor:pointer" onclick="openChangePassword()" title="Change your password"></span>
+    <span class="sync-label no-print" onclick="openSettings()" title="Cloud sync settings">
+      <span class="sync-dot" id="sync-dot"></span>
+      <span id="sync-label">Local only</span>
+    </span>
   </div>
 </header>
 
@@ -2105,6 +2107,8 @@ function buildStkBanner(){
   const weekEnd=new Date(todayStart);
   weekEnd.setDate(weekEnd.getDate()+daysUntilSunday);
   weekEnd.setHours(23,59,59,999);
+  const weekStart=new Date(todayStart);
+  weekStart.setDate(weekStart.getDate()-(dayOfWeek===0?6:dayOfWeek-1));
   const todayISO=todayStart.toISOString().slice(0,10);
 
   const implFilter=selImpls.size>0?[...selImpls]:null;
@@ -2114,7 +2118,7 @@ function buildStkBanner(){
     if(!c.stkDate)return false;
     if(implFilter&&!implFilter.includes(c.implementor||''))return false;
     const d=new Date(c.stkDate+'T00:00:00');
-    return d<=weekEnd;
+    return d>=weekStart && d<=weekEnd;
   });
 
   if(!allHits.length){document.getElementById('stk-banner').style.display='none';return;}
@@ -2123,20 +2127,27 @@ function buildStkBanner(){
 
   const chips=allHits.map(c=>{
     const isToday=c.stkDate===todayISO;
+    const isOverdue=c.stkDate<todayISO;
     const d=new Date(c.stkDate+'T00:00:00');
     const dayName=d.toLocaleDateString('en-GB',{weekday:'short'});
     const dateShort=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
-    const label=isToday?'TODAY':dayName+' '+dateShort;
+    const label=isToday?'TODAY':isOverdue?'OVERDUE · '+dateShort:dayName+' '+dateShort;
     const implTag=c.implementor?`<span style="font-size:10px;opacity:.75"> · ${c.implementor}</span>`:'';
-    return `<span class="stk-chip${isToday?' today':''}" onclick="scrollToClient(${c.id})" title="Click to jump to client">
+    return `<span class="stk-chip${isToday?' today':isOverdue?' overdue':''}" onclick="scrollToClient(${c.id})" title="Click to jump to client">
       <span class="vc-name">${c.name}${implTag}</span>
       <span class="vc-date">${label}</span>
     </span>`;
   }).join('');
 
-  const thisWeekCnt=allHits.length;
+  const overdueCnt=allHits.filter(c=>c.stkDate<todayISO).length;
+  const todayCnt=allHits.filter(c=>c.stkDate===todayISO).length;
+  const upcomingCnt=allHits.filter(c=>c.stkDate>todayISO).length;
   const implSuffix=implFilter?` — ${implFilter.join(', ')}`:'';
-  const title=thisWeekCnt===1?`1 Stock Take reminder this week${implSuffix}:`:`${thisWeekCnt} Stock Take reminders this week${implSuffix}:`;
+  const parts=[];
+  if(overdueCnt) parts.push(overdueCnt+' overdue');
+  if(todayCnt) parts.push('today');
+  if(upcomingCnt) parts.push(upcomingCnt+' upcoming');
+  const title=(parts.join(' · ')||allHits.length+' this week')+' (Stock Take)'+implSuffix+':';
 
   document.getElementById('stk-banner-title').textContent=title;
   document.getElementById('stk-banner-items').innerHTML=chips;
@@ -2280,6 +2291,8 @@ function buildVatBanner(){
   const weekEnd=new Date(todayStart);
   weekEnd.setDate(weekEnd.getDate()+daysUntilSunday);
   weekEnd.setHours(23,59,59,999);
+  const weekStart=new Date(todayStart);
+  weekStart.setDate(weekStart.getDate()-(dayOfWeek===0?6:dayOfWeek-1));
   const todayISO=todayStart.toISOString().slice(0,10);
 
   // respect the implementor filter from toolbar
@@ -2290,7 +2303,7 @@ function buildVatBanner(){
     if(!c.vatDate)return false;
     if(implFilter&&!implFilter.includes(c.implementor||''))return false;
     const d=new Date(c.vatDate+'T00:00:00');
-    return d<=weekEnd;
+    return d>=weekStart && d<=weekEnd;
   });
 
   if(!allHits.length){document.getElementById('vat-banner').style.display='none';return;}
@@ -2299,20 +2312,27 @@ function buildVatBanner(){
 
   const chips=allHits.map(c=>{
     const isToday=c.vatDate===todayISO;
+    const isOverdue=c.vatDate<todayISO;
     const d=new Date(c.vatDate+'T00:00:00');
     const dayName=d.toLocaleDateString('en-GB',{weekday:'short'});
     const dateShort=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
-    const label=isToday?'TODAY':dayName+' '+dateShort;
+    const label=isToday?'TODAY':isOverdue?'OVERDUE · '+dateShort:dayName+' '+dateShort;
     const implTag=c.implementor?`<span style="font-size:10px;opacity:.75"> · ${c.implementor}</span>`:'';
-    return `<span class="vat-chip${isToday?' today':''}" onclick="scrollToClient(${c.id})" title="Click to jump to client">
+    return `<span class="vat-chip${isToday?' today':isOverdue?' overdue':''}" onclick="scrollToClient(${c.id})" title="Click to jump to client">
       <span class="vc-name">${c.name}${implTag}</span>
       <span class="vc-date">${label}</span>
     </span>`;
   }).join('');
 
-  const thisWeekCnt=allHits.length;
+  const overdueCnt=allHits.filter(c=>c.vatDate<todayISO).length;
+  const todayCnt=allHits.filter(c=>c.vatDate===todayISO).length;
+  const upcomingCnt=allHits.filter(c=>c.vatDate>todayISO).length;
   const implSuffix=implFilter?` — ${implFilter.join(', ')}`:'';
-  const title=thisWeekCnt===1?`1 VAT reminder this week${implSuffix}:`:`${thisWeekCnt} VAT reminders this week${implSuffix}:`;
+  const parts=[];
+  if(overdueCnt) parts.push(overdueCnt+' overdue');
+  if(todayCnt) parts.push('today');
+  if(upcomingCnt) parts.push(upcomingCnt+' upcoming');
+  const title=(parts.join(' · ')||allHits.length+' this week')+' (VAT)'+implSuffix+':';
 
   document.getElementById('vat-banner-title').textContent=title;
   document.getElementById('vat-banner-items').innerHTML=chips;
