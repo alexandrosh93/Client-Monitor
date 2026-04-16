@@ -268,34 +268,43 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .login-err{font-size:12px;color:#a32d2d;margin-top:.6rem;min-height:18px;text-align:center}
 /* ═══════ MOBILE (≤ 768px) ═══════ */
 @media(max-width:768px){
-  header{padding:.6rem .75rem;flex-wrap:wrap;gap:8px}
-  .hdr-brand .logo{font-size:13px}
+  header{padding:.55rem .75rem;gap:10px}
+  .hdr-brand .logo{font-size:15px}
   .hdr-divider{display:none}
   .hdr-reports{gap:4px}
   .btn-hdr{font-size:11px;padding:5px 8px}
-  .hdr-actions{gap:5px;margin-left:0;flex:1;justify-content:flex-end}
-  #search{width:120px!important}
-  #search:focus{width:155px!important}
-  #vat-banner,#stk-banner{padding:.45rem .75rem;position:relative;top:auto!important}
-  main{padding:.6rem .5rem}
-  .control-bar{flex-direction:column;gap:7px;align-items:stretch}
+  .hdr-actions{gap:6px;margin-left:auto}
+  #search{width:130px!important}
+  #search:focus{width:170px!important}
+  #vat-banner,#stk-banner{padding:.5rem .75rem;position:relative;top:auto!important}
+  .vc-name{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  main{padding:.5rem .5rem}
+  .control-bar{flex-direction:column;gap:6px;align-items:stretch}
   .stats-group{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:100%}
-  .stat{flex-direction:column;gap:2px;padding:.3rem .35rem;text-align:center;justify-content:center}
-  .stat-n{font-size:17px}
+  .stat{flex-direction:column;gap:2px;padding:.35rem .3rem;text-align:center;justify-content:center;min-height:48px}
+  .stat-n{font-size:18px}
   .stat-l{font-size:9px}
   .cb-divider{display:none}
   .filters-group{width:100%}
   .toolbar{display:flex!important;flex-wrap:wrap;gap:5px;width:100%}
   .toolbar input{flex:1;min-width:120px}
   .dd-btn{min-width:0;padding:5px 8px;font-size:12px}
-  .row-header{grid-template-columns:1fr auto auto!important;gap:5px!important;padding:.35rem .55rem!important}
+  /* client rows — show name, status, progress only */
+  .row-header{grid-template-columns:1fr auto auto!important;gap:6px!important;padding:.55rem .65rem!important;min-height:52px}
   .rh-modules,.rh-grade,.rh-impl,.rh-mgr{display:none!important}
-  .expand-panel{padding:.45rem .55rem}
-  .xgrid{grid-template-columns:1fr 1fr!important;gap:.35rem .5rem!important}
-  .print-row{grid-template-columns:1fr!important}
+  .rh-contact{font-size:11px;color:var(--text-3)}
+  /* expanded panel — single column, bigger touch targets */
+  .expand-panel{padding:.6rem .65rem}
+  .xgrid{grid-template-columns:1fr 1fr!important;gap:.4rem .5rem!important}
+  .xgrid .xdate input,.xgrid .xsel select,.xgrid .xinput input{height:38px;font-size:14px}
+  .xtarea textarea{font-size:14px;min-height:70px}
   .todo-box{margin-top:.4rem}
-  .modal{width:96vw!important;max-height:88vh;padding:1rem}
+  .print-row{grid-template-columns:1fr!important}
+  /* modals */
+  .modal{width:96vw!important;max-height:90vh;overflow-y:auto;padding:1rem}
   .modal-wide{width:96vw!important}
+  /* side menu */
+  #sidemenu{width:85vw;max-width:300px}
 }
 @media(max-width:480px){
   .hdr-reports .btn-hdr{font-size:10px;padding:4px 7px}
@@ -349,8 +358,8 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 /* HEADER REDESIGN */
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:.6rem 1rem;display:flex;align-items:center;gap:.6rem;position:sticky;top:0;z-index:50}
 .hdr-brand{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
-.hdr-brand .logo{font-size:14px;font-weight:700;letter-spacing:.01em;color:var(--accent)}
-.hdr-brand .logo span{color:var(--text-2);font-weight:400}
+.hdr-brand .logo{font-size:18px;font-weight:700;letter-spacing:.01em;color:var(--accent)}
+.hdr-brand .logo span{color:var(--text-2);font-weight:400;font-size:15px}
 .hdr-brand .hdr-user{font-size:11px;color:var(--text-3);font-weight:400}
 .hdr-divider{width:1px;height:24px;background:var(--border-md);flex-shrink:0}
 .hdr-reports{display:flex;gap:4px;align-items:center;flex-shrink:0}
@@ -713,7 +722,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
     <div class="mf"><label class="lbl">Main contact person</label><input id="m-contact" type="text" placeholder="Full name"></div>
     <div class="mf"><label class="lbl">City</label><select id="m-city"><option>Limassol</option><option>Paphos</option></select></div>
     <div class="mf"><label class="lbl">Live Date <span style="font-weight:400;color:var(--text-3)">(planned go-live)</span></label><input id="m-livedate" type="date"></div>
-    <div class="mf"><label class="lbl">Manager</label><select id="m-mgr"><option>VT</option><option>AK</option></select></div>
+    <div class="mf"><label class="lbl">Manager</label><select id="m-mgr"><option value="">— Select —</option><option>VT</option><option>AK</option></select></div>
     <div class="mf"><label class="lbl">Implementor</label><select id="m-impl"><option value="">— None —</option></select></div>
     <div class="mf"><label class="lbl">Status</label>
       <select id="m-status"><option>Active</option><option>Not started</option><option>Dormant</option><option>Completed</option></select>
@@ -2035,7 +2044,7 @@ function openAdd(){
   mGrade=0;
   ['m-name','m-contact','m-comment'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('m-city').value='Limassol';
-  document.getElementById('m-mgr').value='VT';
+  document.getElementById('m-mgr').value='';
   document.getElementById('m-status').value='Active';
   const ld=document.getElementById('m-livedate');if(ld)ld.value='';
   const mImpl=document.getElementById('m-impl');
