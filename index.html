@@ -481,11 +481,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
       <button class="view-btn" id="vbtn-dash" onclick="setView('dash')">⊞ Dashboard</button>
     </div>
     <input type="text" id="search" placeholder="🔍 Search clients…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 11px;border:1px solid var(--border-md);border-radius:99px;background:var(--surface2);color:var(--text);outline:none;width:200px;transition:all .2s" onfocus="this.style.width='260px';this.style.background='var(--surface)';this.style.borderColor='var(--accent)'" onblur="this.style.width='200px';this.style.background='var(--surface2)';this.style.borderColor='var(--border-md)'">
-    <span id="hdr-user-badge" style="display:none;font-size:11px;color:var(--text-2);align-items:center;gap:4px;padding:4px 8px;border-radius:var(--radius);background:var(--surface2);cursor:pointer" onclick="openChangePassword()" title="Change your password"></span>
-    <span class="sync-label no-print" onclick="openSettings()" title="Cloud sync settings">
-      <span class="sync-dot" id="sync-dot"></span>
-      <span id="sync-label">Local only</span>
-    </span>
+    <span id="hdr-user-badge" style="display:none"></span>
+    <span id="sync-dot" style="display:none"></span>
+    <span id="sync-label" style="display:none"></span>
   </div>
 </header>
 
