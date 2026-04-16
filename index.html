@@ -1064,6 +1064,15 @@ function save(){
   syncTimer=setTimeout(()=>gistPush(),1500);
 }
 
+/* immediate push — used for user/password changes so debounce can't race with a reload */
+function saveNow(){
+  localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()}));
+  if(!hasCfg())return;
+  clearTimeout(syncTimer);
+  setSyncStatus('spin','Saving…');
+  gistPush();
+}
+
 /* ── EXPORT / IMPORT ── */
 const BACKUP_KEY='avps_last_backup';
 
@@ -2548,7 +2557,7 @@ function addUser(){
   users.push({username:name,password:pass,role,createdAt:new Date().toISOString()});
   saveUsers(users);
   audit('User','Users','Added user: '+name+' ('+role+')');
-  save();
+  saveNow();
   renderUsersList();
   document.getElementById('new-user-name').value='';
   document.getElementById('new-user-pass').value='';
@@ -2559,7 +2568,7 @@ function deleteUser(username){
   const users=getUsers().filter(u=>u.username!==username);
   saveUsers(users);
   audit('User','Users','Removed user: '+username);
-  save();
+  saveNow();
   renderUsersList();
   toast('User "'+username+'" removed.');
 }
@@ -2590,7 +2599,7 @@ function doChangePassword(){
   u.password=np;
   saveUsers(users);
   audit('Password',target,'Password changed for: '+target);
-  save();
+  saveNow();
   closeModal('chpwd-modal');
   toast('Password updated.');
 }
