@@ -431,6 +431,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
   <button class="smenu-item" onclick="openStkReport();closeSideMenu()">
     <span style="color:#7a6500">📦</span> Stock Take Reminders
   </button>
+  <button class="smenu-item" onclick="openMeetPrep();closeSideMenu()">
+    <span>📋</span> Meeting Prep
+  </button>
 
   <!-- SECTION: Export -->
   <div style="padding:.6rem 1rem .2rem;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3)">Export</div>
@@ -578,6 +581,42 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
     </div>
     <div id="audit-table" style="max-height:420px;overflow-y:auto"></div>
     <div class="modal-btns"><button class="btn-cancel" onclick="closeModal('audit-modal')">Close</button></div>
+  </div>
+</div>
+
+<!-- Meeting Prep Modal -->
+<div class="modal-bg" id="meetprep-modal" onclick="bgClick(event,'meetprep-modal')">
+  <div class="modal modal-wide" style="max-width:700px;padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:90vh">
+    <!-- Header -->
+    <div style="padding:1rem 1.25rem .75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--text)">📋 Meeting Prep</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px">Click a client to edit their To-Do</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select id="mp-filter" onchange="renderMeetPrep()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 8px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
+          <option value="meeting">With meeting set</option>
+          <option value="active" selected>All active</option>
+          <option value="all">All clients</option>
+        </select>
+        <button class="btn-cancel" onclick="closeModal('meetprep-modal')" style="margin:0">✕</button>
+      </div>
+    </div>
+    <!-- List -->
+    <div id="mp-list" style="overflow-y:auto;flex:1;padding:.5rem 0"></div>
+    <!-- Full card (hidden until client selected) -->
+    <div id="mp-card" style="display:none;flex-shrink:0;border-top:2px solid var(--accent);background:var(--bg);padding:1rem 1.25rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem">
+        <div>
+          <div id="mp-card-name" style="font-size:15px;font-weight:700;color:var(--text)"></div>
+          <div id="mp-card-meta" style="font-size:11px;color:var(--text-3);margin-top:2px"></div>
+        </div>
+        <button onclick="document.getElementById('mp-card').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-3);padding:4px">✕</button>
+      </div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);margin-bottom:.4rem">📝 To-Do / Notes for next meeting</div>
+      <textarea id="mp-todo-input" rows="5" placeholder="Add notes, action items, questions for next meeting…" oninput="mpSaveTodo()" style="width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;resize:vertical;line-height:1.6;min-height:90px"></textarea>
+      <div style="font-size:10px;color:var(--text-3);margin-top:4px">Changes save automatically</div>
+    </div>
   </div>
 </div>
 
@@ -2787,6 +2826,71 @@ function removeMod(i){
   clients.forEach(c=>{c.modules=c.modules.filter(m=>m!==name);});
   save();render();renderModsList();
   toast(`Module "${name}" removed.`);
+}
+
+/* ── MEETING PREP ── */
+let mpCurrentId=null;
+function openMeetPrep(){
+  document.getElementById('mp-filter').value='active';
+  document.getElementById('mp-card').style.display='none';
+  mpCurrentId=null;
+  renderMeetPrep();
+  document.getElementById('meetprep-modal').classList.add('open');
+}
+function renderMeetPrep(){
+  const filter=document.getElementById('mp-filter').value;
+  let list=clients.filter(c=>{
+    if(filter==='meeting') return c.mtgSet&&c.mtgDate;
+    if(filter==='active')  return c.status==='Active';
+    return true;
+  });
+  list=list.slice().sort((a,b)=>{
+    // clients with meeting date first, sorted by date
+    if(a.mtgSet&&a.mtgDate&&b.mtgSet&&b.mtgDate) return a.mtgDate.localeCompare(b.mtgDate);
+    if(a.mtgSet&&a.mtgDate) return -1;
+    if(b.mtgSet&&b.mtgDate) return 1;
+    return a.name.localeCompare(b.name);
+  });
+  const el=document.getElementById('mp-list');
+  if(!list.length){el.innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--text-3);font-size:13px">No clients match this filter.</div>';return;}
+  el.innerHTML=list.map(c=>{
+    const hasTodo=c.todo&&c.todo.trim();
+    const mtg=c.mtgSet&&c.mtgDate?`📅 ${fmt(c.mtgDate)}`:'<span style="color:var(--text-3)">No meeting set</span>';
+    const sc='s-'+c.status.replace(/ /g,'-');
+    const active=mpCurrentId===c.id?'background:var(--surface2);':'';
+    return `<div onclick="mpOpenCard(${c.id})" style="display:flex;align-items:center;gap:10px;padding:.65rem 1.25rem;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;${active}" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background='${mpCurrentId===c.id?'var(--surface2)':'transparent'}'">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">
+          <span style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name}</span>
+          <span class="rh-status ${sc}" style="font-size:10px;flex-shrink:0">${c.status}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-3)">${mtg}${c.implementor?' · '+c.implementor:''}</div>
+        ${hasTodo?`<div style="font-size:11px;color:var(--text-2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px">📝 ${c.todo.trim().split('\n')[0]}</div>`:''}
+      </div>
+      <div style="font-size:18px;color:var(--text-3);flex-shrink:0">${hasTodo?'✏️':'➕'}</div>
+    </div>`;
+  }).join('');
+}
+function mpOpenCard(id){
+  mpCurrentId=id;
+  const c=clients.find(x=>x.id===id);
+  if(!c)return;
+  document.getElementById('mp-card-name').textContent=c.name;
+  const mtg=c.mtgSet&&c.mtgDate?`Next meeting: ${fmt(c.mtgDate)}`:'No meeting set';
+  document.getElementById('mp-card-meta').textContent=`${c.status} · ${mtg}${c.implementor?' · '+c.implementor:''}`;
+  document.getElementById('mp-todo-input').value=c.todo||'';
+  document.getElementById('mp-card').style.display='block';
+  document.getElementById('mp-todo-input').focus();
+  renderMeetPrep();
+}
+let mpTimer=null;
+function mpSaveTodo(){
+  if(!mpCurrentId)return;
+  const c=clients.find(x=>x.id===mpCurrentId);
+  if(!c)return;
+  c.todo=document.getElementById('mp-todo-input').value;
+  clearTimeout(mpTimer);
+  mpTimer=setTimeout(()=>{save();renderMeetPrep();},600);
 }
 
 /* ── INIT ── */
