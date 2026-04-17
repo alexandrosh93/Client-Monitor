@@ -24,7 +24,7 @@
 <title>Client Monitor — A.V.PremierSoft</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f7f6f3;--surface:#fff;--surface2:#f0efe9;--border:rgba(0,0,0,0.08);--border-md:rgba(0,0,0,0.14);--text:#1a1917;--text-2:#6b6960;--text-3:#a8a49c;--accent:#1a6b4a;--radius:10px;--radius-lg:14px}
+:root{--bg:#f7f6f3;--surface:#fff;--surface2:#f0efe9;--border:rgba(0,0,0,0.08);--border-md:rgba(0,0,0,0.14);--text:#1a1917;--text-2:#6b6960;--text-3:#a8a49c;--accent:#1e3a6e;--radius:10px;--radius-lg:14px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 /* HEADER */
@@ -63,11 +63,11 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 /* STAT PILLS */
 .stat{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.55rem 1rem;cursor:pointer;transition:all .15s;white-space:nowrap}
 .stat:hover{border-color:var(--border-md);background:var(--surface2)}
-.stat.af{border-color:var(--accent);background:#e4f2eb}
-.stat.af .stat-n,.stat.af .stat-l{color:#1a6b4a}
+.stat.af{border-color:var(--accent);background:#e8eef8}
+.stat.af .stat-n,.stat.af .stat-l{color:#1e3a6e}
 .stat-n{font-size:22px;font-weight:700;line-height:1}
 .stat-l{font-size:12px;color:var(--text-3);font-weight:400}
-.sn-active{color:#1a6b4a}.sn-dormant{color:#8a5a1a}.sn-completed{color:#555}.sn-ns{color:#888}
+.sn-active{color:#1e3a6e}.sn-dormant{color:#8a5a1a}.sn-completed{color:#555}.sn-ns{color:#888}
 /* TOOLBAR (inside filters-group) */
 .toolbar{display:contents}
 .toolbar input,.toolbar select{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;transition:border-color .15s;height:30px}
@@ -78,7 +78,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .dd-wrap{position:relative}
 .dd-btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 9px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;min-width:110px;justify-content:space-between;transition:border-color .15s;user-select:none}
 .dd-btn:hover,.dd-btn.open{border-color:var(--accent)}
-.dd-btn.has-sel{border-color:var(--accent);background:#e4f2eb;color:#1a6b4a}
+.dd-btn.has-sel{border-color:var(--accent);background:#e8eef8;color:#1e3a6e}
 .dd-arrow{font-size:10px;color:var(--text-3);transition:transform .15s}
 .dd-btn.open .dd-arrow{transform:rotate(180deg)}
 .dd-panel{position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border-md);border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:600;min-width:175px;padding:6px 0;display:none;max-height:60vh;overflow-y:auto}
@@ -104,7 +104,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .rh-name{font-size:14px;font-weight:500;color:var(--text)}
 .rh-sub{font-size:12px;color:var(--text-3);margin-top:1px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .rh-contact{color:var(--text-2)}
-.mtg-tag{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#1a6b4a;background:#e4f2eb;border-radius:4px;padding:1px 5px}
+.mtg-tag{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#1e3a6e;background:#e8eef8;border-radius:4px;padding:1px 5px}
 .mtg-tag-none{display:none}
 /* GRADE on row — compact inline stars */
 .rh-grade{display:flex;align-items:center;gap:1px;white-space:nowrap}
@@ -112,11 +112,11 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .rh-grade .gs.lit{color:#e8a020}
 .rh-modules{display:flex;gap:3px;flex-wrap:nowrap}
 .mod{font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid var(--border-md);color:var(--text-3);background:var(--bg);font-family:'DM Mono',monospace}
-.mod.on{border-color:#9fd5b8;background:#e4f2eb;color:#1a6b4a}
+.mod.on{border-color:#a8bfe8;background:#e8eef8;color:#1e3a6e}
 .rh-mgr{font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px;background:#ede9fe;color:#4c1d95;font-family:'DM Mono',monospace;white-space:nowrap}
 .rh-impl{font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px;background:#fff0e6;color:#92400e;font-family:'DM Mono',monospace;white-space:nowrap}
 .rh-status{font-size:11px;font-weight:500;padding:2px 9px;border-radius:99px;white-space:nowrap}
-.s-Active{background:#e4f2eb;color:#1a6b4a}
+.s-Active{background:#e8eef8;color:#1e3a6e}
 .s-Dormant{background:#fdf0db;color:#8a5a1a}
 .s-Pending{background:#dbeeff;color:#1a5a8a}
 .s-Not-started{background:#f0efe9;color:#6b6960}
@@ -140,7 +140,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .xtarea:focus{border-color:var(--accent)}
 .mod-toggle-row{display:flex;flex-wrap:wrap;gap:4px}
 .mod-toggle{display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;border:1px solid var(--border-md);border-radius:6px;padding:3px 9px;background:var(--bg);color:var(--text-2);transition:all .12s;user-select:none}
-.mod-toggle.on{border-color:#9fd5b8;background:#e4f2eb;color:#1a6b4a}
+.mod-toggle.on{border-color:#a8bfe8;background:#e8eef8;color:#1e3a6e}
 .mod-toggle input{display:none}
 .inline-check{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2);margin-bottom:5px;cursor:pointer;user-select:none}
 /* VAT Reminder cell — blue */
@@ -198,7 +198,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .mf textarea{height:64px;resize:none}
 .mods-check{display:flex;flex-wrap:wrap;gap:6px}
 .mods-check label{display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;color:var(--text-2);border:1px solid var(--border-md);border-radius:6px;padding:4px 10px;background:var(--bg);transition:all .14s;user-select:none}
-.mods-check label.checked{border-color:#9fd5b8;background:#e4f2eb;color:#1a6b4a}
+.mods-check label.checked{border-color:#a8bfe8;background:#e8eef8;color:#1e3a6e}
 .mods-check input[type=checkbox]{display:none}
 .mgstars{display:flex;gap:4px}
 .mgstars span{font-size:22px;cursor:pointer;color:#d0cec7;transition:color .1s;user-select:none}
@@ -214,12 +214,12 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .vat-report-table tr:last-child td{border-bottom:none}
 .vat-report-table tr:hover td{background:var(--surface2)}
 .vr-pending{color:#a32d2d;font-weight:500}
-.vr-done{color:#1a6b4a}
+.vr-done{color:#1e3a6e}
 .vr-nodate{color:var(--text-3);font-style:italic}
 .vat-summary{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
 .vat-pill{font-size:12px;padding:4px 12px;border-radius:99px;font-weight:500}
 .vp-pending{background:#feecec;color:#a32d2d}
-.vp-done{background:#e4f2eb;color:#1a6b4a}
+.vp-done{background:#e8eef8;color:#1e3a6e}
 .vp-nodate{background:var(--surface2);color:var(--text-3)}
 /* TOAST */
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#1a1917;color:#fff;font-size:13px;padding:8px 20px;border-radius:99px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
@@ -320,7 +320,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
   body{background:#fff;font-family:'DM Sans',sans-serif;font-size:10px;color:#1a1917;margin:0}
   main{padding:.5cm 1cm;max-width:100%}
   .pdf-hdr{display:block!important;margin-bottom:.4cm}
-  .pdf-hdr-inner{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid #1a6b4a;padding-bottom:.2cm}
+  .pdf-hdr-inner{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid #1e3a6e;padding-bottom:.2cm}
   .group-label{font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;border-bottom:1px solid #ddd;padding:.25cm 0 .1cm;margin:.3cm 0 .1cm}
   .group-label:first-child{margin-top:0}
   /* each client = one compact row */
@@ -331,17 +331,17 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
   .rh-name{font-size:10px!important;font-weight:600!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .rh-sub{font-size:8px!important;margin-top:1px!important;gap:4px!important}
   .rh-contact{font-size:8px!important}
-  .mtg-tag{font-size:8px!important;padding:1px 4px!important;background:#e4f2eb!important;color:#1a6b4a!important}
+  .mtg-tag{font-size:8px!important;padding:1px 4px!important;background:#e8eef8!important;color:#1e3a6e!important}
   .mtg-tag-none{display:none!important}
   .rh-grade .gs{font-size:10px!important;color:#d0cec7!important}
   .rh-grade .gs.lit{color:#e8a020!important}
   .rh-modules{gap:2px!important}
   .mod{font-size:8px!important;padding:1px 4px!important;border-radius:3px!important}
-  .mod.on{background:#e4f2eb!important;color:#1a6b4a!important;border-color:#9fd5b8!important}
+  .mod.on{background:#e8eef8!important;color:#1e3a6e!important;border-color:#a8bfe8!important}
   .mod:not(.on){display:none!important}
   .rh-mgr{font-size:8px!important;padding:1px 5px!important;background:#ede9fe!important;color:#4c1d95!important}
   .rh-status{font-size:8px!important;padding:1px 6px!important}
-  .s-Active{background:#e4f2eb!important;color:#1a6b4a!important}
+  .s-Active{background:#e8eef8!important;color:#1e3a6e!important}
   .s-Dormant{background:#fdf0db!important;color:#8a5a1a!important}
   .s-Pending{background:#dbeeff!important;color:#1a5a8a!important}
   .s-Completed{background:#e8e8e8!important;color:#444!important}
@@ -376,7 +376,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 .btn-hdr-primary{background:var(--accent);color:#fff;border:none}
 .btn-hdr-primary:hover{opacity:.87}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:#d0cec7;display:inline-block;flex-shrink:0}
-.sync-dot.ok{background:#1a6b4a}
+.sync-dot.ok{background:#1e3a6e}
 .sync-dot.err{background:#a32d2d}
 .sync-dot.spin{background:#e8a020;animation:pulse .8s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -593,12 +593,16 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
         <div style="font-size:15px;font-weight:700;color:var(--text)">📋 Meeting Prep</div>
         <div style="font-size:11px;color:var(--text-3);margin-top:2px">Click a client to edit their To-Do</div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <select id="mp-filter" onchange="renderMeetPrep()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 8px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
           <option value="meeting">With meeting set</option>
           <option value="active" selected>All active</option>
           <option value="all">All clients</option>
         </select>
+        <select id="mp-impl-filter" onchange="renderMeetPrep()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 8px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
+          <option value="">All implementors</option>
+        </select>
+        <button onclick="printMeetPrep()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--surface);color:var(--text-2);cursor:pointer;display:flex;align-items:center;gap:4px">🖨 Print</button>
         <button class="btn-cancel" onclick="closeModal('meetprep-modal')" style="margin:0">✕</button>
       </div>
     </div>
@@ -660,7 +664,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 <div class="pdf-hdr" style="display:none;padding:.6cm 1.1cm 0">
   <div class="pdf-hdr-inner">
     <div>
-      <div style="font-size:16px;font-weight:700;color:#1a6b4a;letter-spacing:-.01em">A.V.PremierSoft</div>
+      <div style="font-size:16px;font-weight:700;color:#1e3a6e;letter-spacing:-.01em">A.V.PremierSoft</div>
       <div style="font-size:11px;font-weight:500;color:#444;margin-top:1px">Client Monitor Report</div>
     </div>
     <div style="text-align:right;font-size:9px;color:#888;line-height:1.6">
@@ -841,14 +845,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
         </ol>
       </div>
 
-      <div id="gist-connected-banner" style="display:none;background:#e4f2eb;border:1px solid #9fd5b8;border-radius:8px;padding:.7rem 1rem;margin:.6rem 0">
-        <div style="font-size:12px;font-weight:600;color:#1a6b4a;margin-bottom:.3rem">✓ Connected — data syncs automatically</div>
-        <div style="font-size:11px;color:#1a6b4a;margin-bottom:.4rem">Your data is stored at <a href="https://gist.github.com" target="_blank" style="color:#1a6b4a">gist.github.com</a> as a private file.</div>
-        <div style="font-size:11px;color:#1a6b4a;font-weight:500">To use on another PC or phone — you need:</div>
-        <div style="background:#fff;border:1px solid #9fd5b8;border-radius:6px;padding:.5rem .7rem;margin-top:.4rem;font-size:11px;color:#1a6b4a;line-height:1.8">
+      <div id="gist-connected-banner" style="display:none;background:#e8eef8;border:1px solid #a8bfe8;border-radius:8px;padding:.7rem 1rem;margin:.6rem 0">
+        <div style="font-size:12px;font-weight:600;color:#1e3a6e;margin-bottom:.3rem">✓ Connected — data syncs automatically</div>
+        <div style="font-size:11px;color:#1e3a6e;margin-bottom:.4rem">Your data is stored at <a href="https://gist.github.com" target="_blank" style="color:#1e3a6e">gist.github.com</a> as a private file.</div>
+        <div style="font-size:11px;color:#1e3a6e;font-weight:500">To use on another PC or phone — you need:</div>
+        <div style="background:#fff;border:1px solid #a8bfe8;border-radius:6px;padding:.5rem .7rem;margin-top:.4rem;font-size:11px;color:#1e3a6e;line-height:1.8">
           1. The same GitHub token<br>
           2. Your Gist ID: <strong id="gist-id-display" style="font-family:'DM Mono',monospace;font-size:12px;word-break:break-all"></strong>
-          <button onclick="copyGistId()" style="margin-left:6px;font-size:10px;padding:1px 7px;border:1px solid #9fd5b8;border-radius:4px;background:#e4f2eb;color:#1a6b4a;cursor:pointer;font-family:'DM Sans',sans-serif">Copy</button>
+          <button onclick="copyGistId()" style="margin-left:6px;font-size:10px;padding:1px 7px;border:1px solid #a8bfe8;border-radius:4px;background:#e8eef8;color:#1e3a6e;cursor:pointer;font-family:'DM Sans',sans-serif">Copy</button>
         </div>
       </div>
 
@@ -861,7 +865,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
       <div class="modal-btns" style="margin-top:.8rem;justify-content:space-between;flex-wrap:wrap;gap:6px">
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn-sync" onclick="gistSaveSettings()">Connect &amp; Sync ↑</button>
-          <button class="btn-cancel" onclick="gistPull().then(()=>setSyncMsg(hasCfg()?\'✓ Data loaded from GitHub.\':\'\',\'#1a6b4a\'))">↓ Pull from GitHub</button>
+          <button class="btn-cancel" onclick="gistPull().then(()=>setSyncMsg(hasCfg()?\'✓ Data loaded from GitHub.\':\'\',\'#1e3a6e\'))">↓ Pull from GitHub</button>
         </div>
         <button class="btn-cancel" onclick="closeModal('settings-modal')">Close</button>
       </div>
@@ -970,7 +974,7 @@ function closeSideMenu(){
 
 /* ── SYNC STATUS UI ── */
 function setSyncStatus(state,label){
-  const colors={ok:'#1a6b4a',err:'#a32d2d','':'#aaa'};
+  const colors={ok:'#1e3a6e',err:'#a32d2d','':'#aaa'};
   const col=colors[state]||'#aaa';
   ['sync-dot','sync-dot-side'].forEach(id=>{
     const dot=document.getElementById(id);
@@ -1016,7 +1020,7 @@ async function gistPush(){
     const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()},null,2);
     await gistRequest('PATCH',`/gists/${gistId}`,{files:{'client_monitor.json':{content}}});
     setSyncStatus('ok','Gist synced ✓');
-    setSyncMsg('✓ Saved to GitHub Gist.','#1a6b4a');
+    setSyncMsg('✓ Saved to GitHub Gist.','#1e3a6e');
     stampBackup('gist');
     return true;
   }catch(e){
@@ -1045,7 +1049,7 @@ async function gistPull(){
       if(parsed.users&&parsed.users.length)saveUsers(parsed.users);
       localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()}));
       setSyncStatus('ok','Gist synced ✓');
-      setSyncMsg('✓ Loaded from GitHub Gist.','#1a6b4a');
+      setSyncMsg('✓ Loaded from GitHub Gist.','#1e3a6e');
       render();buildVatBanner();buildStkBanner();
       return true;
     }
@@ -1091,7 +1095,7 @@ async function gistSaveSettings(){
     document.getElementById('cfg-gistid-row').style.display='block';
     document.getElementById('gist-connected').style.display='block';
     setSyncStatus('ok','Gist synced ✓');
-    setSyncMsg('✓ Connected! Gist ID: '+gistId,'#1a6b4a');
+    setSyncMsg('✓ Connected! Gist ID: '+gistId,'#1e3a6e');
     toast('Sync connected — data saved to GitHub Gist.');
   }catch(e){
     setSyncMsg('Connection failed — check your token.','#a32d2d');
@@ -1137,7 +1141,7 @@ function updateBackupStatus(){
     let ago=diffMins<1?'Just now':diffMins<60?diffMins+'m ago':diffHrs<24?diffHrs+'h ago':diffDays+'d ago';
     const full=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
     el.textContent=full+' ('+ago+')';
-    el.style.color=diffDays>=7?'#a32d2d':diffDays>=3?'#8a5a1a':'#1a6b4a';
+    el.style.color=diffDays>=7?'#a32d2d':diffDays>=3?'#8a5a1a':'#1e3a6e';
     if(gistEl)gistEl.textContent=type==='gist'?'☁ Auto-synced via GitHub Gist':type==='file'?'📁 Manual file backup':'';
   }catch(e){el.textContent='Unknown';}
 }
@@ -1157,7 +1161,7 @@ function exportJSON(){
   URL.revokeObjectURL(a.href);
   stampBackup('file');
   audit('Backup','System','Manual backup file downloaded');
-  setSyncMsg('✓ Backup file downloaded.','#1a6b4a');
+  setSyncMsg('✓ Backup file downloaded.','#1e3a6e');
   toast('Backup downloaded.');
 }
 
@@ -1289,7 +1293,7 @@ async function gistSaveSettings(){
       if(!res.ok)throw new Error('Create gist failed: '+res.status);
       const gist=await res.json();
       gistId=gist.id;
-      setSyncMsg('✓ New gist created! Your data is saved.','#1a6b4a');
+      setSyncMsg('✓ New gist created! Your data is saved.','#1e3a6e');
     } else {
       // existing gist on new device — pull data first
       setSyncMsg('Gist ID found — loading your data from GitHub…');
@@ -1297,7 +1301,7 @@ async function gistSaveSettings(){
       const ok=await gistPull();
       if(ok){
         setSyncStatus('ok','Gist synced ✓');
-        setSyncMsg('✓ Data loaded from GitHub.','#1a6b4a');
+        setSyncMsg('✓ Data loaded from GitHub.','#1e3a6e');
         showConnectedBanner(gistId);
         toast('Data loaded from GitHub Gist.');
         return;
@@ -1636,7 +1640,7 @@ function render(){
 
 function clientProgress(c){
   const pct=c.progress||0;
-  const color=pct===100?'#1a6b4a':pct>=67?'#4ade80':pct>=34?'#f59e0b':'#f87171';
+  const color=pct===100?'#1e3a6e':pct>=67?'#4ade80':pct>=34?'#f59e0b':'#f87171';
   return {pct,color};
 }
 
@@ -1667,7 +1671,7 @@ function buildRow(c){
         <input type="checkbox" ${c.vatDone?'checked':''} onchange="fld(${c.id},'vatDone',this.checked)">
         VAT Training Completed
       </label>
-      ${c.vatDone?`<div style="font-size:10px;color:#1a6b4a;margin-top:2px">✓ Completed</div>`:''}
+      ${c.vatDone?`<div style="font-size:10px;color:#1e3a6e;margin-top:2px">✓ Completed</div>`:''}
     </div>`;
 
   // Stock Take reminder — yellow, shown for ALL clients
@@ -1679,7 +1683,7 @@ function buildRow(c){
         <input type="checkbox" ${c.stkDone?'checked':''} onchange="fld(${c.id},'stkDone',this.checked)">
         Stock Take Completed
       </label>
-      ${c.stkDone?`<div style="font-size:10px;color:#1a6b4a;margin-top:2px">✓ Completed</div>`:''}
+      ${c.stkDone?`<div style="font-size:10px;color:#1e3a6e;margin-top:2px">✓ Completed</div>`:''}
     </div>`;
 
   // notes shown only in PDF
@@ -1779,7 +1783,7 @@ function buildRow(c){
             <input type="checkbox" ${c.vatDone?'checked':''} onchange="fld(${c.id},'vatDone',this.checked)">
             Completed
           </label>
-          ${c.vatDone?`<div style="font-size:9px;color:#1a6b4a;margin-top:2px">✓ Done</div>`:''}
+          ${c.vatDone?`<div style="font-size:9px;color:#1e3a6e;margin-top:2px">✓ Done</div>`:''}
         </div>
         <div class="stk-cell">
           <div class="xlbl">Stock Take</div>
@@ -1788,7 +1792,7 @@ function buildRow(c){
             <input type="checkbox" ${c.stkDone?'checked':''} onchange="fld(${c.id},'stkDone',this.checked)">
             Completed
           </label>
-          ${c.stkDone?`<div style="font-size:9px;color:#1a6b4a;margin-top:2px">✓ Done</div>`:''}
+          ${c.stkDone?`<div style="font-size:9px;color:#1e3a6e;margin-top:2px">✓ Done</div>`:''}
         </div>
 
         <!-- MODULES inline after dates -->
@@ -1923,7 +1927,7 @@ function updateProgress(id,val,slider){
   c.progress=parseInt(val);
   save();
   const pct=c.progress;
-  const color=pct===100?'#1a6b4a':pct>=67?'#4ade80':pct>=34?'#f59e0b':'#f87171';
+  const color=pct===100?'#1e3a6e':pct>=67?'#4ade80':pct>=34?'#f59e0b':'#f87171';
   // update label
   const lbl=document.getElementById('prog-lbl-'+id);
   if(lbl){lbl.textContent=pct+'%';lbl.style.color=color;}
@@ -2013,7 +2017,7 @@ function openVatReport(){
   html+=section('Overdue','#a32d2d','#feecec',previous);
   html+=section('Upcoming','#1a5a8a','#e8f0fe',next);
   if(done.length){
-    html+=`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#1a6b4a;background:#e4f2eb;border-radius:6px;padding:4px 10px;margin:.85rem 0 .4rem;display:inline-block">Completed (${done.length})</div>
+    html+=`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#1e3a6e;background:#e8eef8;border-radius:6px;padding:4px 10px;margin:.85rem 0 .4rem;display:inline-block">Completed (${done.length})</div>
     <table class="vat-report-table">
       <thead><tr><th>Client</th><th>Contact</th><th>Manager</th>${showImpl?'<th>Implementor</th>':''}<th>City</th><th>Call date</th></tr></thead>
       <tbody>${done.map(c=>{
@@ -2037,20 +2041,20 @@ function printVatReport(){
   <style>
     *{box-sizing:border-box;margin:0;padding:0}-webkit-print-color-adjust:exact;print-color-adjust:exact;
     body{font-family:'DM Sans',sans-serif;padding:1.5cm 2cm;font-size:12px;color:#1a1917}
-    h1{font-size:18px;font-weight:600;color:#1a6b4a;margin-bottom:4px}
+    h1{font-size:18px;font-weight:600;color:#1e3a6e;margin-bottom:4px}
     .sub{font-size:11px;color:#888;margin-bottom:1.2rem}
     .vat-summary{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
     .vat-pill{font-size:11px;padding:3px 10px;border-radius:99px;font-weight:500}
-    .vp-pending{background:#feecec;color:#a32d2d}.vp-done{background:#e4f2eb;color:#1a6b4a}.vp-nodate{background:#f0efe9;color:#6b6960}
+    .vp-pending{background:#feecec;color:#a32d2d}.vp-done{background:#e8eef8;color:#1e3a6e}.vp-nodate{background:#f0efe9;color:#6b6960}
     .section-lbl{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a8a49c;margin:.9rem 0 .4rem;border-bottom:1px solid #eee;padding-bottom:3px}
     table{width:100%;border-collapse:collapse;font-size:11px;margin-top:.3rem}
     th{text-align:left;font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#a8a49c;padding:5px 8px;border-bottom:1px solid #ddd}
     td{padding:7px 8px;border-bottom:1px solid #f0efe9;vertical-align:middle}
     tr:last-child td{border-bottom:none}
-    .vr-pending{color:#a32d2d;font-weight:500}.vr-done{color:#1a6b4a}
+    .vr-pending{color:#a32d2d;font-weight:500}.vr-done{color:#1e3a6e}
     .rh-mgr{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#ede9fe;color:#4c1d95;font-family:'DM Mono',monospace}
     .rh-status{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px}
-    .s-Active{background:#e4f2eb;color:#1a6b4a}.s-Dormant{background:#fdf0db;color:#8a5a1a}.s-Pending{background:#dbeeff;color:#1a5a8a}.s-Completed{background:#e8e8e8;color:#444}.s-Not-started{background:#f0efe9;color:#6b6960}
+    .s-Active{background:#e8eef8;color:#1e3a6e}.s-Dormant{background:#fdf0db;color:#8a5a1a}.s-Pending{background:#dbeeff;color:#1a5a8a}.s-Completed{background:#e8e8e8;color:#444}.s-Not-started{background:#f0efe9;color:#6b6960}
     @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
   </style></head><body>
   <h1>A.V.PremierSoft — VAT Training Report</h1>
@@ -2316,7 +2320,7 @@ function openStkReport(){
   if(done.length){
     const implCol=showImpl?'<th>Implementor</th>':'';
     const implColData=c=>showImpl?`<td>${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:'—'}</td>`:'';
-    html+=`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#1a6b4a;background:#e4f2eb;border-radius:6px;padding:4px 10px;margin:.85rem 0 .4rem;display:inline-block">Completed (${done.length})</div>
+    html+=`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#1e3a6e;background:#e8eef8;border-radius:6px;padding:4px 10px;margin:.85rem 0 .4rem;display:inline-block">Completed (${done.length})</div>
     <table class="vat-report-table">
       <thead><tr><th>Client</th><th>Contact</th><th>Manager</th>${implCol}<th>City</th><th>Date</th></tr></thead>
       <tbody>${done.map(c=>{
@@ -2345,16 +2349,16 @@ function printStkReport(){
     .sub{font-size:11px;color:#888;margin-bottom:1.2rem}
     .vat-summary{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
     .vat-pill{font-size:11px;padding:3px 10px;border-radius:99px;font-weight:500;background:#fef9c3;color:#7a6500}
-    .vp-done{background:#e4f2eb;color:#1a6b4a}.vp-nodate{background:#f0efe9;color:#6b6960}
+    .vp-done{background:#e8eef8;color:#1e3a6e}.vp-nodate{background:#f0efe9;color:#6b6960}
     table{width:100%;border-collapse:collapse;font-size:11px;margin-top:.5rem}
     th{text-align:left;font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#a8a49c;padding:5px 8px;border-bottom:1px solid #ddd}
     td{padding:7px 8px;border-bottom:1px solid #f0efe9;vertical-align:middle}
     tr:last-child td{border-bottom:none}
-    .vr-done{color:#1a6b4a}
+    .vr-done{color:#1e3a6e}
     .rh-mgr{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#ede9fe;color:#4c1d95;font-family:'DM Mono',monospace}
     .rh-impl{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#fff0e6;color:#92400e;font-family:'DM Mono',monospace}
     .rh-status{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px}
-    .s-Active{background:#e4f2eb;color:#1a6b4a}.s-Dormant{background:#fdf0db;color:#8a5a1a}.s-Pending{background:#dbeeff;color:#1a5a8a}.s-Completed{background:#e8e8e8;color:#444}.s-Not-started{background:#f0efe9;color:#6b6960}
+    .s-Active{background:#e8eef8;color:#1e3a6e}.s-Dormant{background:#fdf0db;color:#8a5a1a}.s-Pending{background:#dbeeff;color:#1a5a8a}.s-Completed{background:#e8e8e8;color:#444}.s-Not-started{background:#f0efe9;color:#6b6960}
     @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
   </style></head><body>
   <h1>${title}</h1>
@@ -2518,7 +2522,7 @@ function renderDashboard(){
   var html=filterNote+'<div class="dash-grid">';
   html+='<div class="dash-card"><div class="dash-card-title">Status overview</div><div class="dash-status-grid">';
   html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(null)" style="background:#f7f6f3"><div class="dsn">'+total+'</div><div class="dsl">All</div></div>';
-  html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Active\')" style="background:#e4f2eb"><div class="dsn" style="color:#1a6b4a">'+byStatus('Active')+'</div><div class="dsl">Active</div></div>';
+  html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Active\')" style="background:#e8eef8"><div class="dsn" style="color:#1e3a6e">'+byStatus('Active')+'</div><div class="dsl">Active</div></div>';
   html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Not started\')" style="background:#f0efe9"><div class="dsn" style="color:#888">'+byStatus('Not started')+'</div><div class="dsl">Not started</div></div>';
   html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Dormant\')" style="background:#fdf0db"><div class="dsn" style="color:#8a5a1a">'+byStatus('Dormant')+'</div><div class="dsl">Dormant</div></div>';
   html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Completed\')" style="background:#e8e8e8"><div class="dsn" style="color:#555">'+byStatus('Completed')+'</div><div class="dsl">Done</div></div>';
@@ -2705,7 +2709,7 @@ function renderAuditTable(){
   if(fs)entries=entries.filter(e=>(e.target+e.detail+e.user).toLowerCase().includes(fs));
   const el=document.getElementById('audit-table');
   if(!entries.length){el.innerHTML='<div style="font-size:13px;color:var(--text-3);padding:1rem 0">No entries found.</div>';return;}
-  const actionColor={Login:'#1a5a8a',Create:'#1a6b4a',Edit:'#6b6960',Delete:'#a32d2d',Password:'#7c3aed',User:'#92400e',Backup:'#0e7490',Restore:'#b45309'};
+  const actionColor={Login:'#1a5a8a',Create:'#1e3a6e',Edit:'#6b6960',Delete:'#a32d2d',Password:'#7c3aed',User:'#92400e',Backup:'#0e7490',Restore:'#b45309'};
   el.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:12px">'
     +'<thead><tr style="border-bottom:2px solid var(--border)">'
     +'<th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text-3);text-transform:uppercase;white-space:nowrap">When</th>'
@@ -2735,7 +2739,7 @@ function renderAuditTable(){
         +'<td style="padding:5px 8px"><span style="font-size:10px;padding:2px 7px;border-radius:99px;background:'+col+'22;color:'+col+';font-weight:600">'+e.action+'</span>'+(detail&&e.action!=='Edit'?'<br><span style="font-size:11px;color:var(--text-2)">'+detail+'</span>':e.action==='Edit'?'<br><span style="font-size:11px;color:var(--text-2)">'+detail+'</span>':'')+'</td>'
         +'<td style="padding:5px 8px">'+e.target+'</td>'
         +'<td style="padding:5px 8px;color:#a32d2d;font-size:11px">'+oldVal+'</td>'
-        +'<td style="padding:5px 8px;color:#1a6b4a;font-size:11px">'+newVal+'</td>'
+        +'<td style="padding:5px 8px;color:#1e3a6e;font-size:11px">'+newVal+'</td>'
         +'</tr>';
     }).join('')
     +'</tbody></table>';
@@ -2834,18 +2838,24 @@ function openMeetPrep(){
   document.getElementById('mp-filter').value='active';
   document.getElementById('mp-card').style.display='none';
   mpCurrentId=null;
+  // populate implementor filter
+  const implSel=document.getElementById('mp-impl-filter');
+  const cur=implSel.value;
+  const sorted=[...implementors].sort((a,b)=>a.localeCompare(b));
+  implSel.innerHTML='<option value="">All implementors</option>'+sorted.map(i=>`<option${i===cur?' selected':''}>${i}</option>`).join('');
   renderMeetPrep();
   document.getElementById('meetprep-modal').classList.add('open');
 }
 function renderMeetPrep(){
   const filter=document.getElementById('mp-filter').value;
+  const implF=document.getElementById('mp-impl-filter').value;
   let list=clients.filter(c=>{
     if(filter==='meeting') return c.mtgSet&&c.mtgDate;
     if(filter==='active')  return c.status==='Active';
     return true;
   });
+  if(implF) list=list.filter(c=>(c.implementor||'')===implF);
   list=list.slice().sort((a,b)=>{
-    // clients with meeting date first, sorted by date
     if(a.mtgSet&&a.mtgDate&&b.mtgSet&&b.mtgDate) return a.mtgDate.localeCompare(b.mtgDate);
     if(a.mtgSet&&a.mtgDate) return -1;
     if(b.mtgSet&&b.mtgDate) return 1;
@@ -2891,6 +2901,52 @@ function mpSaveTodo(){
   c.todo=document.getElementById('mp-todo-input').value;
   clearTimeout(mpTimer);
   mpTimer=setTimeout(()=>{save();renderMeetPrep();},600);
+}
+function printMeetPrep(){
+  const filter=document.getElementById('mp-filter').value;
+  const implF=document.getElementById('mp-impl-filter').value;
+  const filterLabel={meeting:'With meeting set',active:'All active',all:'All clients'}[filter];
+  let list=clients.filter(c=>{
+    if(filter==='meeting') return c.mtgSet&&c.mtgDate;
+    if(filter==='active')  return c.status==='Active';
+    return true;
+  });
+  if(implF) list=list.filter(c=>(c.implementor||'')===implF);
+  list=list.slice().sort((a,b)=>{
+    if(a.mtgSet&&a.mtgDate&&b.mtgSet&&b.mtgDate) return a.mtgDate.localeCompare(b.mtgDate);
+    if(a.mtgSet&&a.mtgDate) return -1;
+    if(b.mtgSet&&b.mtgDate) return 1;
+    return a.name.localeCompare(b.name);
+  });
+  const rows=list.map(c=>`
+    <div class="mp-row">
+      <div class="mp-name">${c.name} <span class="mp-meta">${c.status}${c.implementor?' · '+c.implementor:''}</span></div>
+      <div class="mp-mtg">${c.mtgSet&&c.mtgDate?'Next meeting: '+fmt(c.mtgDate):'No meeting set'}</div>
+      <div class="mp-todo-label">To-Do / Notes:</div>
+      <div class="mp-todo">${(c.todo||'').replace(/\n/g,'<br>') || '<span style="color:#aaa">—</span>'}</div>
+    </div>`).join('');
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Meeting Prep</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;padding:1.5cm 2cm;font-size:12px;color:#1a1917}
+    h1{font-size:18px;font-weight:600;color:#1e3a6e;margin-bottom:4px}
+    .sub{font-size:11px;color:#888;margin-bottom:1.5rem}
+    .mp-row{border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:12px;page-break-inside:avoid}
+    .mp-name{font-size:14px;font-weight:600;color:#1a1917;margin-bottom:4px}
+    .mp-meta{font-size:11px;font-weight:400;color:#888;margin-left:6px}
+    .mp-mtg{font-size:11px;color:#1e3a6e;margin-bottom:8px}
+    .mp-todo-label{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#aaa;margin-bottom:4px}
+    .mp-todo{font-size:12px;color:#1a1917;min-height:40px;line-height:1.6;white-space:pre-wrap}
+    @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
+  </style></head><body>
+  <h1>📋 Meeting Prep</h1>
+  <div class="sub">Filter: ${filterLabel}${implF?' · Implementor: '+implF:''} &nbsp;·&nbsp; Generated: ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})}</div>
+  ${rows}
+  <script>setTimeout(()=>window.print(),300)<\/script>
+  </body></html>`);
+  w.document.close();
 }
 
 /* ── INIT ── */
