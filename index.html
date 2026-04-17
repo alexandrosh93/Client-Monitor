@@ -360,9 +360,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 .hdr-divider{width:1px;height:24px;background:var(--border-md);flex-shrink:0}
 .hdr-reports{display:flex;gap:4px;align-items:center;flex-shrink:0}
 .hdr-actions{display:flex;gap:5px;align-items:center;margin-left:auto;flex-shrink:0}
-.smenu-item{display:flex;align-items:center;gap:10px;padding:.6rem 1rem;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);text-align:left;width:100%;border-radius:0;transition:background .15s}
-.smenu-item:hover{background:var(--surface2)}
-.smenu-item span{font-size:15px;width:20px;text-align:center}
+.smenu-item{display:flex;align-items:center;gap:11px;padding:.6rem 1rem;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-2);text-align:left;width:100%;border-radius:0;transition:background .15s,color .15s;letter-spacing:.01em}
+.smenu-item:hover{background:var(--surface2);color:var(--accent)}
+.smenu-item:hover svg{stroke:var(--accent)}
+.smenu-item svg{flex-shrink:0;opacity:.6;transition:opacity .15s,stroke .15s}
+.smenu-item:hover svg{opacity:1}
 .btn-hdr-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border-md)}
 .btn-hdr-ghost:hover{background:var(--surface2);color:var(--text)}
 .btn-hdr-red{background:#fef2f2;color:#a32d2d;border:1px solid #f7c1c1}
@@ -404,69 +406,94 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 <div id="sidemenu-overlay" onclick="closeSideMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;transition:opacity .2s"></div>
 
 <!-- SIDE MENU -->
-<nav id="sidemenu" class="no-print" style="position:fixed;top:0;left:-280px;width:270px;height:100%;background:var(--surface);border-right:1px solid var(--border-md);z-index:201;display:flex;flex-direction:column;transition:left .25s cubic-bezier(.4,0,.2,1);overflow-y:auto;box-shadow:4px 0 20px rgba(0,0,0,.08)">
-  <!-- Menu header -->
-  <div style="padding:1rem 1rem .75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-    <div style="font-size:13px;font-weight:700;color:var(--text)">A.V.PremierSoft</div>
-    <button onclick="closeSideMenu()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-3);padding:2px 5px;border-radius:5px">✕</button>
+<nav id="sidemenu" class="no-print" style="position:fixed;top:0;left:-280px;width:270px;height:100%;background:var(--surface);border-right:1px solid var(--border-md);z-index:201;display:flex;flex-direction:column;transition:left .25s cubic-bezier(.4,0,.2,1);overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.10)">
+
+  <!-- Brand header -->
+  <div style="padding:1.1rem 1rem .9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--accent)">
+    <div>
+      <div style="font-size:14px;font-weight:700;color:#fff;letter-spacing:.01em">A.V.PremierSoft</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:1px">Client Monitor</div>
+    </div>
+    <button onclick="closeSideMenu()" style="background:rgba(255,255,255,.15);border:none;cursor:pointer;font-size:14px;color:#fff;padding:5px 8px;border-radius:6px;line-height:1" title="Close">✕</button>
   </div>
 
   <!-- User info -->
-  <div id="sidemenu-user" style="padding:.65rem 1rem;border-bottom:1px solid var(--border);display:none;align-items:center;justify-content:space-between">
-    <span id="sidemenu-user-label" style="font-size:12px;color:var(--text-2)"></span>
-    <button onclick="openChangePassword();closeSideMenu()" style="font-size:11px;padding:3px 8px;border:1px solid var(--border-md);border-radius:5px;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text-2)">Change pwd</button>
+  <div id="sidemenu-user" style="padding:.7rem 1rem;border-bottom:1px solid var(--border);display:none;align-items:center;gap:8px">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span id="sidemenu-user-label" style="font-size:12px;color:var(--text-2);flex:1"></span>
+    <button onclick="openChangePassword();closeSideMenu()" style="font-size:11px;padding:3px 9px;border:1px solid var(--border-md);border-radius:5px;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text-2)">Change password</button>
   </div>
 
   <!-- Sync status -->
-  <div onclick="openSettings();closeSideMenu()" style="padding:.55rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text-2)">
+  <div onclick="openSettings();closeSideMenu()" style="padding:.55rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11px;color:var(--text-3);transition:background .15s" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
     <span class="sync-dot" id="sync-dot-side"></span>
     <span id="sync-label-side">Local only</span>
   </div>
 
-  <!-- SECTION: Reports -->
-  <div style="padding:.6rem 1rem .2rem;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3)">Reports</div>
-  <button class="smenu-item" onclick="openVatReport();closeSideMenu()">
-    <span style="color:#1a5a8a">⚑</span> VAT Reminders
-  </button>
-  <button class="smenu-item" onclick="openStkReport();closeSideMenu()">
-    <span style="color:#7a6500">📦</span> Stock Take Reminders
-  </button>
+  <!-- SECTION: Work -->
+  <div style="padding:.7rem 1rem .25rem;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)">Work</div>
+
   <button class="smenu-item" onclick="openMeetPrep();closeSideMenu()">
-    <span>📋</span> Meeting Prep
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
+    Meeting Prep
+  </button>
+
+  <button class="smenu-item" onclick="openVatReport();closeSideMenu()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    VAT Reminders
+  </button>
+
+  <button class="smenu-item" onclick="openStkReport();closeSideMenu()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    Stock Take
+  </button>
+
+  <!-- SECTION: Configuration -->
+  <div style="padding:.7rem 1rem .25rem;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)">Configuration</div>
+
+  <button class="smenu-item" onclick="openImplMgr();closeSideMenu()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Implementors
+  </button>
+
+  <button class="smenu-item" onclick="openModsMgr();closeSideMenu()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    Modules
   </button>
 
   <!-- SECTION: Export -->
-  <div style="padding:.6rem 1rem .2rem;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3)">Export</div>
+  <div style="padding:.7rem 1rem .25rem;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)">Export</div>
+
   <button class="smenu-item" onclick="exportPDF();closeSideMenu()">
-    <span>📄</span> Export as PDF
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+    Export PDF
   </button>
+
   <button class="smenu-item" onclick="exportExcel();closeSideMenu()">
-    <span>📊</span> Export as Excel
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+    Export Excel
   </button>
 
-  <!-- SECTION: Client Data -->
-  <div style="padding:.6rem 1rem .2rem;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3)">Client Data</div>
-  <button class="smenu-item" onclick="openImplMgr();closeSideMenu()">
-    <span>👤</span> Manage Implementors
-  </button>
-  <button class="smenu-item" onclick="openModsMgr();closeSideMenu()">
-    <span>⚙</span> Manage Modules
-  </button>
+  <!-- SECTION: Administration -->
+  <div style="padding:.7rem 1rem .25rem;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)">Administration</div>
 
-  <!-- SECTION: Settings -->
-  <div style="padding:.6rem 1rem .2rem;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3)">Settings</div>
   <button class="smenu-item" id="btn-users-side" style="display:none" onclick="openUsersPanel();closeSideMenu()">
-    <span>👥</span> Manage Users
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Users
   </button>
+
   <button class="smenu-item" onclick="openAuditTrail();closeSideMenu()">
-    <span>📋</span> Audit Trail
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    Audit Trail
   </button>
+
   <button class="smenu-item" onclick="openSettings();closeSideMenu()">
-    <span>☁</span> Sync / Backup
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Sync &amp; Backup
   </button>
 
   <div style="flex:1"></div>
-  <div style="padding:.75rem 1rem;border-top:1px solid var(--border);font-size:11px;color:var(--text-3)">A.V.PremierSoft Ltd © 2025</div>
+  <div style="padding:.75rem 1rem;border-top:1px solid var(--border);font-size:10px;color:var(--text-3);letter-spacing:.02em">A.V.PremierSoft Ltd &copy; 2025</div>
 </nav>
 
 <header class="no-print">
@@ -590,7 +617,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
     <!-- Header -->
     <div style="padding:1rem 1.25rem .75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div>
-        <div style="font-size:15px;font-weight:700;color:var(--text)">📋 Meeting Prep</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text)">📋 Meeting To-Do</div>
         <div style="font-size:11px;color:var(--text-3);margin-top:2px">Click a client to edit their To-Do</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -1786,7 +1813,7 @@ function buildRow(c){
           ${c.vatDone?`<div style="font-size:9px;color:#1e3a6e;margin-top:2px">✓ Done</div>`:''}
         </div>
         <div class="stk-cell">
-          <div class="xlbl">Stock Take</div>
+          <div class="xlbl">Stock Take Reminder</div>
           <input type="date" class="xdate" value="${c.stkDate||''}" onchange="fld(${c.id},'stkDate',this.value)" style="border-color:#e8d87a;color:#7a6500;margin-bottom:3px">
           <label class="inline-check" style="color:#7a6500;margin-bottom:0">
             <input type="checkbox" ${c.stkDone?'checked':''} onchange="fld(${c.id},'stkDone',this.checked)">
@@ -2926,7 +2953,7 @@ function printMeetPrep(){
       <div class="mp-todo">${(c.todo||'').replace(/\n/g,'<br>') || '<span style="color:#aaa">—</span>'}</div>
     </div>`).join('');
   const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>Meeting Prep</title>
+  w.document.write(`<!DOCTYPE html><html><head><title>Meeting To-Do</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -2941,7 +2968,7 @@ function printMeetPrep(){
     .mp-todo{font-size:12px;color:#1a1917;min-height:40px;line-height:1.6;white-space:pre-wrap}
     @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
   </style></head><body>
-  <h1>📋 Meeting Prep</h1>
+  <h1>📋 Meeting To-Do</h1>
   <div class="sub">Filter: ${filterLabel}${implF?' · Implementor: '+implF:''} &nbsp;·&nbsp; Generated: ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})}</div>
   ${rows}
   <script>setTimeout(()=>window.print(),300)<\/script>
