@@ -269,7 +269,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
 .login-err{font-size:12px;color:#a32d2d;margin-top:.6rem;min-height:18px;text-align:center}
 /* ═══════ MOBILE (≤ 768px) ═══════ */
 @media(max-width:768px){
-  *{box-sizing:border-box;max-width:100%}
+  *{box-sizing:border-box}
   html,body{overflow-x:hidden;width:100%;position:relative}
   header{padding:.5rem .65rem;gap:6px;flex-wrap:nowrap;overflow:hidden}
   .hdr-brand .logo{font-size:13px}
@@ -281,14 +281,14 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1rem}
   #vat-banner,#stk-banner{padding:.45rem .65rem;overflow:hidden}
   .vat-chips,.stk-chips{flex-wrap:wrap}
   .vc-name{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  main{padding:.45rem .4rem;overflow-x:hidden}
-  .control-bar{flex-direction:column;gap:5px;align-items:stretch;overflow:hidden}
+  main{padding:.45rem .4rem}
+  .control-bar{flex-direction:column;gap:5px;align-items:stretch}
   .stats-group{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:100%}
   .stat{flex-direction:column;gap:1px;padding:.3rem .15rem;text-align:center;justify-content:center}
   .stat-n{font-size:15px}
   .stat-l{font-size:9px}
   .cb-divider{display:none}
-  .filters-group{width:100%;min-width:0;overflow:hidden}
+  .filters-group{width:100%;min-width:0}
   .toolbar{display:flex!important;flex-wrap:wrap;gap:4px;width:100%}
   .toolbar input{flex:1;min-width:0;width:100%}
   .dd-btn{min-width:0;padding:4px 7px;font-size:11px;width:auto}
@@ -1293,7 +1293,12 @@ function toggleDD(key){
     openDD[k]=false;
     const p=document.getElementById(k+'-panel');
     const b=document.getElementById(k+'-btn');
-    if(p){p.classList.remove('open');p.style.position='';p.style.top='';p.style.left='';p.style.width='';}
+    if(p){
+      p.classList.remove('open');
+      // return panel to its wrap if it was moved to body
+      const wrap=document.getElementById(k+'-wrap');
+      if(wrap&&p.parentElement===document.body){wrap.appendChild(p);p.style.cssText='';}
+    }
     if(b)b.classList.remove('open');
   });
   if(!wasOpen){
@@ -1301,15 +1306,15 @@ function toggleDD(key){
     const p=document.getElementById(key+'-panel');
     const b=document.getElementById(key+'-btn');
     if(p){
-      p.classList.add('open');
-      // on mobile use fixed positioning to escape overflow:hidden parents
       if(window.innerWidth<=768&&b){
+        // move panel to body so it escapes all overflow:hidden parents
         const r=b.getBoundingClientRect();
-        p.style.position='fixed';
-        p.style.top=(r.bottom+4)+'px';
-        p.style.left=Math.max(4,Math.min(r.left,window.innerWidth-200))+'px';
-        p.style.width=Math.min(220,window.innerWidth-8)+'px';
-        p.style.zIndex='9999';
+        document.body.appendChild(p);
+        const pw=Math.min(220,window.innerWidth-8);
+        const left=Math.max(4,Math.min(r.left,window.innerWidth-pw-4));
+        p.style.cssText='position:fixed;top:'+(r.bottom+4)+'px;left:'+left+'px;width:'+pw+'px;z-index:9999;display:block;max-height:55vh;overflow-y:auto';
+      } else {
+        p.classList.add('open');
       }
     }
     if(b)b.classList.add('open');
