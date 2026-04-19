@@ -44,8 +44,6 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;background-image:radial-gradient(ellipse at 20% 0%,rgba(30,58,110,.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(45,82,160,.04) 0%,transparent 60%)}
-/* HEADER */
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:.85rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
 .logo{font-size:18px;font-weight:700;letter-spacing:.01em;color:var(--accent)}
 .logo span{color:var(--text-2);font-weight:400;font-size:15px}
 .hdr-actions{display:flex;gap:8px;align-items:center}
@@ -53,24 +51,24 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:.
 .btn-primary:hover{box-shadow:0 4px 14px rgba(30,58,110,.35);transform:translateY(-1px);opacity:1}
 .btn-outline{background:transparent;color:var(--text-2);border:1px solid var(--border-md);border-radius:var(--radius);padding:7px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
 .btn-outline:hover{background:var(--surface2);color:var(--text)}
-.btn-vat{background:#eff6ff;color:#1a5a8a;border:1px solid #bfdbfe;border-radius:var(--radius);padding:7px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
+.btn-vat{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:var(--radius);padding:7px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
 .btn-vat:hover{background:#dbeeff}
 /* VAT REMINDER BANNER */
 #vat-banner{display:none;background:#eff6ff;border-bottom:1px solid #bfdbfe;padding:.5rem 1rem}
 .vat-banner-inner{max-width:1400px;margin:0 auto;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .vat-banner-icon{font-size:15px;flex-shrink:0;margin-top:1px}
 .vat-banner-text{flex:1;min-width:0}
-.vat-banner-title{font-size:12px;font-weight:600;color:#1a5a8a;margin-bottom:3px}
+.vat-banner-title{font-size:12px;font-weight:600;color:#1d4ed8;margin-bottom:3px}
 .vat-banner-items{display:flex;flex-wrap:wrap;gap:6px}
-.vat-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;background:#dbeeff;border:1px solid #93c5fd;border-radius:99px;padding:2px 10px;color:#1a5a8a;cursor:pointer;transition:background .12s}
+.vat-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;background:#dbeeff;border:1px solid #93c5fd;border-radius:99px;padding:2px 10px;color:#1d4ed8;cursor:pointer;transition:background .12s}
 .vat-chip:hover{background:#bfdbfe}
 .vat-chip .vc-name{font-weight:500}
 .vat-chip .vc-date{opacity:.75}
-.vat-chip.today{background:#1a5a8a;color:#fff;border-color:#1a5a8a}
+.vat-chip.today{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
 .vat-chip.today:hover{background:#154a75}
 .vat-chip.overdue{background:#fee2e2;border-color:#fca5a5;color:#a32d2d}
 .vat-banner-dismiss{font-size:18px;color:#93c5fd;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0;transition:color .1s;margin-top:-1px}
-.vat-banner-dismiss:hover{color:#1a5a8a}
+.vat-banner-dismiss:hover{color:#1d4ed8}
 main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 /* CONTROL BAR */
 .control-bar{display:flex;align-items:center;gap:12px;margin-bottom:.75rem;flex-wrap:wrap}
@@ -82,7 +80,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .stat:hover{border-color:var(--border-md);background:var(--accent-bg);transform:translateY(-1px);box-shadow:var(--shadow-md)}
 .stat.af{border-color:var(--accent);background:linear-gradient(135deg,#dbeafe,#eef1f8);box-shadow:0 0 0 3px rgba(30,58,110,.10),var(--shadow-sm)}
 .stat.af .stat-n,.stat.af .stat-l{color:#1e3a6e}
-.stat-n{font-size:22px;font-weight:800;line-height:1;letter-spacing:-.5px}
+.stat-n{font-size:22px;font-weight:800;line-height:1;letter-spacing:-.8px}
 .stat-l{font-size:12px;color:var(--text-3);font-weight:400}
 .sn-active{color:#1e3a6e}.sn-dormant{color:#8a5a1a}.sn-completed{color:#555}.sn-ns{color:#888}
 /* TOOLBAR (inside filters-group) */
@@ -110,16 +108,16 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .dd-item.checked .dd-radio::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent);display:block}
 .dd-divider{border:none;border-top:1px solid var(--border);margin:4px 0}
 /* GROUPS */
-.group-label{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);padding:.4rem .9rem .3rem;margin-top:.6rem;border-bottom:1px solid var(--border);margin-bottom:.3rem}
+.group-label{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);padding:.5rem 1rem .3rem;margin-top:.7rem;border-bottom:2px solid var(--accent-bg);margin-bottom:.35rem}
 .group-label:first-child{margin-top:0}
 /* CLIENT ROW */
-.client-row{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:5px;overflow:hidden;transition:all .2s;box-shadow:var(--shadow-sm);position:relative}
+.client-row{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:6px;overflow:hidden;transition:all .2s;box-shadow:var(--shadow-sm);position:relative}
 .client-row:hover{border-color:rgba(30,58,110,.2);box-shadow:var(--shadow-md);transform:translateY(-1px)}
 .client-row.expanded{border-color:rgba(30,58,110,.25);box-shadow:var(--shadow-md)}
 /* grid: name | stars | modules | mgr | impl | status | chevron */
-.row-header{display:grid;grid-template-columns:1fr auto auto auto auto auto auto auto;align-items:center;gap:8px;padding:.45rem .9rem;cursor:pointer;user-select:none}
-.rh-name{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-.01em}
-.rh-sub{font-size:12px;color:var(--text-3);margin-top:1px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.row-header{display:grid;grid-template-columns:1fr auto auto auto auto auto auto auto;align-items:center;gap:10px;padding:.6rem 1rem;cursor:pointer;user-select:none}
+.rh-name{font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.01em;line-height:1.3}
+.rh-sub{font-size:12px;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;line-height:1.4}
 .rh-contact{color:var(--text-2)}
 .mtg-tag{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#1e3a6e;background:linear-gradient(135deg,#dbeafe,#eff6ff);border-radius:5px;padding:2px 7px;border:1px solid rgba(30,58,110,.12);font-weight:500}
 .mtg-tag-none{display:none}
@@ -135,21 +133,21 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .rh-status{font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap;letter-spacing:.01em}
 .s-Active{background:linear-gradient(135deg,#e0eaff,#eef1f8);color:#1e3a6e;border:1px solid rgba(30,58,110,.15)}
 .s-Dormant{background:linear-gradient(135deg,#fef3c7,#fdf0db);color:#92400e;border:1px solid rgba(146,64,14,.15)}
-.s-Pending{background:#dbeeff;color:#1a5a8a}
+.s-Pending{background:#dbeeff;color:#1d4ed8}
 .s-Not-started{background:#f1f5f9;color:#64748b;border:1px solid rgba(100,116,139,.15)}
 .s-Completed{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#065f46;border:1px solid rgba(6,95,70,.15)}
 .chevron{color:var(--text-3);font-size:10px;transition:transform .2s}
 .client-row.expanded .chevron{transform:rotate(180deg)}
 /* PROGRESS BAR on row */
 .rh-progress{display:flex;align-items:center;gap:5px;min-width:0}
-.progress-track{width:52px;height:5px;background:var(--surface2);border-radius:99px;overflow:hidden;flex-shrink:0}
+.progress-track{width:56px;height:6px;background:var(--surface2);border-radius:99px;overflow:hidden;flex-shrink:0}
 .progress-fill{height:100%;border-radius:99px;transition:width .3s ease}
 .progress-pct{font-size:10px;font-weight:600;color:var(--text-3);min-width:24px}
 .expand-panel{display:none;border-top:1px solid var(--border);padding:.8rem 1.1rem;background:linear-gradient(180deg,#f8faff 0%,#f4f6fb 100%)}
 .client-row.expanded .expand-panel{display:block;animation:sd .18s ease}
-@keyframes sd{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes sd{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .xgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.45rem .8rem}
-.xlbl{font-size:9px;color:var(--text-3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.18rem}
+.xlbl{font-size:9px;color:var(--text-3);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.2rem}
 .xsel,.xdate,.xinput{font-family:'DM Sans',sans-serif;font-size:11px;padding:3px 6px;border:1px solid var(--border-md);border-radius:6px;background:var(--surface);color:var(--text);outline:none;width:100%}
 .xsel:focus,.xdate:focus,.xinput:focus{border-color:var(--accent)}
 .xdate:disabled{opacity:.4;pointer-events:none}
@@ -162,10 +160,10 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .inline-check{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2);margin-bottom:5px;cursor:pointer;user-select:none}
 /* VAT Reminder cell — blue */
 .vat-cell{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:.4rem .6rem}
-.vat-cell .xlbl{color:#1a5a8a}
-.vat-cell .inline-check{color:#1a5a8a}
-.vat-cell .xdate{border-color:#bfdbfe;color:#1a5a8a;font-size:11px;padding:3px 6px}
-.vat-cell .xdate:focus{border-color:#1a5a8a}
+.vat-cell .xlbl{color:#1d4ed8}
+.vat-cell .inline-check{color:#1d4ed8}
+.vat-cell .xdate{border-color:#bfdbfe;color:#1d4ed8;font-size:11px;padding:3px 6px}
+.vat-cell .xdate:focus{border-color:#1d4ed8}
 /* STOCK TAKE REMINDER cell */
 .stk-cell{background:#fffbeb;border:1px solid #e8d87a;border-radius:8px;padding:.5rem .7rem}
 .stk-cell .xlbl{color:#7a6500}
@@ -198,7 +196,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .xactions{display:flex;justify-content:flex-end;margin-top:.9rem}
 .btn-del-sm{font-size:12px;font-family:'DM Sans',sans-serif;padding:5px 12px;border:1px solid #f7c1c1;border-radius:7px;background:transparent;color:#a32d2d;cursor:pointer}
 .btn-del-sm:hover{background:#fef2f2}
-.empty{text-align:center;padding:3.5rem;color:var(--text-3);font-size:14px}
+.empty{text-align:center;padding:4rem 2rem;color:var(--text-3);font-size:14px;line-height:1.8}
 /* PDF notes row — hidden on screen, shown in print */
 .pdf-notes{display:none}
 /* MODAL */
@@ -206,7 +204,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .modal-bg.open{display:flex}
 .modal{background:var(--surface);border-radius:20px;border:1px solid var(--border);padding:1.75rem;width:390px;max-width:100%;max-height:90vh;overflow-y:auto;animation:su .22s ease;box-shadow:var(--shadow-lg)}
 .modal-wide{width:min(680px,96vw)}
-@keyframes su{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+@keyframes su{from{transform:translateY(20px) scale(.97);opacity:0}to{transform:none;opacity:1}}
 .modal h3{font-size:17px;font-weight:700;margin-bottom:16px;color:var(--text);letter-spacing:-.01em}
 .mf{margin-bottom:11px}
 .mf label.lbl{font-size:12px;color:var(--text-2);display:block;margin-bottom:3px;font-weight:500}
@@ -260,7 +258,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .dash-status-pill .dsn{font-size:20px;font-weight:700}
 .dash-status-pill .dsl{font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
 /* VIEW TOGGLE */
-.view-toggle{display:flex;gap:0;border:1px solid var(--border-md);border-radius:var(--radius);overflow:hidden;flex-shrink:0}
+.view-toggle{display:flex;gap:0;border:1px solid var(--border-md);border-radius:var(--radius);overflow:hidden;flex-shrink:0;box-shadow:var(--shadow-sm)}
 .view-btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 13px;border:none;background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;font-weight:500}
 .view-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent-light));color:#fff}
 .view-btn:not(.active):hover{background:var(--surface2)}
@@ -360,7 +358,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
   .rh-status{font-size:8px!important;padding:1px 6px!important}
   .s-Active{background:#e8eef8!important;color:#1e3a6e!important}
   .s-Dormant{background:#fdf0db!important;color:#8a5a1a!important}
-  .s-Pending{background:#dbeeff!important;color:#1a5a8a!important}
+  .s-Pending{background:#dbeeff!important;color:#1d4ed8!important}
   .s-Completed{background:#e8e8e8!important;color:#444!important}
   .s-Not-started{background:#f0efe9!important;color:#6b6960!important}
   /* notes row under each client */
@@ -385,9 +383,9 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 .btn-hdr-ghost:hover{background:var(--surface2);color:var(--text)}
 .btn-hdr-red{background:#fef2f2;color:#a32d2d;border:1px solid #f7c1c1}
 .btn-hdr-red:hover{background:#fce8e8}
-.btn-hdr-blue{background:#eff6ff;color:#1a5a8a;border:1px solid #bfdbfe}
+.btn-hdr-blue{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
 .btn-hdr-blue:hover{background:#dbeeff}
-.btn-hdr-blue{background:#eff6ff;color:#1a5a8a;border:1px solid #bfdbfe}
+.btn-hdr-blue{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
 .btn-hdr-blue:hover{background:#dbeeff}
 .btn-hdr-yellow{background:#fffbeb;color:#7a6500;border:1px solid #e8d87a}
 .btn-hdr-yellow:hover{background:#fef9c3}
@@ -412,8 +410,54 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 .settings-input-row input{font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none}
 .settings-input-row input:focus{border-color:var(--accent)}
 .sync-info{font-size:11px;color:var(--text-3);margin-top:.4rem;line-height:1.5}
-.btn-sync{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 16px;border:none;border-radius:var(--radius);background:#1a5a8a;color:#fff;cursor:pointer;font-weight:500;transition:opacity .15s}
+.btn-sync{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 16px;border:none;border-radius:var(--radius);background:linear-gradient(135deg,var(--accent),var(--accent-light));color:#fff;cursor:pointer;font-weight:500;transition:all .15s;box-shadow:0 2px 8px rgba(30,58,110,.25)}
 .btn-sync:hover{opacity:.85}
+
+/* ── STATUS LEFT BORDER on client cards ── */
+.client-row[data-status="Active"]       { border-left: 3px solid #1e3a6e }
+.client-row[data-status="Dormant"]      { border-left: 3px solid #d97706 }
+.client-row[data-status="Completed"]    { border-left: 3px solid #059669 }
+.client-row[data-status="Not started"]  { border-left: 3px solid #94a3b8 }
+
+/* ── DARK MODE ── */
+body.dark{
+  --bg:#0f1117;
+  --surface:#1a1d2a;
+  --surface2:#222536;
+  --border:rgba(255,255,255,.07);
+  --border-md:rgba(255,255,255,.13);
+  --text:#e8eaf0;
+  --text-2:#9da5c0;
+  --text-3:#5a6280;
+  --accent-bg:rgba(30,58,110,.35);
+}
+body.dark header{background:rgba(26,29,42,.97)}
+body.dark .login-box{background:#1a1d2a;border-color:rgba(255,255,255,.1)}
+body.dark #login-screen{background:linear-gradient(135deg,#0f1117,#1a1d2a)}
+body.dark .modal{background:#1a1d2a;border-color:rgba(255,255,255,.1)}
+body.dark .modal-bg{background:rgba(0,0,0,.65)}
+body.dark .dd-panel{background:#1a1d2a;border-color:rgba(255,255,255,.1)}
+body.dark .expand-panel{background:linear-gradient(180deg,#181b28,#1a1d2a)}
+body.dark .todo-textarea{background:#0f1117;color:var(--text)}
+body.dark .xsel,body.dark .xdate,body.dark .xinput{background:#1a1d2a;color:var(--text)}
+body.dark .xtarea{background:#1a1d2a;color:var(--text)}
+body.dark .mf input,body.dark .mf select,body.dark .mf textarea{background:#0f1117;color:var(--text)}
+body.dark #vat-banner{background:#0c1829;border-color:#1a3a5e}
+body.dark #stk-banner{background:#1a150a;border-color:#4a3d00}
+body.dark .s-Active{background:rgba(30,58,110,.35);color:#93c5fd}
+body.dark .s-Dormant{background:rgba(146,64,14,.25);color:#fbbf24}
+body.dark .s-Completed{background:rgba(5,150,105,.2);color:#6ee7b7}
+body.dark .s-Not-started{background:rgba(100,116,139,.2);color:#94a3b8}
+body.dark .rh-mgr{background:rgba(91,33,182,.25);color:#c4b5fd}
+body.dark .rh-impl{background:rgba(154,52,18,.2);color:#fdba74}
+body.dark .mod.on{background:rgba(30,58,110,.35);color:#93c5fd;border-color:rgba(147,197,253,.3)}
+body.dark .stat{background:var(--surface);border-color:var(--border)}
+body.dark .dd-btn{background:var(--surface);border-color:var(--border-md);color:var(--text)}
+body.dark .toolbar input,body.dark .toolbar select{background:var(--surface);color:var(--text);border-color:var(--border-md)}
+
+/* Dark mode toggle button */
+#dark-toggle{background:none;border:1px solid var(--border-md);border-radius:var(--radius);cursor:pointer;padding:5px 8px;font-size:15px;color:var(--text-2);transition:all .15s;line-height:1;display:flex;align-items:center}
+#dark-toggle:hover{background:var(--surface2);border-color:var(--border-md)}
 </style>
 </head>
 <body>
@@ -531,7 +575,8 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
       <button class="view-btn active" id="vbtn-list" onclick="setView('list')">☰ List</button>
       <button class="view-btn" id="vbtn-dash" onclick="setView('dash')">⊞ Dashboard</button>
     </div>
-    <input type="text" id="search" placeholder="🔍 Search…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--border-md);border-radius:99px;background:var(--surface2);color:var(--text);outline:none;width:180px;transition:border-color .2s,background .2s" onfocus="this.style.borderColor='var(--accent)';this.style.background='var(--surface)'" onblur="this.style.borderColor='';this.style.background='var(--surface2)'">
+    <input type="text" id="search" placeholder="🔍 Search…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--border-md);border-radius:99px;background:var(--surface2);color:var(--text);outline:none;width:190px;transition:border-color .2s,background .2s,box-shadow .2s" onfocus="this.style.borderColor='var(--accent)';this.style.background='var(--surface)'" onblur="this.style.borderColor='';this.style.background='var(--surface2)'">
+    <button id="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
   </div>
 </header>
 <span id="hdr-user-badge" style="display:none"></span>
@@ -947,8 +992,8 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 
         <!-- GITHUB GIST SYNC -->
         <div style="border:1px solid #bfdbfe;border-radius:var(--radius);padding:.85rem 1rem;background:#eff6ff">
-          <div style="font-size:13px;font-weight:600;color:#1a5a8a;margin-bottom:3px">☁ GitHub Gist (recommended)</div>
-          <div style="font-size:12px;color:#1a5a8a;margin-bottom:.65rem;line-height:1.5">Automatically syncs every time you save. Works on iPhone and PC simultaneously. Switch to the <strong>Sync</strong> tab to connect.</div>
+          <div style="font-size:13px;font-weight:600;color:#1d4ed8;margin-bottom:3px">☁ GitHub Gist (recommended)</div>
+          <div style="font-size:12px;color:#1d4ed8;margin-bottom:.65rem;line-height:1.5">Automatically syncs every time you save. Works on iPhone and PC simultaneously. Switch to the <strong>Sync</strong> tab to connect.</div>
           <button class="btn-cancel" onclick="switchTab('gist')">Go to Sync settings →</button>
         </div>
 
@@ -1709,8 +1754,8 @@ function buildRow(c){
   const vatReminderCell=`
     <div class="vat-cell">
       <div class="xlbl">VAT Reminder</div>
-      <input type="date" class="xdate" value="${c.vatDate||''}" onchange="fld(${c.id},'vatDate',this.value)" style="border-color:#bfdbfe;color:#1a5a8a;margin-bottom:4px">
-      <label class="inline-check" style="color:#1a5a8a">
+      <input type="date" class="xdate" value="${c.vatDate||''}" onchange="fld(${c.id},'vatDate',this.value)" style="border-color:#bfdbfe;color:#1d4ed8;margin-bottom:4px">
+      <label class="inline-check" style="color:#1d4ed8">
         <input type="checkbox" ${c.vatDone?'checked':''} onchange="fld(${c.id},'vatDone',this.checked)">
         VAT Training Completed
       </label>
@@ -1742,7 +1787,7 @@ function buildRow(c){
     :`<span style="font-size:11px;color:var(--text-3)">None</span>`;
   const allModToggles=ALL_MODS.map(m=>`<label class="mod-toggle${c.modules.includes(m)?' on':''}" data-mod="${m}"><input type="checkbox"${c.modules.includes(m)?' checked':''} onchange="tModFld(${c.id},'${m}',this.checked)">${m}</label>`).join('');
 
-  return `<div class="client-row" data-id="${c.id}">
+  return `<div class="client-row" data-id="${c.id}" data-status="${c.status}">
     <div class="row-header" onclick="toggle(${c.id})">
       <div class="rh-left">
         <div class="rh-name">${c.name}${contactLine?`<span class="rh-contact" style="font-size:11px;font-weight:400;color:var(--text-3);margin-left:8px">👤 ${c.contact}</span>`:''}${c.mtgSet?`<span class="mtg-tag" style="margin-left:6px;vertical-align:middle">📅 ${fmt(c.mtgDate)}</span>`:''}</div>
@@ -1821,8 +1866,8 @@ function buildRow(c){
         </div>
         <div class="vat-cell">
           <div class="xlbl">VAT Reminder</div>
-          <input type="date" class="xdate" value="${c.vatDate||''}" onchange="fld(${c.id},'vatDate',this.value)" style="border-color:#bfdbfe;color:#1a5a8a;margin-bottom:3px">
-          <label class="inline-check" style="color:#1a5a8a;margin-bottom:0">
+          <input type="date" class="xdate" value="${c.vatDate||''}" onchange="fld(${c.id},'vatDate',this.value)" style="border-color:#bfdbfe;color:#1d4ed8;margin-bottom:3px">
+          <label class="inline-check" style="color:#1d4ed8;margin-bottom:0">
             <input type="checkbox" ${c.vatDone?'checked':''} onchange="fld(${c.id},'vatDone',this.checked)">
             Completed
           </label>
@@ -2041,7 +2086,7 @@ function openVatReport(){
       <thead><tr><th>Client</th><th>Contact</th><th>Manager</th>${showImpl?'<th>Implementor</th>':''}<th>City</th><th>Status</th>${showDate?'<th>Call date</th>':''}</tr></thead>
       <tbody>${list.map(c=>{
         const isToday=c.vatDate===todayISO;
-        const dateCell=showDate?`<td style="font-weight:500;color:${c.vatDate<todayISO?'#a32d2d':'#1a5a8a'}">${isToday?'<strong>TODAY</strong>':fmt(c.vatDate)}</td>`:'';
+        const dateCell=showDate?`<td style="font-weight:500;color:${c.vatDate<todayISO?'#a32d2d':'#1d4ed8'}">${isToday?'<strong>TODAY</strong>':fmt(c.vatDate)}</td>`:'';
         const implCell=showImpl?`<td>${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:'—'}</td>`:'';
         return `<tr>${nameCell(c)}<td>${c.contact||'—'}</td><td><span class="rh-mgr">${c.mgr}</span></td>${implCell}<td>${c.city}</td><td><span class="rh-status s-${c.status.replace(/ /g,'-')}">${c.status}</span></td>${dateCell}</tr>`;
       }).join('')}</tbody>
@@ -2052,13 +2097,13 @@ function openVatReport(){
   if(implFilter) html+=`<span class="vat-pill" style="background:#fff0e6;color:#92400e;border:1px solid #fbbf8a">👤 ${implFilter.join(', ')}</span>`;
   html+=`<span class="vat-pill" style="background:#fff3cd;color:#856404">${thisWeek.length} this week</span>
     <span class="vat-pill vp-pending">${previous.length} overdue</span>
-    <span class="vat-pill" style="background:#e8f0fe;color:#1a5a8a">${next.length} upcoming</span>
+    <span class="vat-pill" style="background:#e8f0fe;color:#1d4ed8">${next.length} upcoming</span>
     <span class="vat-pill vp-done">${done.length} completed</span>
   </div>`;
 
   html+=section('This week','#856404','#fff3cd',thisWeek);
   html+=section('Overdue','#a32d2d','#feecec',previous);
-  html+=section('Upcoming','#1a5a8a','#e8f0fe',next);
+  html+=section('Upcoming','#1d4ed8','#e8f0fe',next);
   if(done.length){
     html+=`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#1e3a6e;background:#e8eef8;border-radius:6px;padding:4px 10px;margin:.85rem 0 .4rem;display:inline-block">Completed (${done.length})</div>
     <table class="vat-report-table">
@@ -2097,7 +2142,7 @@ function printVatReport(){
     .vr-pending{color:#a32d2d;font-weight:500}.vr-done{color:#1e3a6e}
     .rh-mgr{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#ede9fe;color:#4c1d95;font-family:'DM Mono',monospace}
     .rh-status{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px}
-    .s-Active{background:linear-gradient(135deg,#e0eaff,#eef1f8);color:#1e3a6e;border:1px solid rgba(30,58,110,.15)}.s-Dormant{background:linear-gradient(135deg,#fef3c7,#fdf0db);color:#92400e;border:1px solid rgba(146,64,14,.15)}.s-Pending{background:#dbeeff;color:#1a5a8a}.s-Completed{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#065f46;border:1px solid rgba(6,95,70,.15)}.s-Not-started{background:#f1f5f9;color:#64748b;border:1px solid rgba(100,116,139,.15)}
+    .s-Active{background:linear-gradient(135deg,#e0eaff,#eef1f8);color:#1e3a6e;border:1px solid rgba(30,58,110,.15)}.s-Dormant{background:linear-gradient(135deg,#fef3c7,#fdf0db);color:#92400e;border:1px solid rgba(146,64,14,.15)}.s-Pending{background:#dbeeff;color:#1d4ed8}.s-Completed{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#065f46;border:1px solid rgba(6,95,70,.15)}.s-Not-started{background:#f1f5f9;color:#64748b;border:1px solid rgba(100,116,139,.15)}
     @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
   </style></head><body>
   <h1>A.V.PremierSoft — VAT Training Report</h1>
@@ -2343,7 +2388,7 @@ function openStkReport(){
       <thead><tr><th>Client</th><th>Contact</th><th>Manager</th>${implCol}<th>City</th><th>Status</th>${showDate?'<th>Reminder date</th>':''}</tr></thead>
       <tbody>${list.map(c=>{
         const isToday=c.stkDate===todayISO;
-        const dateCell=showDate?`<td style="font-weight:500;color:${c.stkDate<todayISO?'#7a6500':'#1a5a8a'}">${isToday?'<strong>TODAY</strong>':fmt(c.stkDate)}</td>`:'';
+        const dateCell=showDate?`<td style="font-weight:500;color:${c.stkDate<todayISO?'#7a6500':'#1d4ed8'}">${isToday?'<strong>TODAY</strong>':fmt(c.stkDate)}</td>`:'';
         return `<tr>${nameCell(c)}<td>${c.contact||'—'}</td><td><span class="rh-mgr">${c.mgr}</span></td>${implColData(c)}<td>${c.city}</td><td><span class="rh-status s-${c.status.replace(/ /g,'-')}">${c.status}</span></td>${dateCell}</tr>`;
       }).join('')}</tbody>
     </table>`;
@@ -2353,13 +2398,13 @@ function openStkReport(){
   if(implFilter) html+=`<span class="vat-pill" style="background:#fff0e6;color:#92400e;border:1px solid #fbbf8a">👤 ${implFilter.join(', ')}</span>`;
   html+=`<span class="vat-pill" style="background:#fef9c3;color:#7a6500">${thisWeek.length} this week</span>
     <span class="vat-pill" style="background:#fef3c7;color:#92400e">${previous.length} overdue</span>
-    <span class="vat-pill" style="background:#e8f0fe;color:#1a5a8a">${next.length} upcoming</span>
+    <span class="vat-pill" style="background:#e8f0fe;color:#1d4ed8">${next.length} upcoming</span>
     <span class="vat-pill vp-done">${done.length} completed</span>
   </div>`;
 
   html+=section('This week','#7a6500','#fef9c3',thisWeek);
   html+=section('Overdue','#92400e','#fef3c7',previous);
-  html+=section('Upcoming','#1a5a8a','#e8f0fe',next);
+  html+=section('Upcoming','#1d4ed8','#e8f0fe',next);
   if(done.length){
     const implCol=showImpl?'<th>Implementor</th>':'';
     const implColData=c=>showImpl?`<td>${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:'—'}</td>`:'';
@@ -2401,7 +2446,7 @@ function printStkReport(){
     .rh-mgr{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#ede9fe;color:#4c1d95;font-family:'DM Mono',monospace}
     .rh-impl{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#fff0e6;color:#92400e;font-family:'DM Mono',monospace}
     .rh-status{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px}
-    .s-Active{background:linear-gradient(135deg,#e0eaff,#eef1f8);color:#1e3a6e;border:1px solid rgba(30,58,110,.15)}.s-Dormant{background:linear-gradient(135deg,#fef3c7,#fdf0db);color:#92400e;border:1px solid rgba(146,64,14,.15)}.s-Pending{background:#dbeeff;color:#1a5a8a}.s-Completed{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#065f46;border:1px solid rgba(6,95,70,.15)}.s-Not-started{background:#f1f5f9;color:#64748b;border:1px solid rgba(100,116,139,.15)}
+    .s-Active{background:linear-gradient(135deg,#e0eaff,#eef1f8);color:#1e3a6e;border:1px solid rgba(30,58,110,.15)}.s-Dormant{background:linear-gradient(135deg,#fef3c7,#fdf0db);color:#92400e;border:1px solid rgba(146,64,14,.15)}.s-Pending{background:#dbeeff;color:#1d4ed8}.s-Completed{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#065f46;border:1px solid rgba(6,95,70,.15)}.s-Not-started{background:#f1f5f9;color:#64748b;border:1px solid rgba(100,116,139,.15)}
     @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
   </style></head><body>
   <h1>${title}</h1>
@@ -2574,7 +2619,7 @@ function renderDashboard(){
   // KPI CARD
   html+='<div class="dash-card"><div class="dash-card-title">Key numbers</div>'
     +'<div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap">'
-    +'<div><div class="dash-kpi" style="color:#1a5a8a">'+vatOverdue+'</div><div class="dash-kpi-sub">⚑ VAT overdue</div></div>'
+    +'<div><div class="dash-kpi" style="color:#1d4ed8">'+vatOverdue+'</div><div class="dash-kpi-sub">⚑ VAT overdue</div></div>'
     +'<div><div class="dash-kpi" style="color:#7a6500">'+stkOverdue+'</div><div class="dash-kpi-sub">📦 Stock Take overdue</div></div>'
     +'<div><div class="dash-kpi" style="color:#e8a020">'+avgGrade+'</div><div class="dash-kpi-sub">★ Avg grade</div></div>'
     +'<div><div class="dash-kpi">'+total+'</div><div class="dash-kpi-sub">Total clients</div></div>'
@@ -2588,7 +2633,7 @@ function renderDashboard(){
 
   // CITY CARD
   html+='<div class="dash-card"><div class="dash-card-title">Clients by city</div>';
-  citySorted.forEach(function(e){html+=bar(e[0],e[1],maxCity,'#1a5a8a');});
+  citySorted.forEach(function(e){html+=bar(e[0],e[1],maxCity,'#1d4ed8');});
   html+='</div>';
 
   // MODULE CARD
@@ -2617,7 +2662,7 @@ function renderDashboard(){
         +'<td style="padding:6px 8px;font-weight:500">'+c.name+'</td>'
         +'<td style="padding:6px 8px"><span class="rh-status s-'+c.status.replace(/ /g,'-')+'">'+c.status+'</span></td>'
         +'<td style="padding:6px 8px;color:var(--text-2)">'+(c.implementor||'—')+'</td>'
-        +'<td style="padding:6px 8px;font-weight:500;color:#1a5a8a">📅 '+fmt(c.liveDate)+'</td>'
+        +'<td style="padding:6px 8px;font-weight:500;color:#1d4ed8">📅 '+fmt(c.liveDate)+'</td>'
         +'</tr>';
     });
     html+='</tbody></table>';
@@ -2752,7 +2797,7 @@ function renderAuditTable(){
   if(fs)entries=entries.filter(e=>(e.target+e.detail+e.user).toLowerCase().includes(fs));
   const el=document.getElementById('audit-table');
   if(!entries.length){el.innerHTML='<div style="font-size:13px;color:var(--text-3);padding:1rem 0">No entries found.</div>';return;}
-  const actionColor={Login:'#1a5a8a',Create:'#1e3a6e',Edit:'#6b6960',Delete:'#a32d2d',Password:'#7c3aed',User:'#92400e',Backup:'#0e7490',Restore:'#b45309'};
+  const actionColor={Login:'#1d4ed8',Create:'#1e3a6e',Edit:'#6b6960',Delete:'#a32d2d',Password:'#7c3aed',User:'#92400e',Backup:'#0e7490',Restore:'#b45309'};
   el.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:12px">'
     +'<thead><tr style="border-bottom:2px solid var(--border)">'
     +'<th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text-3);text-transform:uppercase;white-space:nowrap">When</th>'
@@ -2991,6 +3036,20 @@ function printMeetPrep(){
   </body></html>`);
   w.document.close();
 }
+
+/* ── DARK MODE ── */
+function toggleDark(){
+  const isDark=document.body.classList.toggle('dark');
+  document.getElementById('dark-toggle').textContent=isDark?'☀️':'🌙';
+  localStorage.setItem('avps_dark',isDark?'1':'0');
+}
+(function initDark(){
+  if(localStorage.getItem('avps_dark')==='1'){
+    document.body.classList.add('dark');
+    const btn=document.getElementById('dark-toggle');
+    if(btn)btn.textContent='☀️';
+  }
+})();
 
 /* ── INIT ── */
 ['search','f-mgr','f-city'].forEach(id=>{
