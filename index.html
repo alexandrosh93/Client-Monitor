@@ -1571,7 +1571,7 @@ function sortList(list){
     return [...list].sort((a,b)=>S_ORDER.indexOf(a.status)-S_ORDER.indexOf(b.status)||a.name.localeCompare(b.name));
   }
   if(sortMode==='mgr'){
-    return [...list].sort((a,b)=>a.mgr.localeCompare(b.mgr)||a.name.localeCompare(b.name));
+    return [...list].sort((a,b)=>a.mgr.localeCompare(b.mgr)||S_ORDER.indexOf(a.status)-S_ORDER.indexOf(b.status)||a.name.localeCompare(b.name));
   }
   if(sortMode==='impl'){
     return [...list].sort((a,b)=>(a.implementor||'').localeCompare(b.implementor||'')||a.name.localeCompare(b.name));
@@ -1660,7 +1660,7 @@ function render(){
     // group by manager
     const mgrs=[...new Set(list.map(c=>c.mgr))].sort();
     mgrs.forEach(mg=>{
-      const g=list.filter(c=>c.mgr===mg);
+      const g=list.filter(c=>c.mgr===mg).sort((a,b)=>S_ORDER.indexOf(a.status)-S_ORDER.indexOf(b.status)||a.name.localeCompare(b.name));
       html+=`<div class="group-label">Manager: ${mg} <span style="font-weight:400;color:var(--text-3)">(${g.length})</span></div>`;
       g.forEach(c=>{html+=buildRow(c);});
     });
