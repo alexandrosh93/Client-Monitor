@@ -1971,6 +1971,7 @@ function buildRow(c){
           <input type="range" min="0" max="100" step="5" value="${c.progress||0}"
             style="flex:1;min-width:80px;max-width:220px;accent-color:${prog.color};cursor:pointer"
             oninput="updateProgress(${c.id},this.value,this)"
+            onchange="auditProgress(${c.id},this.value)"
           >
           <span id="prog-lbl-${c.id}" style="font-size:13px;font-weight:700;color:${prog.color};min-width:36px">${prog.pct}%</span>
         </div>
@@ -2010,8 +2011,15 @@ function fld(id,k,v){
 
 function clearReminder(id,type){
   const c=clients.find(x=>x.id===id);if(!c)return;
-  if(type==='vat'){c.vatDate='';c.vatDone=false;}
-  else{c.stkDate='';c.stkDone=false;}
+  if(type==='vat'){
+    if(c.vatDate)audit('Edit',c.name,'VAT date: "'+c.vatDate+'" → "(empty)"');
+    if(c.vatDone)audit('Edit',c.name,'VAT done: "Yes" → "No"');
+    c.vatDate='';c.vatDone=false;
+  }else{
+    if(c.stkDate)audit('Edit',c.name,'Stock Take date: "'+c.stkDate+'" → "(empty)"');
+    if(c.stkDone)audit('Edit',c.name,'Stock Take done: "Yes" → "No"');
+    c.stkDate='';c.stkDone=false;
+  }
   save();
   const was=expanded.has(id);render();if(was)expanded.add(id);
   buildVatBanner();buildStkBanner();
@@ -2033,7 +2041,10 @@ function unpreviewGrade(id){
 }
 function setGrd(id,v){
   const c=clients.find(x=>x.id===id);if(!c)return;
-  c.grade=v;save();
+  const old=c.grade||0;
+  c.grade=v;
+  audit('Edit',c.name,'Grade: "'+old+'" → "'+v+'"');
+  save();
   // re-render so both row header stars AND expand panel stars update
   const was=expanded.has(id);render();if(was)expanded.add(id);
   toast('Grade saved.');
@@ -2043,6 +2054,7 @@ function tModFld(id,m,on){
   const c=clients.find(x=>x.id===id);if(!c)return;
   if(on&&!c.modules.includes(m))c.modules.push(m);
   else c.modules=c.modules.filter(x=>x!==m);
+  audit('Edit',c.name,'Modules: '+(on?'added':'removed')+' "'+m+'"');
   save();
   // update the mod-toggle visual without full re-render
   const lbl=document.querySelector(`#mod-edit-${id} .mod-toggle[data-mod="${m}"]`);
@@ -2056,13 +2068,17 @@ function tModFld(id,m,on){
 }
 function tMtg(id,on){
   const c=clients.find(x=>x.id===id);if(!c)return;
+  audit('Edit',c.name,'Meeting scheduled: "'+(!on?'Yes':'No')+'" → "'+(on?'Yes':'No')+'"');
   c.mtgSet=on;save();
   const di=document.getElementById('md-'+id);if(di)di.disabled=!on;
   const was=expanded.has(id);render();if(was)expanded.add(id);
 }
 function tLiveDate(id,on){
   const c=clients.find(x=>x.id===id);if(!c)return;
-  if(!on){c.liveDate='';save();}
+  if(!on){
+    audit('Edit',c.name,'Live Date: "'+( c.liveDate||'(empty)')+'" → "(empty)"');
+    c.liveDate='';save();
+  }
   const di=document.getElementById('ld-'+id);
   if(di){di.disabled=!on;if(!on)di.value='';}
 }
@@ -2092,6 +2108,10 @@ function updateProgress(id,val,slider){
   const rowPct=document.querySelector('.client-row[data-id="'+id+'"] .progress-pct');
   if(row){row.style.width=pct+'%';row.style.background=color;}
   if(rowPct){rowPct.textContent=pct+'%';rowPct.style.color=color;}
+}
+function auditProgress(id,val){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  audit('Edit',c.name,'Progress: "'+val+'%"');
 }
 
 function delClient(id){
