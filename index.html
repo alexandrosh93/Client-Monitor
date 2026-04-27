@@ -401,6 +401,10 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 .sync-dot.err{background:#a32d2d}
 .sync-dot.spin{background:#e8a020;animation:pulse .8s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes spin360{to{transform:rotate(360deg)}}
+.refresh-btn{background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-3);padding:2px 5px;border-radius:5px;line-height:1;transition:color .15s,background .15s}
+.refresh-btn:hover{color:var(--accent);background:var(--surface2)}
+.refresh-btn.spinning{animation:spin360 .7s linear infinite;color:var(--accent)}
 .sync-label{font-size:11px;color:var(--text-3);cursor:pointer;display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:var(--radius);transition:background .15s}
 .sync-label:hover{background:var(--surface2)}
 /* SETTINGS MODAL */
@@ -452,7 +456,8 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
   <!-- Sync status -->
   <div onclick="openSettings();closeSideMenu()" style="padding:.55rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11px;color:var(--text-3);transition:background .15s" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
     <span class="sync-dot" id="sync-dot-side"></span>
-    <span id="sync-label-side">Local only</span>
+    <span id="sync-label-side" style="flex:1">Local only</span>
+    <button id="refresh-btn-side" class="refresh-btn no-print" onclick="event.stopPropagation();manualRefresh();closeSideMenu()" title="Refresh now" style="display:none;font-size:14px;padding:1px 4px">↻</button>
   </div>
 
   <!-- SECTION: Work -->
@@ -541,6 +546,7 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
       <button class="view-btn active" id="vbtn-list" onclick="setView('list')">☰ List</button>
       <button class="view-btn" id="vbtn-dash" onclick="setView('dash')">⊞ Dashboard</button>
     </div>
+    <button id="refresh-btn" class="refresh-btn no-print" onclick="manualRefresh()" title="Refresh data from GitHub" style="display:none">↻</button>
     <input type="text" id="search" placeholder="🔍 Search…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--border-md);border-radius:99px;background:var(--surface2);color:var(--text);outline:none;width:190px;transition:border-color .2s,background .2s,box-shadow .2s" onfocus="this.style.borderColor='var(--accent)';this.style.background='var(--surface)'" onblur="this.style.borderColor='';this.style.background='var(--surface2)'">
   </div>
 </header>
@@ -995,6 +1001,9 @@ const expanded=new Set();
 let selStatuses=new Set();
 let sortMode='status';
 let syncTimer=null;
+let lastGistUpdate=null;
+let autoRefreshInterval=null;
+let pollBusy=false;
 
 /* ── USERS ── */
 function getUsers(){
@@ -1076,7 +1085,8 @@ async function gistPush(){
   try{
     const {gistId}=getCfg();
     const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()},null,2);
-    await gistRequest('PATCH',`/gists/${gistId}`,{files:{'client_monitor.json':{content}}});
+    const pushResult=await gistRequest('PATCH',`/gists/${gistId}`,{files:{'client_monitor.json':{content}}});
+    lastGistUpdate=pushResult.updated_at||lastGistUpdate;
     setSyncStatus('ok','Gist synced ✓');
     setSyncMsg('✓ Saved to GitHub Gist.','#1e3a6e');
     stampBackup('gist');
@@ -1095,6 +1105,7 @@ async function gistPull(){
   try{
     const {gistId}=getCfg();
     const data=await gistRequest('GET',`/gists/${gistId}`);
+    lastGistUpdate=data.updated_at||null;
     const raw=data.files?.['client_monitor.json']?.content;
     if(!raw)return false;
     const parsed=JSON.parse(raw);
@@ -1117,6 +1128,62 @@ async function gistPull(){
     setSyncMsg('Could not load — check your Gist ID.','#a32d2d');
     console.warn(e);return false;
   }
+}
+
+/* ── AUTO-REFRESH ── */
+function showRefreshButtons(){
+  ['refresh-btn','refresh-btn-side'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display='';
+  });
+}
+
+async function manualRefresh(){
+  ['refresh-btn','refresh-btn-side'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.classList.add('spinning');
+  });
+  await gistPull();
+  ['refresh-btn','refresh-btn-side'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.classList.remove('spinning');
+  });
+}
+
+async function pollForChanges(){
+  if(!hasCfg()||pollBusy)return;
+  const ae=document.activeElement;
+  if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.tagName==='SELECT'))return;
+  pollBusy=true;
+  try{
+    const{gistId}=getCfg();
+    const data=await gistRequest('GET',`/gists/${gistId}`);
+    const ts=data.updated_at;
+    if(lastGistUpdate!==null&&ts!==lastGistUpdate){
+      lastGistUpdate=ts;
+      const raw=data.files?.['client_monitor.json']?.content;
+      if(raw){
+        const parsed=JSON.parse(raw);
+        if(parsed&&Array.isArray(parsed.c)){
+          clients=parsed.c;nextId=parsed.n||clients.length+1;
+          implementors=parsed.impl||[];
+          if(parsed.mods&&parsed.mods.length)ALL_MODS=parsed.mods;
+          if(parsed.audit)auditLog=parsed.audit;
+          if(parsed.users&&parsed.users.length)saveUsers(parsed.users);
+          localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()}));
+          setSyncStatus('ok','Gist synced ✓');
+          const wasExp=new Set(expanded);render();wasExp.forEach(id=>expanded.add(id));
+          buildVatBanner();buildStkBanner();
+          toast('↻ Data refreshed.');
+        }
+      }
+    }else{lastGistUpdate=ts;}
+  }catch(e){console.warn('Auto-refresh:',e);}
+  pollBusy=false;
+}
+
+function startAutoRefresh(){
+  if(!hasCfg())return;
+  showRefreshButtons();
+  clearInterval(autoRefreshInterval);
+  autoRefreshInterval=setInterval(pollForChanges,30000);
 }
 
 async function gistSaveSettings(){
@@ -1264,7 +1331,7 @@ async function load(){
   if(hasCfg()){
     setSyncStatus('spin','Loading…');
     const ok=await gistPull();
-    if(ok){render();buildVatBanner();buildStkBanner();return;}
+    if(ok){render();buildVatBanner();buildStkBanner();startAutoRefresh();return;}
   }
 
   // localStorage fallback
@@ -1285,6 +1352,7 @@ async function load(){
   }
   setSyncStatus(hasCfg()?'err':'','Local only');
   render();buildVatBanner();buildStkBanner();
+  startAutoRefresh();
 }
 
 function openSettings(){
