@@ -83,7 +83,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .stat.af .stat-n,.stat.af .stat-l{color:#1e3a6e}
 .stat-n{font-size:22px;font-weight:800;line-height:1;letter-spacing:-.8px}
 .stat-l{font-size:12px;color:var(--text-3);font-weight:400}
-.sn-active{color:#1e3a6e}.sn-dormant{color:#8a5a1a}.sn-completed{color:#555}.sn-ns{color:#888}
+.sn-active{color:#1e3a6e}.sn-dormant{color:#8a5a1a}.sn-completed{color:#555}.sn-ns{color:#888}.sn-pfu{color:#5b21b6}
 /* TOOLBAR (inside filters-group) */
 .toolbar{display:contents}
 .toolbar input,.toolbar select{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;transition:all .15s;height:30px;box-shadow:var(--shadow-sm)}
@@ -135,6 +135,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .s-Active{background:linear-gradient(135deg,#e0eaff,#eef1f8);color:#1e3a6e;border:1px solid rgba(30,58,110,.15)}
 .s-Dormant{background:linear-gradient(135deg,#fef3c7,#fdf0db);color:#92400e;border:1px solid rgba(146,64,14,.15)}
 .s-Pending{background:#dbeeff;color:#1d4ed8}
+.s-Pending-Follow-Up{background:linear-gradient(135deg,#ede9fe,#f5f3ff);color:#5b21b6;border:1px solid rgba(91,33,182,.15)}
 .s-Not-started{background:#f1f5f9;color:#64748b;border:1px solid rgba(100,116,139,.15)}
 .s-Completed{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#065f46;border:1px solid rgba(6,95,70,.15)}
 .chevron{color:var(--text-3);font-size:10px;transition:transform .2s}
@@ -364,6 +365,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
   .s-Active{background:#e8eef8!important;color:#1e3a6e!important}
   .s-Dormant{background:#fdf0db!important;color:#8a5a1a!important}
   .s-Pending{background:#dbeeff!important;color:#1d4ed8!important}
+  .s-Pending-Follow-Up{background:#ede9fe!important;color:#5b21b6!important}
   .s-Completed{background:#e8e8e8!important;color:#444!important}
   .s-Not-started{background:#f0efe9!important;color:#6b6960!important}
   /* notes row under each client */
@@ -423,10 +425,11 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 .btn-sync:hover{opacity:.85}
 
 /* ── STATUS LEFT BORDER on client cards ── */
-.client-row[data-status="Active"]       { border-left: 3px solid #1e3a6e }
-.client-row[data-status="Dormant"]      { border-left: 3px solid #d97706 }
-.client-row[data-status="Completed"]    { border-left: 3px solid #059669 }
-.client-row[data-status="Not started"]  { border-left: 3px solid #94a3b8 }
+.client-row[data-status="Active"]            { border-left: 3px solid #1e3a6e }
+.client-row[data-status="Dormant"]           { border-left: 3px solid #d97706 }
+.client-row[data-status="Completed"]         { border-left: 3px solid #059669 }
+.client-row[data-status="Not started"]       { border-left: 3px solid #94a3b8 }
+.client-row[data-status="Pending Follow-Up"] { border-left: 3px solid #7c3aed }
 </style>
 </head>
 <body>
@@ -759,8 +762,9 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
             <hr class="dd-divider">
             <div class="dd-item" data-val="Active"      onclick="sfToggle(event,'Active')"><div class="dd-check" id="sdc-Active"></div> Active</div>
             <div class="dd-item" data-val="Not started" onclick="sfToggle(event,'Not started')"><div class="dd-check" id="sdc-Notstarted"></div> Not started</div>
-            <div class="dd-item" data-val="Dormant"     onclick="sfToggle(event,'Dormant')"><div class="dd-check" id="sdc-Dormant"></div> Dormant</div>
-            <div class="dd-item" data-val="Completed"   onclick="sfToggle(event,'Completed')"><div class="dd-check" id="sdc-Completed"></div> Completed</div>
+            <div class="dd-item" data-val="Dormant"          onclick="sfToggle(event,'Dormant')"><div class="dd-check" id="sdc-Dormant"></div> Dormant</div>
+            <div class="dd-item" data-val="Pending Follow-Up" onclick="sfToggle(event,'Pending Follow-Up')"><div class="dd-check" id="sdc-PendingFollow-Up"></div> Pending Follow-Up</div>
+            <div class="dd-item" data-val="Completed"         onclick="sfToggle(event,'Completed')"><div class="dd-check" id="sdc-Completed"></div> Completed</div>
           </div>
         </div>
 
@@ -828,7 +832,7 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
     <div class="mf"><label class="lbl">Manager</label><select id="m-mgr"><option value="">— Select —</option><option>VT</option><option>AK</option></select></div>
     <div class="mf"><label class="lbl">Implementor</label><select id="m-impl"><option value="">— None —</option></select></div>
     <div class="mf"><label class="lbl">Status</label>
-      <select id="m-status"><option>Active</option><option>Not started</option><option>Dormant</option><option>Completed</option></select>
+      <select id="m-status"><option>Active</option><option>Not started</option><option>Dormant</option><option>Pending Follow-Up</option><option>Completed</option></select>
     </div>
     <div class="mf"><label class="lbl">Modules</label>
       <div class="mods-check" id="mods-check"></div>
@@ -991,7 +995,7 @@ const IMPL_KEY='avps_implementors';
 const CFG_KEY='avps_gist_cfg';
 const USERS_KEY='avps_users';
 let ALL_MODS=['Payroll','Accounting','Invoicing','Stock'];
-const S_ORDER=['Active','Not started','Dormant','Completed'];
+const S_ORDER=['Active','Not started','Dormant','Pending Follow-Up','Completed'];
 
 let clients=[],nextId=1,mGrade=0;
 let implementors=[];
@@ -1698,6 +1702,9 @@ function renderStats(){
     <div class="stat${selStatuses.size===1&&selStatuses.has('Dormant')?' af':''}" onclick="setSF('Dormant')">
       <span class="stat-n sn-dormant">${cnt('Dormant')}</span><span class="stat-l">Dormant</span>
     </div>
+    <div class="stat${selStatuses.size===1&&selStatuses.has('Pending Follow-Up')?' af':''}" onclick="setSF('Pending Follow-Up')">
+      <span class="stat-n sn-pfu">${cnt('Pending Follow-Up')}</span><span class="stat-l">Pending</span>
+    </div>
     <div class="stat${selStatuses.size===1&&selStatuses.has('Completed')?' af':''}" onclick="setSF('Completed')">
       <span class="stat-n sn-completed">${cnt('Completed')}</span><span class="stat-l">Completed</span>
     </div>
@@ -2201,7 +2208,7 @@ function printVatReport(){
     .vr-pending{color:#a32d2d;font-weight:500}.vr-done{color:#1e3a6e}
     .rh-mgr{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#ede9fe;color:#4c1d95;font-family:'DM Mono',monospace}
     .rh-status{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px}
-    .s-Active{background:linear-gradient(135deg,#e0eaff,#eef1f8);color:#1e3a6e;border:1px solid rgba(30,58,110,.15)}.s-Dormant{background:linear-gradient(135deg,#fef3c7,#fdf0db);color:#92400e;border:1px solid rgba(146,64,14,.15)}.s-Pending{background:#dbeeff;color:#1d4ed8}.s-Completed{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#065f46;border:1px solid rgba(6,95,70,.15)}.s-Not-started{background:#f1f5f9;color:#64748b;border:1px solid rgba(100,116,139,.15)}
+    .s-Active{background:linear-gradient(135deg,#e0eaff,#eef1f8);color:#1e3a6e;border:1px solid rgba(30,58,110,.15)}.s-Dormant{background:linear-gradient(135deg,#fef3c7,#fdf0db);color:#92400e;border:1px solid rgba(146,64,14,.15)}.s-Pending{background:#dbeeff;color:#1d4ed8}.s-Pending-Follow-Up{background:linear-gradient(135deg,#ede9fe,#f5f3ff);color:#5b21b6;border:1px solid rgba(91,33,182,.15)}.s-Completed{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#065f46;border:1px solid rgba(6,95,70,.15)}.s-Not-started{background:#f1f5f9;color:#64748b;border:1px solid rgba(100,116,139,.15)}
     @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
   </style></head><body>
   <h1>A.V.PremierSoft — VAT Training Report</h1>
@@ -2328,7 +2335,7 @@ function exportPDF(){
   document.getElementById('pdf-date').textContent='Generated: '+now.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
   const cnt=s=>clients.filter(c=>c.status===s).length;
   document.getElementById('pdf-summary').textContent=
-    `${clients.length} clients · Active: ${cnt('Active')} · Dormant: ${cnt('Dormant')} · Completed: ${cnt('Completed')}`;
+    `${clients.length} clients · Active: ${cnt('Active')} · Dormant: ${cnt('Dormant')} · Pending: ${cnt('Pending Follow-Up')} · Completed: ${cnt('Completed')}`;
   window.print();
 }
 
@@ -2505,7 +2512,7 @@ function printStkReport(){
     .rh-mgr{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#ede9fe;color:#4c1d95;font-family:'DM Mono',monospace}
     .rh-impl{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#fff0e6;color:#92400e;font-family:'DM Mono',monospace}
     .rh-status{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px}
-    .s-Active{background:linear-gradient(135deg,#e0eaff,#eef1f8);color:#1e3a6e;border:1px solid rgba(30,58,110,.15)}.s-Dormant{background:linear-gradient(135deg,#fef3c7,#fdf0db);color:#92400e;border:1px solid rgba(146,64,14,.15)}.s-Pending{background:#dbeeff;color:#1d4ed8}.s-Completed{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#065f46;border:1px solid rgba(6,95,70,.15)}.s-Not-started{background:#f1f5f9;color:#64748b;border:1px solid rgba(100,116,139,.15)}
+    .s-Active{background:linear-gradient(135deg,#e0eaff,#eef1f8);color:#1e3a6e;border:1px solid rgba(30,58,110,.15)}.s-Dormant{background:linear-gradient(135deg,#fef3c7,#fdf0db);color:#92400e;border:1px solid rgba(146,64,14,.15)}.s-Pending{background:#dbeeff;color:#1d4ed8}.s-Pending-Follow-Up{background:linear-gradient(135deg,#ede9fe,#f5f3ff);color:#5b21b6;border:1px solid rgba(91,33,182,.15)}.s-Completed{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#065f46;border:1px solid rgba(6,95,70,.15)}.s-Not-started{background:#f1f5f9;color:#64748b;border:1px solid rgba(100,116,139,.15)}
     @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
   </style></head><body>
   <h1>${title}</h1>
@@ -2672,6 +2679,7 @@ function renderDashboard(){
   html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Active\')" style="background:#e8eef8"><div class="dsn" style="color:#1e3a6e">'+byStatus('Active')+'</div><div class="dsl">Active</div></div>';
   html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Not started\')" style="background:#f0efe9"><div class="dsn" style="color:#888">'+byStatus('Not started')+'</div><div class="dsl">Not started</div></div>';
   html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Dormant\')" style="background:#fdf0db"><div class="dsn" style="color:#8a5a1a">'+byStatus('Dormant')+'</div><div class="dsl">Dormant</div></div>';
+  html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Pending Follow-Up\')" style="background:#ede9fe"><div class="dsn" style="color:#5b21b6">'+byStatus('Pending Follow-Up')+'</div><div class="dsl">Pending</div></div>';
   html+='<div class="dash-status-pill" onclick="setView(\'list\');setSF(\'Completed\')" style="background:#e8e8e8"><div class="dsn" style="color:#555">'+byStatus('Completed')+'</div><div class="dsl">Done</div></div>';
   html+='</div></div>';
 
