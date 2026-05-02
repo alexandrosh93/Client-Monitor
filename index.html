@@ -778,7 +778,17 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
           </div>
         </div>
 
-        <select id="f-mgr" style="height:30px"><option value="">Manager</option></select>
+        <div class="dd-wrap" id="fmgr-wrap">
+          <div class="dd-btn" id="fmgr-btn" onclick="toggleDD('fmgr')">
+            <span id="fmgr-label">Manager</span>
+            <span class="dd-arrow" id="fmgr-arrow">▼</span>
+          </div>
+          <div class="dd-panel" id="fmgr-panel">
+            <div class="dd-item checked" data-val="" onclick="fmgrSet(event,'')"><div class="dd-check" id="fmgrdc-all">✓</div> All managers</div>
+            <hr class="dd-divider">
+            <div id="fmgr-items"></div>
+          </div>
+        </div>
 
         <div class="dd-wrap" id="fi-wrap">
           <div class="dd-btn" id="fi-btn" onclick="toggleDD('fi')">
@@ -804,7 +814,17 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
           </div>
         </div>
 
-        <select id="f-city" style="height:30px"><option value="">City</option></select>
+        <div class="dd-wrap" id="fcity-wrap">
+          <div class="dd-btn" id="fcity-btn" onclick="toggleDD('fcity')">
+            <span id="fcity-label">City</span>
+            <span class="dd-arrow" id="fcity-arrow">▼</span>
+          </div>
+          <div class="dd-panel" id="fcity-panel">
+            <div class="dd-item checked" data-val="" onclick="fcitySet(event,'')"><div class="dd-check" id="fcitydc-all">✓</div> All cities</div>
+            <hr class="dd-divider">
+            <div id="fcity-items"></div>
+          </div>
+        </div>
 
         <div class="dd-wrap" id="sort-wrap">
           <div class="dd-btn" id="sort-btn" onclick="toggleDD('sort')" style="min-width:90px">
@@ -1560,6 +1580,8 @@ function setSort(e,mode,label){
 
 let selImpls=new Set();
 let selMods=new Set();
+let selMgr='';
+let selCity='';
 
 /* ── MULTI-IMPLEMENTOR FILTER ── */
 function fiToggle(e,val){
@@ -1619,8 +1641,7 @@ function populateImplFilter(){
     sel.innerHTML=`<option value="">All implementors</option>`+sorted.map(i=>`<option${i===cur?' selected':''}>${i}</option>`).join('');
   }
   // populate manager and city filters from client data
-  const mgrEl=document.getElementById('f-mgr');
-  const cityEl=document.getElementById('f-city');
+  
   if(mgrEl){
     const curMgr=mgrEl.value;
     const mgrs=[...new Set(clients.map(c=>c.mgr).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
@@ -1639,11 +1660,58 @@ function populateImplFilter(){
   }
 }
 
+
+/* ── MANAGER FILTER ── */
+function fmgrSet(e,val){
+  e.stopPropagation();
+  selMgr=val;
+  updateFMGRUI();
+  render();buildVatBanner();buildStkBanner();
+}
+function updateFMGRUI(){
+  const none=selMgr==='';
+  const allEl=document.getElementById('fmgrdc-all');
+  if(allEl){allEl.textContent=none?'✓':'';document.querySelector('#fmgr-panel [data-val=""]')?.classList.toggle('checked',none);}
+  document.querySelectorAll('#fmgr-items .dd-item').forEach(item=>{
+    const v=item.dataset.val;
+    const chk=item.querySelector('.dd-check');
+    if(chk)chk.textContent=selMgr===v?'✓':'';
+    item.classList.toggle('checked',selMgr===v);
+  });
+  const lbl=document.getElementById('fmgr-label');
+  const btn=document.getElementById('fmgr-btn');
+  if(none){lbl.textContent='Manager';btn.classList.remove('has-sel');}
+  else{lbl.textContent=selMgr;btn.classList.add('has-sel');}
+}
+
+/* ── CITY FILTER ── */
+function fcitySet(e,val){
+  e.stopPropagation();
+  selCity=val;
+  updateFCITYUI();
+  render();buildVatBanner();buildStkBanner();
+}
+function updateFCITYUI(){
+  const none=selCity==='';
+  const allEl=document.getElementById('fcitydc-all');
+  if(allEl){allEl.textContent=none?'✓':'';document.querySelector('#fcity-panel [data-val=""]')?.classList.toggle('checked',none);}
+  document.querySelectorAll('#fcity-items .dd-item').forEach(item=>{
+    const v=item.dataset.val;
+    const chk=item.querySelector('.dd-check');
+    if(chk)chk.textContent=selCity===v?'✓':'';
+    item.classList.toggle('checked',selCity===v);
+  });
+  const lbl=document.getElementById('fcity-label');
+  const btn=document.getElementById('fcity-btn');
+  if(none){lbl.textContent='City';btn.classList.remove('has-sel');}
+  else{lbl.textContent=selCity;btn.classList.add('has-sel');}
+}
+
 /* ── FILTER + SORT ── */
 function getFiltered(){
   const s=document.getElementById('search').value.toLowerCase();
-  const mg=document.getElementById('f-mgr').value;
-  const ci=document.getElementById('f-city').value;
+  const mg=selMgr;
+  const ci=selCity;
   return clients.filter(c=>{
     if(s&&!c.name.toLowerCase().includes(s)&&!(c.contact||'').toLowerCase().includes(s))return false;
     if(mg&&c.mgr!==mg)return false;
@@ -1682,8 +1750,8 @@ function sortList(list){
 /* ── STATS ── */
 function renderStats(){
   const el=document.getElementById('stats-row');
-  const mg=document.getElementById('f-mgr')?document.getElementById('f-mgr').value:'';
-  const ci=document.getElementById('f-city')?document.getElementById('f-city').value:'';
+  const mg=selMgr;
+  const ci=selCity;
   const s=document.getElementById('search')?document.getElementById('search').value.toLowerCase():'';
 
   // base pool: clients matching all active filters EXCEPT status
@@ -2680,8 +2748,8 @@ function renderDashboard(){
 
   // Build active filter summary
   const activeFilters=[];
-  const mg=document.getElementById('f-mgr')?document.getElementById('f-mgr').value:'';
-  const ci=document.getElementById('f-city')?document.getElementById('f-city').value:'';
+  const mg=selMgr;
+  const ci=selCity;
   const sr=document.getElementById('search')?document.getElementById('search').value:'';
   if(sr) activeFilters.push('Search: "'+sr+'"');
   if(mg) activeFilters.push('Manager: '+mg);
@@ -3136,7 +3204,7 @@ function printMeetPrep(){
 
 
 /* ── INIT ── */
-['search','f-mgr','f-city'].forEach(id=>{
+['search'].forEach(id=>{
   const el=document.getElementById(id);
   if(el)el.addEventListener('input',()=>{render();buildVatBanner();buildStkBanner();});
 });
