@@ -291,6 +291,15 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .login-btn{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:11px;border:none;border-radius:var(--radius);background:linear-gradient(135deg,#1e3a6e,#2d52a0);color:#fff;cursor:pointer;margin-top:.25rem;transition:all .18s;box-shadow:0 3px 12px rgba(30,58,110,.3)}
 .login-btn:hover{box-shadow:0 5px 18px rgba(30,58,110,.4);transform:translateY(-1px)}
 .login-err{font-size:12px;color:#a32d2d;margin-top:.6rem;min-height:18px;text-align:center}
+/* ═══════ TABLET (769px – 1024px) ═══════ */
+@media(min-width:769px) and (max-width:1024px){
+  .control-bar{flex-direction:column;gap:6px;align-items:stretch}
+  .stats-group{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;width:100%}
+  .cb-divider{display:none}
+  .filters-group{width:100%;min-width:0}
+  .toolbar{display:flex!important;flex-wrap:wrap;gap:5px;width:100%}
+  .toolbar input{flex:1;min-width:120px}
+}
 /* ═══════ MOBILE (≤ 768px) ═══════ */
 @media(max-width:768px){
   *{box-sizing:border-box}
