@@ -1641,17 +1641,14 @@ function populateImplFilter(){
     sel.innerHTML=`<option value="">All implementors</option>`+sorted.map(i=>`<option${i===cur?' selected':''}>${i}</option>`).join('');
   }
   // populate manager and city filters from client data
-  
-  if(mgrEl){
-    const curMgr=mgrEl.value;
-    const mgrs=[...new Set(clients.map(c=>c.mgr).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-    mgrEl.innerHTML=`<option value="">Manager</option>`+mgrs.map(m=>`<option${m===curMgr?' selected':''}>${m}</option>`).join('');
-  }
-  if(cityEl){
-    const curCity=cityEl.value;
-    const cities=[...new Set(clients.map(c=>c.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-    cityEl.innerHTML=`<option value="">City</option>`+cities.map(c=>`<option${c===curCity?' selected':''}>${c}</option>`).join('');
-  }
+  const mgrs=[...new Set(clients.map(c=>c.mgr).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const mgrItemsEl=document.getElementById('fmgr-items');
+  if(mgrItemsEl)mgrItemsEl.innerHTML=mgrs.map(m=>`<div class="dd-item" data-val="${m}" onclick="fmgrSet(event,'${m}')"><div class="dd-check">${selMgr===m?'✓':''}</div> ${m}</div>`).join('');
+  updateFMGRUI();
+  const cities=[...new Set(clients.map(c=>c.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const cityItemsEl=document.getElementById('fcity-items');
+  if(cityItemsEl)cityItemsEl.innerHTML=cities.map(c=>`<div class="dd-item" data-val="${c}" onclick="fcitySet(event,'${c}')"><div class="dd-check">${selCity===c?'✓':''}</div> ${c}</div>`).join('');
+  updateFCITYUI();
   // keep module filter items in sync (sorted)
   const fmItemsEl=document.getElementById('fm-items');
   if(fmItemsEl){
