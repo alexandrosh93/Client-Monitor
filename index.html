@@ -75,10 +75,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .vat-banner-dismiss:hover{color:#1d4ed8}
 main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 /* CONTROL BAR */
-.control-bar{display:flex;align-items:center;gap:12px;margin-bottom:.75rem;flex-wrap:wrap}
-.stats-group{display:flex;align-items:center;gap:4px;flex-shrink:0}
-.cb-divider{width:1px;height:22px;background:var(--border-md);flex-shrink:0;margin:0 4px}
-.filters-group{display:flex;align-items:center;gap:6px;flex:1;flex-wrap:wrap}
+.control-bar{display:flex;flex-direction:column;gap:6px;align-items:stretch;margin-bottom:.75rem}
+.stats-group{display:flex;align-items:center;gap:6px;width:100%;flex-wrap:wrap}
+.cb-divider{display:none}
+.filters-group{display:flex;align-items:center;gap:6px;width:100%;flex-wrap:wrap}
 /* STAT PILLS */
 .stat{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.55rem 1rem;cursor:pointer;transition:all .18s;white-space:nowrap;box-shadow:var(--shadow-sm)}
 .stat:hover{border-color:var(--border-md);background:var(--accent-bg);transform:translateY(-1px);box-shadow:var(--shadow-md)}
