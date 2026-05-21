@@ -26,6 +26,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Client Monitor — A.V.PremierSoft</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -964,7 +965,7 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
       </div>
       <div class="modal-btns" style="margin-top:.8rem;justify-content:space-between;flex-wrap:wrap;gap:6px">
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn-sync" onclick="gistSaveSettings()">Connect &amp; Sync ↑</button>
+          <button class="btn-sync" onclick="gistSaveSettings()" style="display:none">Connect &amp; Sync ↑</button>
           <button class="btn-cancel" onclick="gistPull().then(()=>setSyncMsg(hasCfg()?\'✓ Data loaded from GitHub.\':\'\',\'#1e3a6e\'))">↓ Pull from GitHub</button>
         </div>
         <button class="btn-cancel" onclick="closeModal('settings-modal')">Close</button>
@@ -1023,9 +1024,27 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 
 <script>
 const KEY='avps_v6';
+const SUPA_URL='https://gdyibhbznfywnilqpjvo.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkeWliaGJ6bmZ5d25pbHFwanZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzOTM0OTQsImV4cCI6MjA5NDk2OTQ5NH0.wiyx0PBb3dtaH-kTpGVj68NWzeZpyVKWrD8XhWxftGQ';
+const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+
+function dbToClient(r){return {id:r.id,name:r.name,contact:r.contact||'',city:r.city||'',mgr:r.mgr||'',
+  implementor:r.implementor||'',status:r.status||'Not started',modules:r.modules||[],
+  grade:r.grade||0,comment:r.comment||'',todo:r.todo||'',
+  mtgSet:r.mtg_set||false,mtgDate:r.mtg_date||'',vatDate:r.vat_date||'',
+  vatDone:r.vat_done||false,stkDate:r.stk_date||'',stkDone:r.stk_done||false,
+  liveDate:r.live_date||'',progress:r.progress||0};}
+function clientToDb(c){const d=v=>v||null;
+  return {id:c.id,name:c.name,contact:c.contact||'',city:c.city||'',mgr:c.mgr||'',
+  implementor:c.implementor||'',status:c.status||'Not started',modules:c.modules||[],
+  grade:c.grade||0,comment:c.comment||'',todo:c.todo||'',
+  mtg_set:c.mtgSet||false,mtg_date:d(c.mtgDate),vat_date:d(c.vatDate),
+  vat_done:c.vatDone||false,stk_date:d(c.stkDate),stk_done:c.stkDone||false,
+  live_date:d(c.liveDate),progress:c.progress||0};}
+const FIELD_MAP={mtgSet:'mtg_set',mtgDate:'mtg_date',vatDate:'vat_date',vatDone:'vat_done',
+  stkDate:'stk_date',stkDone:'stk_done',liveDate:'live_date'};
+
 const IMPL_KEY='avps_implementors';
-const CFG_KEY='avps_gist_cfg';
-const USERS_KEY='avps_users';
 let ALL_MODS=['Payroll','Accounting','Invoicing','Stock'];
 const S_ORDER=['Active','Not started','Dormant','Pending Follow-Up','Completed'];
 
@@ -1042,25 +1061,23 @@ let autoRefreshInterval=null;
 let pollBusy=false;
 
 /* ── USERS ── */
-function getUsers(){
-  try{
-    const stored=JSON.parse(localStorage.getItem(USERS_KEY));
-    if(stored&&stored.length)return stored;
-    const def=defaultUsers();
-    saveUsers(def);
-    return def;
-  }catch(e){return defaultUsers();}
+let _cachedUsers=[];
+async function loadUsers(){
+  const {data}=await sb.from('app_users').select('*');
+  _cachedUsers=data||[];
+  return _cachedUsers;
 }
-function defaultUsers(){
-  return [{username:'Admin',password:'1993',role:'admin',createdAt:new Date().toISOString()}];
-}
-function saveUsers(users){localStorage.setItem(USERS_KEY,JSON.stringify(users));}
+function getUsers(){return _cachedUsers;}
+function saveUsers(users){_cachedUsers=users;}
 
 /* ── AUDIT ── */
 function audit(action,target,detail){
   if(!currentUser)return;
-  auditLog.push({ts:new Date().toISOString(),user:currentUser,action,target:target||'',detail:detail||''});
-  if(auditLog.length>500)auditLog=auditLog.slice(-500);
+  const entry={ts:new Date().toISOString(),user:currentUser,action,target:target||'',detail:detail||''};
+  auditLog.unshift(entry);
+  if(auditLog.length>500)auditLog=auditLog.slice(0,500);
+  sb.from('audit_log').insert({ts:entry.ts,user:entry.user,action:entry.action,target:entry.target,detail:entry.detail})
+    .then(({error})=>{if(error)console.error('Audit error:',error);});
 }
 
 /* ── SIDE MENU ── */
@@ -1095,76 +1112,14 @@ function setSyncMsg(msg,color){
 
 /* ── CONFIG ── */
 function getCfg(){try{return JSON.parse(localStorage.getItem(CFG_KEY)||'{}');}catch{return {};}}
-function hasCfg(){const c=getCfg();return !!(c.token&&c.gistId);}
+function hasCfg(){return false;}
 
 /* ── GITHUB GIST API ── */
-async function gistRequest(method,path,body){
-  const {token}=getCfg();
-  const res=await fetch('https://api.github.com'+path,{
-    method,
-    headers:{
-      'Authorization':'Bearer '+token,
-      'Content-Type':'application/json',
-      'Accept':'application/vnd.github+json',
-      'X-GitHub-Api-Version':'2022-11-28'
-    },
-    body:body?JSON.stringify(body):undefined
-  });
-  if(!res.ok)throw new Error('GitHub API '+res.status);
-  return res.json();
-}
+async function gistRequest(){return {};}
 
-async function gistPush(){
-  if(!hasCfg())return false;
-  setSyncStatus('spin','Saving…');
-  setSyncMsg('Saving to GitHub…');
-  try{
-    const {gistId}=getCfg();
-    const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()},null,2);
-    const pushResult=await gistRequest('PATCH',`/gists/${gistId}`,{files:{'client_monitor.json':{content}}});
-    lastGistUpdate=pushResult.updated_at||lastGistUpdate;
-    setSyncStatus('ok','Gist synced ✓');
-    setSyncMsg('✓ Saved to GitHub Gist.','#1e3a6e');
-    stampBackup('gist');
-    return true;
-  }catch(e){
-    setSyncStatus('err','Sync failed');
-    setSyncMsg('Sync failed — check your token.','#a32d2d');
-    console.warn(e);return false;
-  }
-}
+async function gistPush(){return true;}
 
-async function gistPull(){
-  if(!hasCfg())return false;
-  setSyncStatus('spin','Loading…');
-  setSyncMsg('Loading from GitHub…');
-  try{
-    const {gistId}=getCfg();
-    const data=await gistRequest('GET',`/gists/${gistId}`);
-    lastGistUpdate=data.updated_at||null;
-    const raw=data.files?.['client_monitor.json']?.content;
-    if(!raw)return false;
-    const parsed=JSON.parse(raw);
-    if(parsed&&Array.isArray(parsed.c)){
-      clients=parsed.c;
-      nextId=parsed.n||clients.length+1;
-      implementors=parsed.impl||[];
-      if(parsed.mods&&parsed.mods.length)ALL_MODS=parsed.mods;
-      if(parsed.audit)auditLog=parsed.audit;
-      if(parsed.users&&parsed.users.length)saveUsers(parsed.users);
-      localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()}));
-      setSyncStatus('ok','Gist synced ✓');
-      setSyncMsg('✓ Loaded from GitHub Gist.','#1e3a6e');
-      render();buildVatBanner();buildStkBanner();
-      return true;
-    }
-    return false;
-  }catch(e){
-    setSyncStatus('err','Sync failed');
-    setSyncMsg('Could not load — check your Gist ID.','#a32d2d');
-    console.warn(e);return false;
-  }
-}
+async function gistPull(){return true;}
 
 /* ── AUTO-REFRESH ── */
 function showRefreshButtons(){
@@ -1184,102 +1139,39 @@ async function manualRefresh(){
 }
 
 async function pollForChanges(){
-  if(!hasCfg()||pollBusy)return;
-  const ae=document.activeElement;
-  if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.tagName==='SELECT'))return;
-  pollBusy=true;
-  try{
-    const{gistId}=getCfg();
-    const data=await gistRequest('GET',`/gists/${gistId}`);
-    const ts=data.updated_at;
-    if(lastGistUpdate!==null&&ts!==lastGistUpdate){
-      lastGistUpdate=ts;
-      const raw=data.files?.['client_monitor.json']?.content;
-      if(raw){
-        const parsed=JSON.parse(raw);
-        if(parsed&&Array.isArray(parsed.c)){
-          clients=parsed.c;nextId=parsed.n||clients.length+1;
-          implementors=parsed.impl||[];
-          if(parsed.mods&&parsed.mods.length)ALL_MODS=parsed.mods;
-          if(parsed.audit)auditLog=parsed.audit;
-          if(parsed.users&&parsed.users.length)saveUsers(parsed.users);
-          localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()}));
-          setSyncStatus('ok','Gist synced ✓');
-          const wasExp=new Set(expanded);render();wasExp.forEach(id=>expanded.add(id));
-          buildVatBanner();buildStkBanner();
-          toast('↻ Data refreshed.');
-        }
-      }
-    }else{lastGistUpdate=ts;}
-  }catch(e){console.warn('Auto-refresh:',e);}
-  pollBusy=false;
+  await load();
 }
 
 function startAutoRefresh(){
-  if(!hasCfg())return;
   showRefreshButtons();
   clearInterval(autoRefreshInterval);
   autoRefreshInterval=setInterval(pollForChanges,30000);
 }
 
-async function gistSaveSettings(){
-  const token=document.getElementById('cfg-ghtoken').value.trim();
-  const existingId=document.getElementById('cfg-gistid').value.trim();
-  if(!token){setSyncMsg('Please enter your GitHub token.','#a32d2d');return;}
-  setSyncMsg('Connecting…');
-
-  try{
-    let gistId=existingId;
-    if(!gistId){
-      // create a new private gist
-      const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()},null,2);
-      const res=await fetch('https://api.github.com/gists',{
-        method:'POST',
-        headers:{
-          'Authorization':'Bearer '+token,
-          'Content-Type':'application/json',
-          'Accept':'application/vnd.github+json',
-          'X-GitHub-Api-Version':'2022-11-28'
-        },
-        body:JSON.stringify({
-          description:'Client Monitor — A.V.PremierSoft (private)',
-          public:false,
-          files:{'client_monitor.json':{content}}
-        })
-      });
-      if(!res.ok)throw new Error('Create gist failed: '+res.status);
-      const gist=await res.json();
-      gistId=gist.id;
-    }
-    localStorage.setItem(CFG_KEY,JSON.stringify({token,gistId}));
-    document.getElementById('cfg-gistid').value=gistId;
-    document.getElementById('cfg-gistid-row').style.display='block';
-    document.getElementById('gist-connected').style.display='block';
-    setSyncStatus('ok','Gist synced ✓');
-    setSyncMsg('✓ Connected! Gist ID: '+gistId,'#1e3a6e');
-    toast('Sync connected — data saved to GitHub Gist.');
-  }catch(e){
-    setSyncMsg('Connection failed — check your token.','#a32d2d');
-    console.warn(e);
-  }
-}
+async function gistSaveSettings(){toast("Sync now handled by Supabase.");}
 
 /* ── SAVE (local + debounced Gist push) ── */
 function save(){
-  localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()}));
-  if(!hasCfg())return;
   clearTimeout(syncTimer);
   setSyncStatus('spin','Saving…');
-  syncTimer=setTimeout(()=>gistPush(),1500);
+  syncTimer=setTimeout(()=>pushToSupabase(),1500);
 }
-
-/* immediate push — used for user/password changes so debounce can't race with a reload */
 function saveNow(){
-  localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()}));
-  if(!hasCfg())return;
   clearTimeout(syncTimer);
   setSyncStatus('spin','Saving…');
-  gistPush();
+  pushToSupabase();
+}
+async function pushToSupabase(){
+  try{
+    const {error}=await sb.from('clients').upsert(clients.map(clientToDb),{onConflict:'id'});
+    if(error)throw error;
+    setSyncStatus('ok','Supabase ✓');
+    stampBackup('supabase');
+  }catch(e){
+    console.error('Save error:',e);
+    setSyncStatus('err','Save failed');
+    toast('Could not save to Supabase.');
+  }
 }
 
 /* ── EXPORT / IMPORT ── */
@@ -1354,44 +1246,32 @@ function importJSON(input){
 
 /* ── LOAD ── */
 async function load(){
-  const defaultClients=[
-    {id:1,name:'Alpha Traders Ltd',contact:'Nikos Papadopoulos',city:'Limassol',mgr:'VT',status:'Active',modules:['Payroll','Accounting'],grade:4,comment:'Good relationship. Renewal due Q3.',mtgSet:true,mtgDate:'2025-09-15',vatDate:'',vatDone:false,stkDate:'',stkDone:false,liveDate:'2025-07-01',progress:0,todo:''},
-    {id:2,name:'Beta Services Ltd',contact:'Maria Ioannou',city:'Paphos',mgr:'AK',status:'Active',modules:['Invoicing','Stock'],grade:3,comment:'Some issues with stock module config.',mtgSet:false,mtgDate:'',vatDate:'',vatDone:false,stkDate:'',stkDone:false,liveDate:'',progress:0,todo:''},
-    {id:3,name:'Gamma Retail Co',contact:'Andreas Georgiou',city:'Limassol',mgr:'VT',status:'Dormant',modules:['Accounting'],grade:2,comment:'No contact since January. Follow up.',mtgSet:false,mtgDate:'',vatDate:'',vatDone:true,stkDate:'',stkDone:false,liveDate:'',progress:0,todo:''},
-    {id:4,name:'Delta Foods Ltd',contact:'Elena Stavrou',city:'Paphos',mgr:'AK',status:'Not started',modules:['Payroll','Invoicing'],grade:0,comment:'Contract signed, awaiting go-live.',mtgSet:true,mtgDate:'2025-10-03',vatDate:'',vatDone:false,stkDate:'',stkDone:false,liveDate:'2025-11-01',progress:0,todo:''},
-    {id:5,name:'Epsilon Tech',contact:'Christos Petrou',city:'Limassol',mgr:'AK',status:'Not started',modules:['Payroll','Accounting','Invoicing'],grade:0,comment:'Demo done. Waiting on IT team.',mtgSet:false,mtgDate:'',vatDate:'',vatDone:false,stkDate:'',stkDone:false,liveDate:'',progress:0,todo:''},
-    {id:6,name:'Zeta Imports Ltd',contact:'Sofia Nicolaou',city:'Paphos',mgr:'VT',status:'Completed',modules:['Accounting','Invoicing','Stock'],grade:5,comment:'Full implementation done.',mtgSet:false,mtgDate:'',vatDate:'',vatDone:true,stkDate:'',stkDone:true,liveDate:'2025-05-15',progress:100,todo:''},
-  ];
-
-  // try Gist first if configured
-  if(hasCfg()){
-    setSyncStatus('spin','Loading…');
-    const ok=await gistPull();
-    if(ok){render();buildVatBanner();buildStkBanner();startAutoRefresh();return;}
+  setSyncStatus('spin','Loading…');
+  try{
+    await loadUsers();
+    const [cRes,iRes,mRes,aRes]=await Promise.all([
+      sb.from('clients').select('*').order('id'),
+      sb.from('implementors').select('name'),
+      sb.from('modules').select('name'),
+      sb.from('audit_log').select('*').order('ts',{ascending:false}).limit(500)
+    ]);
+    if(cRes.error)throw cRes.error;
+    clients=(cRes.data||[]).map(dbToClient);
+    nextId=clients.length>0?Math.max(...clients.map(c=>c.id))+1:1;
+    implementors=(iRes.data||[]).map(r=>r.name);
+    if(mRes.data&&mRes.data.length)ALL_MODS=mRes.data.map(r=>r.name);
+    if(aRes.data)auditLog=aRes.data.map(r=>({ts:r.ts,user:r.user,action:r.action,target:r.target||'',detail:r.detail||''}));
+    setSyncStatus('ok','Supabase ✓');
+  }catch(e){
+    console.error('Load error:',e);
+    setSyncStatus('err','Load failed');
+    toast('Could not load from Supabase. Check connection.');
   }
-
-  // localStorage fallback
-  const s=localStorage.getItem(KEY);
-  if(s){
-    const p=JSON.parse(s);
-    clients=p.c||[];
-    nextId=p.n||clients.length+1;
-    implementors=p.impl||[];
-    if(p.mods&&p.mods.length)ALL_MODS=p.mods;
-    if(p.audit)auditLog=p.audit;
-    if(p.users&&p.users.length)saveUsers(p.users);
-  } else {
-    clients=defaultClients;
-    nextId=7;
-    implementors=[];
-    localStorage.setItem(KEY,JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()}));
-  }
-  setSyncStatus(hasCfg()?'err':'','Local only');
   render();buildVatBanner();buildStkBanner();
   startAutoRefresh();
 }
 
-function openSettings(){
+async function openSettings(){
   const cfg=getCfg();
   const tokenEl=document.getElementById('cfg-ghtoken');
   const gistEl=document.getElementById('cfg-gistid');
@@ -1427,58 +1307,7 @@ function switchTab(tab){
   if(tab==='export')updateBackupStatus();
 }
 
-async function gistSaveSettings(){
-  const token=document.getElementById('cfg-ghtoken').value.trim();
-  const existingId=document.getElementById('cfg-gistid').value.trim();
-  if(!token){setSyncMsg('Please enter your GitHub token.','#a32d2d');return;}
-  setSyncMsg('Connecting…');
-
-  try{
-    let gistId=existingId;
-    if(!gistId){
-      // create a new private gist
-      const content=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()},null,2);
-      const res=await fetch('https://api.github.com/gists',{
-        method:'POST',
-        headers:{
-          'Authorization':'Bearer '+token,
-          'Content-Type':'application/json',
-          'Accept':'application/vnd.github+json',
-          'X-GitHub-Api-Version':'2022-11-28'
-        },
-        body:JSON.stringify({
-          description:'Client Monitor — A.V.PremierSoft (private)',
-          public:false,
-          files:{'client_monitor.json':{content}}
-        })
-      });
-      if(!res.ok)throw new Error('Create gist failed: '+res.status);
-      const gist=await res.json();
-      gistId=gist.id;
-      setSyncMsg('✓ New gist created! Your data is saved.','#1e3a6e');
-    } else {
-      // existing gist on new device — pull data first
-      setSyncMsg('Gist ID found — loading your data from GitHub…');
-      localStorage.setItem(CFG_KEY,JSON.stringify({token,gistId}));
-      const ok=await gistPull();
-      if(ok){
-        setSyncStatus('ok','Gist synced ✓');
-        setSyncMsg('✓ Data loaded from GitHub.','#1e3a6e');
-        showConnectedBanner(gistId);
-        toast('Data loaded from GitHub Gist.');
-        return;
-      }
-    }
-    localStorage.setItem(CFG_KEY,JSON.stringify({token,gistId}));
-    document.getElementById('cfg-gistid').value=gistId;
-    showConnectedBanner(gistId);
-    setSyncStatus('ok','Gist synced ✓');
-    toast('Sync connected.');
-  }catch(e){
-    setSyncMsg('Connection failed — check your token.','#a32d2d');
-    console.warn(e);
-  }
-}
+async function gistSaveSettings(){toast("Sync now handled by Supabase.");}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 function fmt(d){if(!d)return '—';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
 
@@ -2081,7 +1910,13 @@ function fld(id,k,v){
   const oldFmt=fmt(old);
   const newFmt=fmt(v);
   audit('Edit',c.name,label+': "'+oldFmt+'" → "'+newFmt+'"');
-  save();
+  const col=FIELD_MAP[k]||k;
+  const dbVal=(v==='')?null:v;
+  sb.from('clients').update({[col]:dbVal}).eq('id',id)
+    .then(({error})=>{
+      if(error){console.error('Update error:',error);setSyncStatus('err','Save failed');}
+      else setSyncStatus('ok','Supabase ✓');
+    });
   const was=expanded.has(id);render();if(was)expanded.add(id);
   buildVatBanner();buildStkBanner();
 }
@@ -2189,15 +2024,19 @@ function updateProgress(id,val,slider){
 function auditProgress(id,val){
   const c=clients.find(x=>x.id===id);if(!c)return;
   audit('Edit',c.name,'Progress: "'+val+'%"');
+  sb.from('clients').update({progress:parseInt(val)}).eq('id',id).then(({error})=>{if(error)console.error('Progress error:',error);else setSyncStatus('ok','Supabase ✓');});
 }
 
-function delClient(id){
+async function delClient(id){
   const c=clients.find(x=>x.id===id);
   const pwd=prompt(`Enter password to delete "${c.name}":`);
   if(pwd===null)return;
   if(pwd!=='0000'){toast('Incorrect password.');return;}
   audit('Delete',c.name,'Client deleted');
-  clients=clients.filter(x=>x.id!==id);expanded.delete(id);save();render();toast('Client deleted.');
+  clients=clients.filter(x=>x.id!==id);expanded.delete(id);render();toast('Client deleted.');
+  const {error}=await sb.from('clients').delete().eq('id',id);
+  if(error){console.error('Delete error:',error);setSyncStatus('err','Delete failed');}
+  else setSyncStatus('ok','Supabase ✓');
 }
 
 /* ── VAT REPORT ── */
@@ -2288,7 +2127,8 @@ function printVatReport(){
   const body=document.getElementById('vat-report-body').innerHTML;
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>VAT Training Report</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}-webkit-print-color-adjust:exact;print-color-adjust:exact;
     body{font-family:'DM Sans',sans-serif;padding:1.5cm 2cm;font-size:12px;color:#1a1917}
@@ -2383,13 +2223,12 @@ function openAdd(){
   document.getElementById('add-modal').classList.add('open');
   setTimeout(()=>document.getElementById('m-name').focus(),80);
 }
-function saveNew(){
+async function saveNew(){
   const name=document.getElementById('m-name').value.trim();
   if(!name){document.getElementById('m-name').focus();return;}
   const mods=[...document.querySelectorAll('.mods-check input:checked')].map(x=>x.value);
   const mImpl=document.getElementById('m-impl');
-  clients.push({
-    id:nextId++,name,
+  const newC={id:nextId++,name,
     contact:document.getElementById('m-contact').value.trim(),
     city:document.getElementById('m-city').value,
     mgr:document.getElementById('m-mgr').value,
@@ -2399,11 +2238,14 @@ function saveNew(){
     comment:document.getElementById('m-comment').value.trim(),
     mtgSet:false,mtgDate:'',vatDate:'',vatDone:false,stkDate:'',stkDone:false,
     liveDate:document.getElementById('m-livedate')?document.getElementById('m-livedate').value:'',
-    progress:0,todo:''
-  });
-  save();closeModal('add-modal');render();
-  audit('Create',clients[clients.length-1].name,'New client added');
+    progress:0,todo:''};
+  clients.push(newC);
+  closeModal('add-modal');render();
+  audit('Create',newC.name,'New client added');
   toast('Client added.');
+  const {error}=await sb.from('clients').insert(clientToDb(newC));
+  if(error){console.error('Insert error:',error);toast('Warning: save to Supabase failed.');}
+  else setSyncStatus('ok','Supabase ✓');
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function bgClick(e,id){if(e.target===document.getElementById(id))closeModal(id);}
@@ -2592,7 +2434,8 @@ function printStkReport(){
   const title=document.getElementById('stk-modal-title').textContent;
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>${title}</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'DM Sans',sans-serif;padding:1.5cm 2cm;font-size:12px;color:#1a1917}
@@ -2883,28 +2726,27 @@ function renderUsersList(){
       +'</div>';
   }).join('');
 }
-function addUser(){
+async function addUser(){
   const name=document.getElementById('new-user-name').value.trim();
   const pass=document.getElementById('new-user-pass').value;
   const role=document.getElementById('new-user-role').value;
   if(!name||!pass){toast('Enter username and password.');return;}
-  const users=getUsers();
-  if(users.find(u=>u.username===name)){toast('Username already exists.');return;}
-  users.push({username:name,password:pass,role,createdAt:new Date().toISOString()});
-  saveUsers(users);
+  if(getUsers().find(u=>u.username===name)){toast('Username already exists.');return;}
+  const {data,error}=await sb.from('app_users').insert({username:name,password:pass,role}).select().single();
+  if(error){toast('Error adding user: '+error.message);return;}
+  _cachedUsers.push(data);
   audit('User','Users','Added user: '+name+' ('+role+')');
-  saveNow();
   renderUsersList();
   document.getElementById('new-user-name').value='';
   document.getElementById('new-user-pass').value='';
   toast('User "'+name+'" added.');
 }
-function deleteUser(username){
+async function deleteUser(username){
   if(!confirm('Remove user "'+username+'"?'))return;
-  const users=getUsers().filter(u=>u.username!==username);
-  saveUsers(users);
+  const {error}=await sb.from('app_users').delete().eq('username',username);
+  if(error){toast('Error removing user.');return;}
+  _cachedUsers=_cachedUsers.filter(u=>u.username!==username);
   audit('User','Users','Removed user: '+username);
-  saveNow();
   renderUsersList();
   toast('User "'+username+'" removed.');
 }
@@ -2922,20 +2764,18 @@ function openChangePasswordFor(username){
   closeModal('users-modal');
   document.getElementById('chpwd-modal').classList.add('open');
 }
-function doChangePassword(){
+async function doChangePassword(){
   const target=document.getElementById('chpwd-target-user').value;
   const np=document.getElementById('chpwd-new').value;
   const cp=document.getElementById('chpwd-confirm').value;
   const err=document.getElementById('chpwd-err');
   if(np.length<4){err.textContent='Password must be at least 4 characters.';return;}
   if(np!==cp){err.textContent='Passwords do not match.';return;}
-  const users=getUsers();
-  const u=users.find(x=>x.username===target);
-  if(!u){err.textContent='User not found.';return;}
-  u.password=np;
-  saveUsers(users);
+  const {error}=await sb.from('app_users').update({password:np}).eq('username',target);
+  if(error){err.textContent='Error updating password.';return;}
+  const u=_cachedUsers.find(x=>x.username===target);
+  if(u)u.password=np;
   audit('Password',target,'Password changed for: '+target);
-  saveNow();
   closeModal('chpwd-modal');
   toast('Password updated.');
 }
@@ -3017,34 +2857,35 @@ function exportAuditCSV(){
 }
 
 /* ── LOGIN ── */
-function doLogin(){
+async function doLogin(){
   const u=document.getElementById('login-user').value.trim();
   const p=document.getElementById('login-pass').value;
   const err=document.getElementById('login-err');
-  const users=getUsers();
-  const match=users.find(x=>x.username===u&&x.password===p);
-  if(match){
+  err.textContent='Signing in…';
+  try{
+    const {data,error}=await sb.from('app_users').select('*').eq('username',u).eq('password',p).single();
+    if(error||!data){
+        err.textContent='Incorrect username or password.';
+      document.getElementById('login-pass').value='';
+      document.getElementById('login-pass').focus();
+      return;
+    }
     currentUser=u;
     document.getElementById('login-screen').classList.add('hidden');
-    // side menu user only - not in header
     const sm=document.getElementById('sidemenu-user');
     document.getElementById('sidemenu-user-label').textContent='👤 '+u;
     sm.style.display='flex';
-    // show/hide admin-only items
-    const isAdmin=match.role==='admin';
+    const isAdmin=data.role==='admin';
     if(isAdmin){
-      const btu=document.getElementById('btn-users');
-      if(btu)btu.style.display='flex';
-      const btus=document.getElementById('btn-users-side');
-      if(btus)btus.style.display='flex';
+      const btu=document.getElementById('btn-users');if(btu)btu.style.display='flex';
+      const btus=document.getElementById('btn-users-side');if(btus)btus.style.display='flex';
     }
     err.textContent='';
     audit('Login',u,'Signed in');
     load();
-  } else {
-    err.textContent='Incorrect username or password.';
-    document.getElementById('login-pass').value='';
-    document.getElementById('login-pass').focus();
+  }catch(e){
+    console.error('Login error:',e);
+    err.textContent='Connection error. Try again.';
   }
 }
 
@@ -3063,25 +2904,29 @@ function renderModsList(){
       <button onclick="removeMod(${i})" style="font-size:11px;padding:2px 8px;border:1px solid #f7c1c1;border-radius:5px;background:transparent;color:#a32d2d;cursor:pointer;font-family:'DM Sans',sans-serif">Remove</button>
     </div>`).join('');
 }
-function addMod(){
+async function addMod(){
   const val=document.getElementById('mod-input').value.trim();
   if(!val||ALL_MODS.includes(val))return;
-  ALL_MODS.push(val);
-  ALL_MODS.sort((a,b)=>a.localeCompare(b));
-  save();renderModsList();render();updateFMUI();
+  ALL_MODS.push(val);ALL_MODS.sort((a,b)=>a.localeCompare(b));
+  renderModsList();render();updateFMUI();
   document.getElementById('mod-input').value='';
   toast(`Module "${val}" added.`);
+  const {error}=await sb.from('modules').insert({name:val});
+  if(error)console.error('Module add error:',error);
 }
-function removeMod(i){
+async function removeMod(i){
   const name=ALL_MODS[i];
   const pwd=prompt(`Enter password to remove module "${name}":`);
   if(pwd===null)return;
   if(pwd!=='0000'){toast('Incorrect password.');return;}
   ALL_MODS.splice(i,1);
-  // remove module from all clients
   clients.forEach(c=>{c.modules=c.modules.filter(m=>m!==name);});
-  save();render();renderModsList();
+  render();renderModsList();
   toast(`Module "${name}" removed.`);
+  await Promise.all([
+    sb.from('modules').delete().eq('name',name),
+    sb.from('clients').upsert(clients.map(clientToDb),{onConflict:'id'})
+  ]);
 }
 
 /* ── MEETING PREP ── */
@@ -3179,7 +3024,8 @@ function printMeetPrep(){
     </div>`).join('');
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>Meeting To-Do</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'DM Sans',sans-serif;padding:1.5cm 2cm;font-size:12px;color:#1a1917}
