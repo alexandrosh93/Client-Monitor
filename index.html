@@ -581,22 +581,40 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 <!-- LOGIN SCREEN -->
 <div id="login-screen">
   <div class="login-box">
-        <div style="text-align:center;padding:2.25rem 2rem 1.5rem;border-bottom:1px solid #f0f2f5;margin-bottom:1.5rem">
+    <div style="text-align:center;padding:2.25rem 2rem 1.5rem;border-bottom:1px solid #f0f2f5;margin-bottom:1.5rem">
       <div style="font-size:16px;font-weight:800;color:#1a1d2e;letter-spacing:-.02em">A.V.PremierSoft</div>
       <div style="font-size:11px;color:#9ca3af;margin-top:3px;letter-spacing:.04em;text-transform:uppercase">Client Monitor</div>
     </div>
-    <div style="padding:0 2rem">
-    <div class="login-field">
-      <label>Username</label>
-      <input id="login-user" type="text" placeholder="Username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    <!-- Sign in panel -->
+    <div id="login-panel" style="padding:0 2rem">
+      <div class="login-field">
+        <label>Username or Email</label>
+        <input id="login-user" type="text" placeholder="Username or email" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="login-field">
+        <label>Password</label>
+        <input id="login-pass" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="login-btn" onclick="doLogin()">Sign in</button>
+      <div class="login-err" id="login-err" style="margin-top:.5rem"></div>
+      <div style="text-align:center;margin-top:.6rem">
+        <button type="button" onclick="showForgot()" style="background:none;border:none;font-family:'DM Sans',sans-serif;font-size:12px;color:#6b7280;cursor:pointer;text-decoration:underline;padding:0">Forgot password?</button>
+      </div>
     </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input id="login-pass" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <!-- Forgot password panel -->
+    <div id="forgot-panel" style="display:none;padding:0 2rem">
+      <div style="font-size:13px;font-weight:700;color:#1a1d2e;margin-bottom:.25rem">Reset Password</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:1rem;line-height:1.5">Enter your email address and we'll send you a reset link. Internal username accounts should contact an administrator.</div>
+      <div class="login-field">
+        <label>Email address</label>
+        <input id="forgot-email" type="email" placeholder="your@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')doForgotPassword()">
+      </div>
+      <button class="login-btn" onclick="doForgotPassword()">Send reset link</button>
+      <div id="forgot-msg" style="font-size:12px;min-height:18px;margin-top:.6rem;text-align:center"></div>
+      <div style="text-align:center;margin-top:.75rem">
+        <button type="button" onclick="hideForgot()" style="background:none;border:none;font-family:'DM Sans',sans-serif;font-size:12px;color:#6b7280;cursor:pointer;text-decoration:underline;padding:0">← Back to sign in</button>
+      </div>
     </div>
-    <button class="login-btn" onclick="doLogin()">Sign in</button>
-    </div>
-    <div class="login-err" id="login-err"></div>
   </div>
 </div>
 
@@ -2790,6 +2808,36 @@ async function doLogout(){
   try{await sb.auth.signOut();}catch(e){}
   location.reload();
 }
+function showForgot(){
+  document.getElementById('login-panel').style.display='none';
+  document.getElementById('forgot-panel').style.display='block';
+  document.getElementById('forgot-email').value='';
+  document.getElementById('forgot-msg').textContent='';
+  document.getElementById('forgot-email').focus();
+}
+function hideForgot(){
+  document.getElementById('forgot-panel').style.display='none';
+  document.getElementById('login-panel').style.display='block';
+  document.getElementById('login-err').textContent='';
+  document.getElementById('login-user').focus();
+}
+async function doForgotPassword(){
+  const email=document.getElementById('forgot-email').value.trim().toLowerCase();
+  const msg=document.getElementById('forgot-msg');
+  if(!email){msg.style.color='#a32d2d';msg.textContent='Enter your email address.';return;}
+  if(email.endsWith('@avps.local')||!email.includes('@')){
+    msg.style.color='#1e3a6e';
+    msg.textContent='Internal accounts cannot reset by email. Contact your administrator.';
+    return;
+  }
+  msg.style.color='#6b7280';msg.textContent='Sending…';
+  try{
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.href});
+    if(error){msg.style.color='#a32d2d';msg.textContent='Error: '+error.message;return;}
+    msg.style.color='#2d7a4f';
+    msg.textContent='Reset link sent! Check your inbox.';
+  }catch(e){msg.style.color='#a32d2d';msg.textContent='Connection error. Try again.';}
+}
 
 /* ── MODULES MANAGEMENT ── */
 function openModsMgr(){
@@ -2961,11 +3009,20 @@ document.addEventListener('keydown',e=>{
 updateSFUI();updateFIUI();updateFMUI();
 
 buildVatBanner();buildStkBanner();
+// Handle password reset redirect (Supabase adds token to URL hash)
+sb.auth.onAuthStateChange(async(event,session)=>{
+  if(event==='PASSWORD_RECOVERY'&&session){
+    await onAuthed(session.user);
+    openModal('chpwd-modal');
+    const e=document.getElementById('chpwd-err');
+    if(e)e.textContent='Enter your new password below.';
+  }
+});
 // Restore existing Supabase Auth session, else show login screen
 (async()=>{
   try{
     const {data}=await sb.auth.getSession();
-    if(data&&data.session){await onAuthed(data.session.user);return;}
+    if(data&&data.session&&data.session.user){await onAuthed(data.session.user);return;}
   }catch(e){console.error('Session check failed:',e);}
   document.getElementById('login-user').focus();
 })();
