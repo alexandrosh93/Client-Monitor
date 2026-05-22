@@ -620,7 +620,7 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 
 <!-- Users Modal -->
 <div class="modal-bg" id="users-modal" onclick="bgClick(event,'users-modal')">
-  <div class="modal" style="width:500px;max-width:95vw">
+  <div class="modal" style="width:600px;max-width:96vw">
     <h3>👥 User Management</h3>
     <!-- List view -->
     <div id="um-list-view">
@@ -2703,27 +2703,44 @@ async function umLoadUsers(){
 function umRenderTable(){
   const tbl=document.getElementById('um-user-table');
   if(!_umUsers.length){tbl.innerHTML='<div style="font-size:12px;color:var(--text-3)">No users found.</div>';return;}
-  let h=`<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="border-bottom:2px solid var(--border-md)">
-    <th style="text-align:left;padding:5px 8px;font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Name</th>
-    <th style="text-align:left;padding:5px 8px;font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Login</th>
-    <th style="text-align:left;padding:5px 8px;font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Role</th>
-    <th style="width:70px"></th></tr></thead><tbody>`;
+  const total=_umUsers.length;
+  const admins=_umUsers.filter(u=>u.role==='admin').length;
+  let h=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:.65rem">
+    <span style="font-size:12px;color:var(--text-2)">${total} user${total!==1?'s':''}</span>
+    <span style="font-size:11px;color:var(--text-3)">·</span>
+    <span style="font-size:12px;color:var(--text-2)">${admins} admin${admins!==1?'s':''}</span>
+  </div>
+  <div style="overflow-x:auto">
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+  <thead><tr style="border-bottom:2px solid var(--border-md)">
+    <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Display Name</th>
+    <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Email / Login</th>
+    <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">Role</th>
+    <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Added</th>
+    <th style="width:76px"></th>
+  </tr></thead><tbody>`;
   for(const u of _umUsers){
-    const loginLabel=u.email.endsWith('@avps.local')?u.email.replace('@avps.local',''):u.email;
+    const isInternal=u.email.endsWith('@avps.local');
+    const emailDisplay=isInternal
+      ?`<span style="color:var(--text)">${esc(u.email.replace('@avps.local',''))}</span><span style="color:var(--text-3);font-size:11px">@avps.local</span>`
+      :`<span>${esc(u.email)}</span>`;
     const badge=u.role==='admin'
-      ?`<span style="font-size:10px;padding:2px 7px;border-radius:9px;background:#e8edff;color:#1e3a6e;font-weight:600">admin</span>`
-      :`<span style="font-size:10px;padding:2px 7px;border-radius:9px;background:var(--surface2);color:var(--text-2)">user</span>`;
+      ?`<span style="font-size:10px;padding:2px 8px;border-radius:9px;background:#e8edff;color:#1e3a6e;font-weight:700">admin</span>`
+      :`<span style="font-size:10px;padding:2px 8px;border-radius:9px;background:var(--surface2);color:var(--text-2);font-weight:600">user</span>`;
+    const added=u.created_at?new Date(u.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}):'—';
     const isMe=u.email.toLowerCase()===currentUser.toLowerCase()+'@avps.local'||u.email.toLowerCase()===currentUser.toLowerCase();
-    h+=`<tr style="border-bottom:1px solid var(--border-sm)">
-      <td style="padding:7px 8px">${esc(u.username)}</td>
-      <td style="padding:7px 8px;color:var(--text-2);font-size:12px">${esc(loginLabel)}</td>
-      <td style="padding:7px 8px">${badge}</td>
-      <td style="padding:7px 4px;text-align:right;white-space:nowrap">
+    const meBadge=isMe?`<span style="font-size:9px;padding:1px 5px;border-radius:5px;background:#f0f9f4;color:#2d7a4f;font-weight:600;margin-left:4px">you</span>`:'';
+    h+=`<tr style="border-bottom:1px solid var(--border-sm);transition:background .1s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <td style="padding:8px 8px;font-weight:500">${esc(u.username)}${meBadge}</td>
+      <td style="padding:8px 8px;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${emailDisplay}</td>
+      <td style="padding:8px 8px">${badge}</td>
+      <td style="padding:8px 8px;font-size:11px;color:var(--text-3);white-space:nowrap">${added}</td>
+      <td style="padding:8px 4px;text-align:right;white-space:nowrap">
         <button onclick="umOpenEdit('${esc(u.id)}')" title="Edit" style="background:none;border:1px solid var(--border-md);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:12px;font-family:inherit;color:var(--text-2);margin-right:3px">✏️</button>
         ${isMe?'':`<button onclick="umDelete('${esc(u.id)}','${esc(u.username)}')" title="Delete" style="background:none;border:1px solid #f7c1c1;border-radius:5px;padding:2px 7px;cursor:pointer;font-size:12px;font-family:inherit;color:#a32d2d">🗑</button>`}
       </td></tr>`;
   }
-  h+='</tbody></table>';
+  h+='</tbody></table></div>';
   tbl.innerHTML=h;
 }
 function umShowList(){
