@@ -1163,7 +1163,7 @@ function stampBackup(type){
 }
 
 function exportJSON(){
-  const data=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog,users:getUsers()},null,2);
+  const data=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog},null,2);
   const blob=new Blob([data],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -1190,7 +1190,6 @@ function importJSON(input){
       implementors=data.impl||[];
       if(data.mods&&data.mods.length)ALL_MODS=data.mods;
       if(data.audit)auditLog=data.audit;
-      if(data.users&&data.users.length)saveUsers(data.users);
       save();render();buildVatBanner();buildStkBanner();
       stampBackup('file');
       audit('Restore','System','Data restored from backup file: '+file.name);
