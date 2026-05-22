@@ -1,0 +1,124 @@
+-- ══════════════════════════════════════════════════════
+-- Admin User Management Functions
+-- Run this ONCE in Supabase SQL Editor
+-- After running, user management works directly from the app
+-- ══════════════════════════════════════════════════════
+
+-- List all users (admin only)
+CREATE OR REPLACE FUNCTION admin_list_users()
+RETURNS TABLE(id uuid, email text, username text, role text, created_at timestamptz)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public
+AS $$
+BEGIN
+  IF NOT (
+    coalesce(auth.jwt()->'app_metadata'->>'role','') = 'admin' OR
+    coalesce(auth.jwt()->'user_metadata'->>'role','') = 'admin'
+  ) THEN RAISE EXCEPTION 'Not authorized'; END IF;
+  RETURN QUERY
+  SELECT u.id, u.email,
+    coalesce(u.raw_user_meta_data->>'username', split_part(u.email,'@',1)) AS username,
+    coalesce(u.raw_app_meta_data->>'role', u.raw_user_meta_data->>'role', 'user') AS role,
+    u.created_at
+  FROM auth.users u ORDER BY u.created_at;
+END;
+$$;
+
+-- Create a new user (admin only)
+-- p_login: username (becomes username@avps.local) or full email
+CREATE OR REPLACE FUNCTION admin_create_user(
+  p_login text, p_password text, p_username text, p_role text
+)
+RETURNS uuid
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public
+AS $$
+DECLARE
+  v_email text;
+  v_id uuid := gen_random_uuid();
+BEGIN
+  IF NOT (
+    coalesce(auth.jwt()->'app_metadata'->>'role','') = 'admin' OR
+    coalesce(auth.jwt()->'user_metadata'->>'role','') = 'admin'
+  ) THEN RAISE EXCEPTION 'Not authorized'; END IF;
+
+  v_email := CASE WHEN p_login LIKE '%@%' THEN lower(p_login)
+                  ELSE lower(p_login) || '@avps.local' END;
+
+  INSERT INTO auth.users(
+    id, instance_id, email, encrypted_password, email_confirmed_at,
+    raw_app_meta_data, raw_user_meta_data, created_at, updated_at, aud, role
+  ) VALUES (
+    v_id, '00000000-0000-0000-0000-000000000000',
+    v_email, crypt(p_password, gen_salt('bf')), now(),
+    jsonb_build_object('provider','email','providers',ARRAY['email'],'role',p_role),
+    jsonb_build_object('username', p_username),
+    now(), now(), 'authenticated', 'authenticated'
+  );
+
+  INSERT INTO auth.identities(
+    id, user_id, provider_id, identity_data, provider,
+    last_sign_in_at, created_at, updated_at
+  ) VALUES (
+    gen_random_uuid(), v_id, v_email,
+    jsonb_build_object('sub', v_id::text, 'email', v_email),
+    'email', now(), now(), now()
+  );
+
+  RETURN v_id;
+END;
+$$;
+
+-- Update user display name and role (admin only)
+CREATE OR REPLACE FUNCTION admin_update_user(
+  p_user_id uuid, p_username text, p_role text
+)
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public
+AS $$
+BEGIN
+  IF NOT (
+    coalesce(auth.jwt()->'app_metadata'->>'role','') = 'admin' OR
+    coalesce(auth.jwt()->'user_metadata'->>'role','') = 'admin'
+  ) THEN RAISE EXCEPTION 'Not authorized'; END IF;
+
+  UPDATE auth.users
+  SET raw_user_meta_data = coalesce(raw_user_meta_data,'{}') ||
+        jsonb_build_object('username', p_username),
+      raw_app_meta_data = coalesce(raw_app_meta_data,'{}') ||
+        jsonb_build_object('role', p_role),
+      updated_at = now()
+  WHERE id = p_user_id;
+END;
+$$;
+
+-- Reset any user's password (admin only)
+CREATE OR REPLACE FUNCTION admin_set_password(p_user_id uuid, p_password text)
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public
+AS $$
+BEGIN
+  IF NOT (
+    coalesce(auth.jwt()->'app_metadata'->>'role','') = 'admin' OR
+    coalesce(auth.jwt()->'user_metadata'->>'role','') = 'admin'
+  ) THEN RAISE EXCEPTION 'Not authorized'; END IF;
+
+  UPDATE auth.users
+  SET encrypted_password = crypt(p_password, gen_salt('bf')),
+      updated_at = now()
+  WHERE id = p_user_id;
+END;
+$$;
+
+-- Delete a user (admin only)
+CREATE OR REPLACE FUNCTION admin_delete_user(p_user_id uuid)
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public
+AS $$
+BEGIN
+  IF NOT (
+    coalesce(auth.jwt()->'app_metadata'->>'role','') = 'admin' OR
+    coalesce(auth.jwt()->'user_metadata'->>'role','') = 'admin'
+  ) THEN RAISE EXCEPTION 'Not authorized'; END IF;
+
+  DELETE FROM auth.users WHERE id = p_user_id;
+END;
+$$;

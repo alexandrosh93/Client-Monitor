@@ -620,24 +620,44 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 
 <!-- Users Modal -->
 <div class="modal-bg" id="users-modal" onclick="bgClick(event,'users-modal')">
-  <div class="modal" style="width:420px">
+  <div class="modal" style="width:500px;max-width:95vw">
     <h3>👥 User Management</h3>
-    <div style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:1rem">
-      User accounts are managed securely in the <strong>Supabase Dashboard</strong>.
-      <div style="background:var(--surface2);border:1px solid var(--border-md);border-radius:var(--radius);padding:.7rem .9rem;margin-top:.7rem;font-size:12px;line-height:1.7">
-        <strong>To add a user:</strong><br>
-        1. Supabase → <strong>Authentication → Users → Add user</strong><br>
-        2. Email = <code>username@avps.local</code> (e.g. <code>jsmith@avps.local</code>)<br>
-        3. Set a password, tick <strong>Auto Confirm User</strong><br>
-        4. For an admin, set App Metadata to <code>{"role":"admin"}</code>
-        <br><br>
-        <strong>To remove a user:</strong> delete them from that same Users list.
+    <!-- List view -->
+    <div id="um-list-view">
+      <div id="um-user-table" style="min-height:60px;margin-bottom:1rem"></div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal('users-modal')">Close</button>
+        <button class="btn-cancel" onclick="closeModal('users-modal');openChangePassword()" style="margin-right:auto">My Password</button>
+        <button class="btn-primary" onclick="umShowAdd()">+ Add User</button>
       </div>
-      <div style="font-size:12px;color:var(--text-3);margin-top:.6rem">You can change your own password below.</div>
     </div>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal('users-modal')">Close</button>
-      <button class="btn-primary" onclick="closeModal('users-modal');openChangePassword()">Change my password</button>
+    <!-- Add user view -->
+    <div id="um-add-view" style="display:none">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:.85rem">New User</div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Display Name</label><input id="um-add-name" type="text" placeholder="e.g. John Smith"></div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Login (username or email)</label><input id="um-add-login" type="text" placeholder="jsmith  or  john@company.com"></div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Password</label><input id="um-add-pass" type="password" placeholder="Minimum 6 characters"></div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Role</label><select id="um-add-role"><option value="user">User</option><option value="admin">Admin</option></select></div>
+      <div id="um-add-err" style="font-size:12px;color:#a32d2d;min-height:16px;margin:.3rem 0 .6rem"></div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="umShowList()">Cancel</button>
+        <button class="btn-primary" onclick="umCreateUser()">Create User</button>
+      </div>
+    </div>
+    <!-- Edit user view -->
+    <div id="um-edit-view" style="display:none">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:.85rem">Edit User</div>
+      <input type="hidden" id="um-edit-id">
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Display Name</label><input id="um-edit-name" type="text"></div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Role</label><select id="um-edit-role"><option value="user">User</option><option value="admin">Admin</option></select></div>
+      <div style="border-top:1px solid var(--border-md);padding-top:.75rem;margin:.75rem 0 .6rem">
+        <div class="mf"><label class="lbl">New Password <span style="font-weight:400;color:var(--text-3)">(leave blank to keep current)</span></label><input id="um-edit-pass" type="password" placeholder="Leave blank to keep"></div>
+      </div>
+      <div id="um-edit-err" style="font-size:12px;color:#a32d2d;min-height:16px;margin:.3rem 0 .6rem"></div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="umShowList()">Cancel</button>
+        <button class="btn-primary" onclick="umSaveEdit()">Save Changes</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2665,8 +2685,116 @@ function exportExcel(){
 }
 
 /* ── USERS PANEL ── */
-function openUsersPanel(){
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+let _umUsers=[];
+async function openUsersPanel(){
   document.getElementById('users-modal').classList.add('open');
+  umShowList();
+  await umLoadUsers();
+}
+async function umLoadUsers(){
+  const tbl=document.getElementById('um-user-table');
+  tbl.innerHTML='<div style="font-size:12px;color:var(--text-3);padding:.5rem 0">Loading…</div>';
+  const {data,error}=await sb.rpc('admin_list_users');
+  if(error){tbl.innerHTML=`<div style="font-size:12px;color:#a32d2d">Error: ${esc(error.message)}<br><small>Make sure you ran the admin SQL functions in Supabase.</small></div>`;return;}
+  _umUsers=data||[];
+  umRenderTable();
+}
+function umRenderTable(){
+  const tbl=document.getElementById('um-user-table');
+  if(!_umUsers.length){tbl.innerHTML='<div style="font-size:12px;color:var(--text-3)">No users found.</div>';return;}
+  let h=`<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="border-bottom:2px solid var(--border-md)">
+    <th style="text-align:left;padding:5px 8px;font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Name</th>
+    <th style="text-align:left;padding:5px 8px;font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Login</th>
+    <th style="text-align:left;padding:5px 8px;font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Role</th>
+    <th style="width:70px"></th></tr></thead><tbody>`;
+  for(const u of _umUsers){
+    const loginLabel=u.email.endsWith('@avps.local')?u.email.replace('@avps.local',''):u.email;
+    const badge=u.role==='admin'
+      ?`<span style="font-size:10px;padding:2px 7px;border-radius:9px;background:#e8edff;color:#1e3a6e;font-weight:600">admin</span>`
+      :`<span style="font-size:10px;padding:2px 7px;border-radius:9px;background:var(--surface2);color:var(--text-2)">user</span>`;
+    const isMe=u.email.toLowerCase()===currentUser.toLowerCase()+'@avps.local'||u.email.toLowerCase()===currentUser.toLowerCase();
+    h+=`<tr style="border-bottom:1px solid var(--border-sm)">
+      <td style="padding:7px 8px">${esc(u.username)}</td>
+      <td style="padding:7px 8px;color:var(--text-2);font-size:12px">${esc(loginLabel)}</td>
+      <td style="padding:7px 8px">${badge}</td>
+      <td style="padding:7px 4px;text-align:right;white-space:nowrap">
+        <button onclick="umOpenEdit('${esc(u.id)}')" title="Edit" style="background:none;border:1px solid var(--border-md);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:12px;font-family:inherit;color:var(--text-2);margin-right:3px">✏️</button>
+        ${isMe?'':`<button onclick="umDelete('${esc(u.id)}','${esc(u.username)}')" title="Delete" style="background:none;border:1px solid #f7c1c1;border-radius:5px;padding:2px 7px;cursor:pointer;font-size:12px;font-family:inherit;color:#a32d2d">🗑</button>`}
+      </td></tr>`;
+  }
+  h+='</tbody></table>';
+  tbl.innerHTML=h;
+}
+function umShowList(){
+  document.getElementById('um-list-view').style.display='';
+  document.getElementById('um-add-view').style.display='none';
+  document.getElementById('um-edit-view').style.display='none';
+}
+function umShowAdd(){
+  document.getElementById('um-list-view').style.display='none';
+  document.getElementById('um-add-view').style.display='';
+  document.getElementById('um-edit-view').style.display='none';
+  ['um-add-name','um-add-login','um-add-pass'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('um-add-role').value='user';
+  document.getElementById('um-add-err').textContent='';
+  document.getElementById('um-add-name').focus();
+}
+function umOpenEdit(userId){
+  const u=_umUsers.find(x=>x.id===userId);if(!u)return;
+  document.getElementById('um-list-view').style.display='none';
+  document.getElementById('um-add-view').style.display='none';
+  document.getElementById('um-edit-view').style.display='';
+  document.getElementById('um-edit-id').value=u.id;
+  document.getElementById('um-edit-name').value=u.username;
+  document.getElementById('um-edit-role').value=u.role==='admin'?'admin':'user';
+  document.getElementById('um-edit-pass').value='';
+  document.getElementById('um-edit-err').textContent='';
+  document.getElementById('um-edit-name').focus();
+}
+async function umCreateUser(){
+  const name=document.getElementById('um-add-name').value.trim();
+  const login=document.getElementById('um-add-login').value.trim();
+  const pass=document.getElementById('um-add-pass').value;
+  const role=document.getElementById('um-add-role').value;
+  const err=document.getElementById('um-add-err');
+  if(!name||!login||!pass){err.textContent='All fields are required.';return;}
+  if(pass.length<6){err.textContent='Password must be at least 6 characters.';return;}
+  err.textContent='Creating…';
+  const {error}=await sb.rpc('admin_create_user',{p_login:login,p_password:pass,p_username:name,p_role:role});
+  if(error){err.textContent='Error: '+error.message;return;}
+  audit('Users',currentUser,'Created user: '+name);
+  toast('User created.');
+  umShowList();
+  await umLoadUsers();
+}
+async function umSaveEdit(){
+  const id=document.getElementById('um-edit-id').value;
+  const name=document.getElementById('um-edit-name').value.trim();
+  const role=document.getElementById('um-edit-role').value;
+  const pass=document.getElementById('um-edit-pass').value;
+  const err=document.getElementById('um-edit-err');
+  if(!name){err.textContent='Name is required.';return;}
+  err.textContent='Saving…';
+  const {error}=await sb.rpc('admin_update_user',{p_user_id:id,p_username:name,p_role:role});
+  if(error){err.textContent='Error: '+error.message;return;}
+  if(pass){
+    if(pass.length<6){err.textContent='Saved name/role but password must be 6+ characters.';return;}
+    const {error:pe}=await sb.rpc('admin_set_password',{p_user_id:id,p_password:pass});
+    if(pe){err.textContent='Saved name/role, password error: '+pe.message;return;}
+  }
+  audit('Users',currentUser,'Updated user: '+name);
+  toast('User updated.');
+  umShowList();
+  await umLoadUsers();
+}
+async function umDelete(userId,username){
+  if(!confirm(`Delete user "${username}"? This cannot be undone.`))return;
+  const {error}=await sb.rpc('admin_delete_user',{p_user_id:userId});
+  if(error){toast('Error: '+error.message);return;}
+  audit('Users',currentUser,'Deleted user: '+username);
+  toast('User deleted.');
+  await umLoadUsers();
 }
 function openChangePassword(){
   document.getElementById('chpwd-new').value='';
