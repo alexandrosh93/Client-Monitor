@@ -2902,7 +2902,14 @@ async function doLogin(){
   if(!u||!p){err.textContent='Enter username and password.';return;}
   err.textContent='Signing in…';
   try{
-    const email=u.includes('@')?u.toLowerCase():u.toLowerCase()+AUTH_DOMAIN;
+    let email;
+    if(u.includes('@')){
+      email=u.toLowerCase();
+    }else{
+      // Try to resolve username/display-name to the stored email
+      const {data:resolved}=await sb.rpc('get_login_email',{p_username:u});
+      email=resolved||u.toLowerCase()+AUTH_DOMAIN;
+    }
     const {data,error}=await sb.auth.signInWithPassword({email,password:p});
     if(error||!data||!data.session){
       err.textContent='Incorrect username or password.';
