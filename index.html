@@ -925,95 +925,49 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 <!-- Settings / Sync Modal -->
 <div class="modal-bg" id="settings-modal" onclick="bgClick(event,'settings-modal')">
   <div class="modal" style="width:440px;max-height:88vh;overflow-y:auto">
-    <h3>☁️ Sync &amp; Backup</h3>
+    <h3>&#x2699;&#xFE0F; Backup &amp; Settings</h3>
 
-    <!-- Tab switcher -->
-    <div style="display:flex;gap:0;border:1px solid var(--border-md);border-radius:var(--radius);overflow:hidden;margin-bottom:1.1rem">
-      <button id="tab-gist" onclick="switchTab('gist')" style="flex:1;padding:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;border:none;cursor:pointer;background:var(--accent);color:#fff;transition:all .15s">GitHub Gist (auto-sync)</button>
-      <button id="tab-export" onclick="switchTab('export')" style="flex:1;padding:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;border:none;cursor:pointer;background:var(--surface2);color:var(--text-2);transition:all .15s">Export / Import</button>
-    </div>
-
-    <!-- GIST PANEL -->
-    <div id="panel-gist">
-      <div class="settings-section">
-        <h4 style="margin-bottom:.4rem">Private GitHub Gist — no app registration needed</h4>
-        <ol class="settings-steps">
-          <li>Go to <a href="https://github.com" target="_blank">github.com</a> → sign in (or create free account)</li>
-          <li>Click your profile picture → <strong>Settings</strong> → scroll to <strong>Developer settings</strong></li>
-          <li><strong>Personal access tokens</strong> → <strong>Tokens (classic)</strong> → <strong>Generate new token</strong></li>
-          <li>Give it any name, tick only <strong>gist</strong>, click <strong>Generate token</strong></li>
-          <li>Copy the token and paste it below — the app creates a private gist automatically</li>
-        </ol>
-      </div>
-
-      <div id="gist-connected-banner" style="display:none;background:#e8eef8;border:1px solid #a8bfe8;border-radius:8px;padding:.7rem 1rem;margin:.6rem 0">
-        <div style="font-size:12px;font-weight:600;color:#1e3a6e;margin-bottom:.3rem">✓ Connected — data syncs automatically</div>
-        <div style="font-size:11px;color:#1e3a6e;margin-bottom:.4rem">Your data is stored at <a href="https://gist.github.com" target="_blank" style="color:#1e3a6e">gist.github.com</a> as a private file.</div>
-        <div style="font-size:11px;color:#1e3a6e;font-weight:500">To use on another PC or phone — you need:</div>
-        <div style="background:#fff;border:1px solid #a8bfe8;border-radius:6px;padding:.5rem .7rem;margin-top:.4rem;font-size:11px;color:#1e3a6e;line-height:1.8">
-          1. The same GitHub token<br>
-          2. Your Gist ID: <strong id="gist-id-display" style="font-family:'DM Mono',monospace;font-size:12px;word-break:break-all"></strong>
-          <button onclick="copyGistId()" style="margin-left:6px;font-size:10px;padding:1px 7px;border:1px solid #a8bfe8;border-radius:4px;background:#e8eef8;color:#1e3a6e;cursor:pointer;font-family:'DM Sans',sans-serif">Copy</button>
-        </div>
-      </div>
-
-      <div class="settings-input-row" style="margin-top:.6rem">
-        <label>GitHub Personal Access Token</label>
-        <input type="password" id="cfg-ghtoken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
-        <label style="margin-top:.5rem">Gist ID <span style="font-weight:400;color:var(--text-3)">— leave blank on first use, paste it on a new device</span></label>
-        <input type="text" id="cfg-gistid" placeholder="Leave blank to create new · or paste existing Gist ID" style="font-family:'DM Mono',monospace;font-size:11px">
-      </div>
-      <div class="modal-btns" style="margin-top:.8rem;justify-content:space-between;flex-wrap:wrap;gap:6px">
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn-sync" onclick="gistSaveSettings()" style="display:none">Connect &amp; Sync ↑</button>
-          <button class="btn-cancel" onclick="gistPull().then(()=>setSyncMsg(hasCfg()?\'✓ Data loaded from GitHub.\':\'\',\'#1e3a6e\'))">↓ Pull from GitHub</button>
-        </div>
-        <button class="btn-cancel" onclick="closeModal('settings-modal')">Close</button>
+    <!-- Supabase connection status -->
+    <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:.75rem 1rem;margin-bottom:1.1rem;display:flex;align-items:center;gap:10px">
+      <div style="width:9px;height:9px;border-radius:50%;background:#16a34a;flex-shrink:0;box-shadow:0 0 0 3px rgba(22,163,74,.2)"></div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:#14532d">Connected to Supabase</div>
+        <div style="font-size:11px;color:#166534;margin-top:1px">Data syncs automatically across all devices — no setup needed.</div>
       </div>
     </div>
 
-    <!-- EXPORT/IMPORT PANEL -->
-    <div id="panel-export" style="display:none">
+    <!-- LAST BACKUP STATUS -->
+    <div id="backup-status-bar" style="background:var(--surface2);border:1px solid var(--border-md);border-radius:var(--radius);padding:.65rem 1rem;margin-bottom:.85rem;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:2px">Last backup</div>
+        <div id="last-backup-label" style="font-size:13px;font-weight:500;color:var(--text)">Never</div>
+      </div>
+      <div id="last-backup-gist" style="font-size:11px;color:var(--text-3)"></div>
+    </div>
 
-      <!-- LAST BACKUP STATUS -->
-      <div id="backup-status-bar" style="background:var(--surface2);border:1px solid var(--border-md);border-radius:var(--radius);padding:.65rem 1rem;margin-bottom:.85rem;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <div>
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:2px">Last backup</div>
-          <div id="last-backup-label" style="font-size:13px;font-weight:500;color:var(--text)">Never</div>
-        </div>
-        <div id="last-backup-gist" style="font-size:11px;color:var(--text-3)"></div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+
+      <!-- DOWNLOAD BACKUP -->
+      <div style="border:1px solid var(--border-md);border-radius:var(--radius);padding:.85rem 1rem">
+        <div style="font-size:13px;font-weight:600;margin-bottom:3px">&#x2B07; Download backup</div>
+        <div style="font-size:12px;color:var(--text-2);margin-bottom:.65rem;line-height:1.5">Downloads a <strong>.json</strong> file with all your clients, modules, implementors and audit log. Save it to iCloud, OneDrive or Google Drive.</div>
+        <button class="btn-sync" onclick="exportJSON()">&#x2B07; Download backup file</button>
       </div>
 
-      <div style="display:flex;flex-direction:column;gap:10px">
-
-        <!-- DOWNLOAD BACKUP -->
-        <div style="border:1px solid var(--border-md);border-radius:var(--radius);padding:.85rem 1rem">
-          <div style="font-size:13px;font-weight:600;margin-bottom:3px">⬇ Download backup</div>
-          <div style="font-size:12px;color:var(--text-2);margin-bottom:.65rem;line-height:1.5">Downloads a <strong>.json</strong> file with all your clients, modules, implementors and audit log. Save it to iCloud, OneDrive or Google Drive.</div>
-          <button class="btn-sync" onclick="exportJSON()">⬇ Download backup file</button>
-        </div>
-
-        <!-- RESTORE FROM FILE -->
-        <div style="border:1px solid var(--border-md);border-radius:var(--radius);padding:.85rem 1rem">
-          <div style="font-size:13px;font-weight:600;margin-bottom:3px">⬆ Restore from file</div>
-          <div style="font-size:12px;color:var(--text-2);margin-bottom:.65rem;line-height:1.5">Select a previously downloaded backup file to restore all data. <strong style="color:#a32d2d">This will replace all current data.</strong></div>
-          <label style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--surface2);border:1px solid var(--border-md);border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">
-            ⬆ Choose backup file
-            <input type="file" accept=".json" style="display:none" onchange="importJSON(this)">
-          </label>
-        </div>
-
-        <!-- GITHUB GIST SYNC -->
-        <div style="border:1px solid #bfdbfe;border-radius:var(--radius);padding:.85rem 1rem;background:#eff6ff">
-          <div style="font-size:13px;font-weight:600;color:#1d4ed8;margin-bottom:3px">☁ GitHub Gist (recommended)</div>
-          <div style="font-size:12px;color:#1d4ed8;margin-bottom:.65rem;line-height:1.5">Automatically syncs every time you save. Works on iPhone and PC simultaneously. Switch to the <strong>Sync</strong> tab to connect.</div>
-          <button class="btn-cancel" onclick="switchTab('gist')">Go to Sync settings →</button>
-        </div>
-
+      <!-- RESTORE FROM FILE -->
+      <div style="border:1px solid var(--border-md);border-radius:var(--radius);padding:.85rem 1rem">
+        <div style="font-size:13px;font-weight:600;margin-bottom:3px">&#x2B06; Restore from file</div>
+        <div style="font-size:12px;color:var(--text-2);margin-bottom:.65rem;line-height:1.5">Select a previously downloaded backup file to restore all data. <strong style="color:#a32d2d">This will replace all current data.</strong></div>
+        <label style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--surface2);border:1px solid var(--border-md);border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">
+          &#x2B06; Choose backup file
+          <input type="file" accept=".json" style="display:none" onchange="importJSON(this)">
+        </label>
       </div>
-      <div class="modal-btns" style="margin-top:1rem">
-        <button class="btn-cancel" onclick="closeModal('settings-modal')">Close</button>
-      </div>
+
+    </div>
+
+    <div class="modal-btns" style="margin-top:1rem">
+      <button class="btn-cancel" onclick="closeModal('settings-modal')">Close</button>
     </div>
 
     <div id="sync-msg" style="font-size:12px;margin-top:.5rem;min-height:16px;color:var(--text-2)"></div>
@@ -1195,7 +1149,7 @@ function updateBackupStatus(){
     const full=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
     el.textContent=full+' ('+ago+')';
     el.style.color=diffDays>=7?'#a32d2d':diffDays>=3?'#8a5a1a':'#1e3a6e';
-    if(gistEl)gistEl.textContent=type==='gist'?'☁ Auto-synced via GitHub Gist':type==='file'?'📁 Manual file backup':'';
+    if(gistEl)gistEl.textContent=type==='file'?'📁 Manual file backup':'';
   }catch(e){el.textContent='Unknown';}
 }
 
@@ -1272,15 +1226,7 @@ async function load(){
 }
 
 async function openSettings(){
-  const cfg=getCfg();
-  const tokenEl=document.getElementById('cfg-ghtoken');
-  const gistEl=document.getElementById('cfg-gistid');
-  if(tokenEl)tokenEl.value='';
-  if(gistEl)gistEl.value=cfg.gistId||'';
-  if(cfg.gistId)showConnectedBanner(cfg.gistId);
-  else document.getElementById('gist-connected-banner').style.display='none';
   setSyncMsg('');
-  switchTab('gist');
   document.getElementById('settings-modal').classList.add('open');
 }
 
