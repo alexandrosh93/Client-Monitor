@@ -978,6 +978,10 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 
 <script>
 const KEY='avps_v6';
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
 const SUPA_URL='https://gdyibhbznfywnilqpjvo.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkeWliaGJ6bmZ5d25pbHFwanZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzOTM0OTQsImV4cCI6MjA5NDk2OTQ5NH0.wiyx0PBb3dtaH-kTpGVj68NWzeZpyVKWrD8XhWxftGQ';
 const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
@@ -2676,7 +2680,7 @@ async function addUser(){
   const role=document.getElementById('new-user-role').value;
   if(!name||!pass){toast('Enter username and password.');return;}
   if(getUsers().find(u=>u.username===name)){toast('Username already exists.');return;}
-  const {data,error}=await sb.from('app_users').insert({username:name,password:pass,role}).select().single();
+  const {data,error}=await sb.from('app_users').insert({username:name,password:await sha256(pass),role}).select().single();
   if(error){toast('Error adding user: '+error.message);return;}
   _cachedUsers.push(data);
   audit('User','Users','Added user: '+name+' ('+role+')');
@@ -2715,10 +2719,11 @@ async function doChangePassword(){
   const err=document.getElementById('chpwd-err');
   if(np.length<4){err.textContent='Password must be at least 4 characters.';return;}
   if(np!==cp){err.textContent='Passwords do not match.';return;}
-  const {error}=await sb.from('app_users').update({password:np}).eq('username',target);
+  const hash=await sha256(np);
+  const {error}=await sb.from('app_users').update({password:hash}).eq('username',target);
   if(error){err.textContent='Error updating password.';return;}
   const u=_cachedUsers.find(x=>x.username===target);
-  if(u)u.password=np;
+  if(u)u.password=hash;
   audit('Password',target,'Password changed for: '+target);
   closeModal('chpwd-modal');
   toast('Password updated.');
@@ -2807,12 +2812,18 @@ async function doLogin(){
   const err=document.getElementById('login-err');
   err.textContent='Signing in…';
   try{
-    const {data,error}=await sb.from('app_users').select('*').eq('username',u).eq('password',p).single();
+    const hash=await sha256(p);
+    let {data,error}=await sb.from('app_users').select('*').eq('username',u).eq('password',hash).single();
     if(error||!data){
+      const r2=await sb.from('app_users').select('*').eq('username',u).eq('password',p).single();
+      if(r2.error||!r2.data){
         err.textContent='Incorrect username or password.';
-      document.getElementById('login-pass').value='';
-      document.getElementById('login-pass').focus();
-      return;
+        document.getElementById('login-pass').value='';
+        document.getElementById('login-pass').focus();
+        return;
+      }
+      data=r2.data;
+      await sb.from('app_users').update({password:hash}).eq('username',u);
     }
     currentUser=u;
     document.getElementById('login-screen').classList.add('hidden');
