@@ -469,6 +469,7 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
     <span id="sidemenu-user-label" style="font-size:12px;color:var(--text-2);flex:1"></span>
     <button onclick="openChangePassword();closeSideMenu()" style="font-size:11px;padding:3px 9px;border:1px solid var(--border-md);border-radius:5px;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text-2)">Change password</button>
+    <button onclick="doLogout()" style="font-size:11px;padding:3px 9px;border:1px solid #f7c1c1;border-radius:5px;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;color:#a32d2d">Log out</button>
   </div>
 
   <!-- Sync status -->
@@ -603,20 +604,23 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 <div class="modal-bg" id="users-modal" onclick="bgClick(event,'users-modal')">
   <div class="modal" style="width:420px">
     <h3>👥 User Management</h3>
-    <div id="users-list" style="margin-bottom:1rem"></div>
-    <div style="border-top:1px solid var(--border);padding-top:.85rem;margin-top:.5rem">
-      <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Add New User</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <input id="new-user-name" type="text" placeholder="Username" style="flex:1;min-width:100px;font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
-        <input id="new-user-pass" type="password" placeholder="Password" style="flex:1;min-width:100px;font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
-        <select id="new-user-role" style="font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
-        <button class="btn-primary" onclick="addUser()">Add</button>
+    <div style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:1rem">
+      User accounts are managed securely in the <strong>Supabase Dashboard</strong>.
+      <div style="background:var(--surface2);border:1px solid var(--border-md);border-radius:var(--radius);padding:.7rem .9rem;margin-top:.7rem;font-size:12px;line-height:1.7">
+        <strong>To add a user:</strong><br>
+        1. Supabase → <strong>Authentication → Users → Add user</strong><br>
+        2. Email = <code>username@avps.local</code> (e.g. <code>jsmith@avps.local</code>)<br>
+        3. Set a password, tick <strong>Auto Confirm User</strong><br>
+        4. For an admin, set App Metadata to <code>{"role":"admin"}</code>
+        <br><br>
+        <strong>To remove a user:</strong> delete them from that same Users list.
       </div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:.6rem">You can change your own password below.</div>
     </div>
-    <div class="modal-btns"><button class="btn-cancel" onclick="closeModal('users-modal')">Close</button></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('users-modal')">Close</button>
+      <button class="btn-primary" onclick="closeModal('users-modal');openChangePassword()">Change my password</button>
+    </div>
   </div>
 </div>
 
@@ -624,8 +628,7 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 <div class="modal-bg" id="chpwd-modal" onclick="bgClick(event,'chpwd-modal')">
   <div class="modal" style="width:340px">
     <h3>🔑 Change Password</h3>
-    <div id="chpwd-target-info" style="font-size:12px;color:var(--text-2);margin-bottom:.85rem"></div>
-    <input type="hidden" id="chpwd-target-user">
+    <div id="chpwd-target-info" style="font-size:12px;color:var(--text-2);margin-bottom:.85rem">Change your password</div>
     <div class="mf"><label class="lbl">New password</label><input id="chpwd-new" type="password" placeholder="New password"></div>
     <div class="mf"><label class="lbl">Confirm password</label><input id="chpwd-confirm" type="password" placeholder="Confirm password"></div>
     <div id="chpwd-err" style="font-size:12px;color:#a32d2d;min-height:16px;margin-bottom:.5rem"></div>
@@ -1010,6 +1013,7 @@ let clients=[],nextId=1,mGrade=0;
 let implementors=[];
 let auditLog=[];   // [{ts, user, action, target, detail}]
 let currentUser=''; // set on login
+let isAdminUser=false;
 const expanded=new Set();
 let selStatuses=new Set();
 let sortMode='status';
@@ -1018,15 +1022,7 @@ let lastGistUpdate=null;
 let autoRefreshInterval=null;
 let pollBusy=false;
 
-/* ── USERS ── */
-let _cachedUsers=[];
-async function loadUsers(){
-  const {data}=await sb.from('app_users').select('*');
-  _cachedUsers=data||[];
-  return _cachedUsers;
-}
-function getUsers(){return _cachedUsers;}
-function saveUsers(users){_cachedUsers=users;}
+/* ── USERS handled by Supabase Auth ── */
 
 /* ── AUDIT ── */
 function audit(action,target,detail){
@@ -1205,7 +1201,6 @@ function importJSON(input){
 async function load(){
   setSyncStatus('spin','Loading…');
   try{
-    await loadUsers();
     const [cRes,iRes,mRes,aRes]=await Promise.all([
       sb.from('clients').select('*').order('id'),
       sb.from('implementors').select('name'),
@@ -2653,58 +2648,9 @@ function exportExcel(){
 
 /* ── USERS PANEL ── */
 function openUsersPanel(){
-  renderUsersList();
-  document.getElementById('new-user-name').value='';
-  document.getElementById('new-user-pass').value='';
   document.getElementById('users-modal').classList.add('open');
 }
-function renderUsersList(){
-  const users=getUsers();
-  const el=document.getElementById('users-list');
-  el.innerHTML=users.map((u,i)=>{
-    const isMe=u.username===currentUser;
-    const isSuperAdmin=u.username==='Admin'&&u.role==='admin';
-    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">'
-      +'<span style="flex:1;font-size:13px;font-weight:500">'+u.username+'</span>'
-      +'<span style="font-size:10px;padding:2px 7px;border-radius:99px;background:'+(u.role==='admin'?'#ede9fe':'var(--surface2)')+';color:'+(u.role==='admin'?'#4c1d95':'var(--text-3)')+'">'+u.role+'</span>'
-      +(isMe?'<span style="font-size:10px;color:var(--text-3)">(you)</span>':'' )
-      +'<button onclick="openChangePasswordFor(\''+u.username+'\')" style="font-size:11px;padding:2px 8px;border:1px solid var(--border-md);border-radius:5px;background:transparent;color:var(--text-2);cursor:pointer;font-family:\'DM Sans\',sans-serif">🔑 Reset</button>'
-      +(!isSuperAdmin&&!isMe?'<button onclick="deleteUser(\''+u.username+'\')" style="font-size:11px;padding:2px 8px;border:1px solid #f7c1c1;border-radius:5px;background:transparent;color:#a32d2d;cursor:pointer;font-family:\'DM Sans\',sans-serif">Remove</button>':'')
-      +'</div>';
-  }).join('');
-}
-async function addUser(){
-  const name=document.getElementById('new-user-name').value.trim();
-  const pass=document.getElementById('new-user-pass').value;
-  const role=document.getElementById('new-user-role').value;
-  if(!name||!pass){toast('Enter username and password.');return;}
-  if(getUsers().find(u=>u.username===name)){toast('Username already exists.');return;}
-  const {data,error}=await sb.from('app_users').insert({username:name,password:await sha256(pass),role}).select().single();
-  if(error){toast('Error adding user: '+error.message);return;}
-  _cachedUsers.push(data);
-  audit('User','Users','Added user: '+name+' ('+role+')');
-  renderUsersList();
-  document.getElementById('new-user-name').value='';
-  document.getElementById('new-user-pass').value='';
-  toast('User "'+name+'" added.');
-}
-async function deleteUser(username){
-  if(!confirm('Remove user "'+username+'"?'))return;
-  const {error}=await sb.from('app_users').delete().eq('username',username);
-  if(error){toast('Error removing user.');return;}
-  _cachedUsers=_cachedUsers.filter(u=>u.username!==username);
-  audit('User','Users','Removed user: '+username);
-  renderUsersList();
-  toast('User "'+username+'" removed.');
-}
 function openChangePassword(){
-  openChangePasswordFor(currentUser);
-}
-function openChangePasswordFor(username){
-  const isAdmin=getUsers().find(u=>u.username===currentUser)?.role==='admin';
-  if(username!==currentUser&&!isAdmin){toast('Permission denied.');return;}
-  document.getElementById('chpwd-target-user').value=username;
-  document.getElementById('chpwd-target-info').textContent='Changing password for: '+username;
   document.getElementById('chpwd-new').value='';
   document.getElementById('chpwd-confirm').value='';
   document.getElementById('chpwd-err').textContent='';
@@ -2712,18 +2658,15 @@ function openChangePasswordFor(username){
   document.getElementById('chpwd-modal').classList.add('open');
 }
 async function doChangePassword(){
-  const target=document.getElementById('chpwd-target-user').value;
   const np=document.getElementById('chpwd-new').value;
   const cp=document.getElementById('chpwd-confirm').value;
   const err=document.getElementById('chpwd-err');
-  if(np.length<4){err.textContent='Password must be at least 4 characters.';return;}
+  if(np.length<6){err.textContent='Password must be at least 6 characters.';return;}
   if(np!==cp){err.textContent='Passwords do not match.';return;}
-  const hash=await sha256(np);
-  const {error}=await sb.from('app_users').update({password:hash}).eq('username',target);
-  if(error){err.textContent='Error updating password.';return;}
-  const u=_cachedUsers.find(x=>x.username===target);
-  if(u)u.password=hash;
-  audit('Password',target,'Password changed for: '+target);
+  err.textContent='Saving…';
+  const {error}=await sb.auth.updateUser({password:np});
+  if(error){err.textContent='Error: '+error.message;return;}
+  audit('Password',currentUser,'Password changed');
   closeModal('chpwd-modal');
   toast('Password updated.');
 }
@@ -2805,42 +2748,47 @@ function exportAuditCSV(){
 }
 
 /* ── LOGIN ── */
+const AUTH_DOMAIN='@avps.local';
 async function doLogin(){
   const u=document.getElementById('login-user').value.trim();
   const p=document.getElementById('login-pass').value;
   const err=document.getElementById('login-err');
+  if(!u||!p){err.textContent='Enter username and password.';return;}
   err.textContent='Signing in…';
   try{
-    const hash=await sha256(p);
-    let {data,error}=await sb.from('app_users').select('*').eq('username',u).eq('password',hash).single();
-    if(error||!data){
-      const r2=await sb.from('app_users').select('*').eq('username',u).eq('password',p).single();
-      if(r2.error||!r2.data){
-        err.textContent='Incorrect username or password.';
-        document.getElementById('login-pass').value='';
-        document.getElementById('login-pass').focus();
-        return;
-      }
-      data=r2.data;
-      await sb.from('app_users').update({password:hash}).eq('username',u);
-    }
-    currentUser=u;
-    document.getElementById('login-screen').classList.add('hidden');
-    const sm=document.getElementById('sidemenu-user');
-    document.getElementById('sidemenu-user-label').textContent='👤 '+u;
-    sm.style.display='flex';
-    const isAdmin=data.role==='admin';
-    if(isAdmin){
-      const btu=document.getElementById('btn-users');if(btu)btu.style.display='flex';
-      const btus=document.getElementById('btn-users-side');if(btus)btus.style.display='flex';
+    const email=u.toLowerCase()+AUTH_DOMAIN;
+    const {data,error}=await sb.auth.signInWithPassword({email,password:p});
+    if(error||!data||!data.session){
+      err.textContent='Incorrect username or password.';
+      document.getElementById('login-pass').value='';
+      document.getElementById('login-pass').focus();
+      return;
     }
     err.textContent='';
-    audit('Login',u,'Signed in');
-    load();
+    await onAuthed(data.user);
+    audit('Login',currentUser,'Signed in');
   }catch(e){
     console.error('Login error:',e);
     err.textContent='Connection error. Try again.';
   }
+}
+async function onAuthed(user){
+  currentUser=(user.user_metadata&&user.user_metadata.username)||user.email.split('@')[0];
+  const role=(user.app_metadata&&user.app_metadata.role)||(user.user_metadata&&user.user_metadata.role)||'user';
+  isAdminUser=role==='admin';
+  document.getElementById('login-screen').classList.add('hidden');
+  const sm=document.getElementById('sidemenu-user');
+  document.getElementById('sidemenu-user-label').textContent='👤 '+currentUser;
+  sm.style.display='flex';
+  if(isAdminUser){
+    const btu=document.getElementById('btn-users');if(btu)btu.style.display='flex';
+    const btus=document.getElementById('btn-users-side');if(btus)btus.style.display='flex';
+  }
+  await load();
+}
+async function doLogout(){
+  try{await sb.auth.signOut();}catch(e){}
+  location.reload();
 }
 
 /* ── MODULES MANAGEMENT ── */
@@ -3012,9 +2960,15 @@ document.addEventListener('keydown',e=>{
 });
 updateSFUI();updateFIUI();updateFMUI();
 
-// App starts at login screen — load() called after successful sign-in
-document.getElementById('login-user').focus();
 buildVatBanner();buildStkBanner();
+// Restore existing Supabase Auth session, else show login screen
+(async()=>{
+  try{
+    const {data}=await sb.auth.getSession();
+    if(data&&data.session){await onAuthed(data.session.user);return;}
+  }catch(e){console.error('Session check failed:',e);}
+  document.getElementById('login-user').focus();
+})();
 </script>
 </body>
 </html>
