@@ -2756,7 +2756,7 @@ async function doLogin(){
   if(!u||!p){err.textContent='Enter username and password.';return;}
   err.textContent='Signing in…';
   try{
-    const email=u.toLowerCase()+AUTH_DOMAIN;
+    const email=u.includes('@')?u.toLowerCase():u.toLowerCase()+AUTH_DOMAIN;
     const {data,error}=await sb.auth.signInWithPassword({email,password:p});
     if(error||!data||!data.session){
       err.textContent='Incorrect username or password.';
