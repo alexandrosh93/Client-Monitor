@@ -320,20 +320,15 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3)}
 .hv-card-link{font-size:12px;color:var(--accent);cursor:pointer;font-weight:500;background:none;border:none;font-family:inherit;padding:0}
 .hv-card-link:hover{text-decoration:underline}
-.hv-impl-list{display:flex;flex-direction:column;gap:8px}
-.hv-impl-row{display:flex;align-items:center;gap:10px;cursor:pointer;padding:6px 8px;border-radius:8px;transition:background .14s}
-.hv-impl-row:hover{background:var(--surface2)}
-.hv-impl-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#e8eef8,#d1dcf7);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#1e3a6e;flex-shrink:0}
-.hv-impl-info{flex:1;min-width:0}
-.hv-impl-name{font-size:13px;font-weight:600;color:var(--text)}
-.hv-impl-bar-wrap{height:5px;background:var(--surface2);border-radius:99px;margin-top:3px;overflow:hidden}
-.hv-impl-bar{height:100%;background:linear-gradient(90deg,#2d52a0,#5b8ee8);border-radius:99px;transition:width .4s}
-.hv-impl-count{font-size:13px;font-weight:700;color:var(--accent);flex-shrink:0}
-.hv-impl-badge{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:700;flex-shrink:0}
-.hv-mgr-grid{display:flex;flex-wrap:wrap;gap:8px}
-.hv-mgr-chip{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:var(--surface2);border:1.5px solid var(--border-md);color:var(--text);transition:all .16s}
-.hv-mgr-chip:hover{border-color:var(--accent);color:var(--accent);background:var(--surface);transform:translateY(-1px)}
-.hv-mgr-chip .hv-mgr-n{font-size:15px;font-weight:800;color:var(--accent)}
+.hv-tilegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.hv-tile{position:relative;background:var(--bg);border:1px solid var(--border-sm);border-radius:13px;padding:12px 13px;cursor:pointer;transition:all .16s}
+.hv-tile:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.08)}
+.hv-tile-head{display:flex;align-items:center;justify-content:space-between;min-height:32px;margin-bottom:8px}
+.hv-tile-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:.01em}
+.hv-tile-you{font-size:9px;padding:2px 6px;border-radius:5px;background:#d1dcf7;color:#1e3a6e;font-weight:700}
+.hv-tile-num{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--text)}
+.hv-tile-name{font-size:12px;font-weight:600;color:var(--text-2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hv-tile-od{margin-top:7px;font-size:10px;font-weight:700;color:#a32d2d;background:#feecec;display:inline-block;padding:2px 8px;border-radius:6px}
 .hv-upcoming-list{display:flex;flex-direction:column;gap:5px}
 .hv-event{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border:1px solid var(--border-sm);border-radius:9px;cursor:pointer;transition:all .14s}
 .hv-event:hover{background:var(--surface2);border-color:var(--border-md);transform:translateX(2px)}
@@ -351,35 +346,6 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-qbtn-primary:hover{background:rgba(255,255,255,.9)}
 /* stat icon */
 .hv-stat-icon{position:absolute;top:11px;right:13px;font-size:17px;opacity:.45;line-height:1}
-/* onboarding pipeline */
-.hv-pipe-list{display:flex;flex-direction:column;gap:11px}
-.hv-pipe-stage{cursor:pointer;border-radius:8px;padding:5px 7px;margin:-5px -7px;transition:background .14s}
-.hv-pipe-stage:hover{background:var(--surface2)}
-.hv-pipe-top{display:flex;align-items:baseline;gap:8px;margin-bottom:5px}
-.hv-pipe-icon{font-size:14px}
-.hv-pipe-lbl{font-size:13px;font-weight:600;color:var(--text);flex:1}
-.hv-pipe-count{font-size:13px;font-weight:700;color:var(--text)}
-.hv-pipe-pct{font-size:11px;font-weight:600;color:var(--text-3);min-width:38px;text-align:right}
-.hv-pipe-bar-wrap{height:9px;background:var(--surface2);border-radius:99px;overflow:hidden}
-.hv-pipe-bar{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
-/* today focus */
-.hv-focus-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:10px;background:var(--bg);border:1px solid var(--border-sm);cursor:pointer;transition:all .14s}
-.hv-focus-item:hover{border-color:var(--border-md);transform:translateX(2px)}
-.hv-focus-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.hv-focus-client{font-size:13px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hv-focus-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0}
-.hv-focus-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1.6rem .5rem;color:var(--text-3)}
-.hv-focus-empty .em{font-size:30px;margin-bottom:8px;opacity:.8}
-/* recent activity */
-.hv-act-list{display:flex;flex-direction:column;gap:2px}
-.hv-act{display:flex;gap:11px;padding:7px 4px;position:relative}
-.hv-act-rail{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
-.hv-act-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);margin-top:4px;flex-shrink:0;box-shadow:0 0 0 3px var(--surface)}
-.hv-act-line{width:2px;flex:1;background:var(--border-sm);margin-top:2px}
-.hv-act-body{flex:1;min-width:0;padding-bottom:4px}
-.hv-act-txt{font-size:12.5px;color:var(--text-2);line-height:1.4}
-.hv-act-txt b{color:var(--text);font-weight:700}
-.hv-act-time{font-size:10.5px;color:var(--text-3);margin-top:1px}
 @media(max-width:960px){.hv-stats{grid-template-columns:repeat(3,1fr)}.hv-grid{grid-template-columns:1fr}.hv-grid-3{grid-template-columns:1fr}}
 @media(max-width:600px){.hv-stats{grid-template-columns:repeat(2,1fr)}.hv-banner{flex-wrap:wrap}.hv-banner-actions{width:100%;flex-direction:row;flex-wrap:wrap}.hv-qbtn{flex:1}.hv-greeting{font-size:18px}}
 /* ═══════ TABLET (769px – 1024px) ═══════ */
@@ -2733,7 +2699,6 @@ function renderHomeDashboard(){
   const statusData=statusDef.map(s=>({...s,n:clients.filter(c=>c.status===s.key).length})).filter(s=>s.n>0);
 
   // implementors
-  const maxImpl=Math.max(1,...implementors.map(n=>clients.filter(c=>c.implementor===n).length));
   const implData=implementors.map(name=>{
     const mine=clients.filter(c=>c.implementor===name);
     const overdue=mine.filter(c=>(!c.vatDone&&c.vatDate&&c.vatDate<todayISO)||(!c.stkDone&&c.stkDate&&c.stkDate<todayISO)).length;
@@ -2758,44 +2723,10 @@ function renderHomeDashboard(){
 
   const evBadge={VAT:{bg:'#fff3cd',color:'#856404',lbl:'⚑ VAT'},STK:{bg:'#fef9c3',color:'#7a6500',lbl:'📦 STK'},LIVE:{bg:'#d1fae5',color:'#065f46',lbl:'🚀 Live'}};
 
-  // onboarding pipeline (funnel)
-  const pMeeting=clients.filter(c=>c.mtgSet).length;
-  const pVat=clients.filter(c=>c.vatDone).length;
-  const pStk=clients.filter(c=>c.stkDone).length;
-  const pLive=clients.filter(c=>c.liveDate&&c.liveDate<=todayISO).length;
-  const pipeline=[
-    {key:'Meeting Set',icon:'📅',n:pMeeting,color:'#8b5cf6',go:{}},
-    {key:'VAT Training',icon:'⚑',n:pVat,color:'#3b6cc7',go:{}},
-    {key:'Stock Take',icon:'📦',n:pStk,color:'#f59e0b',go:{}},
-    {key:'Go-Live',icon:'🚀',n:pLive,color:'#10b981',go:{}},
-  ];
-
-  // today's focus — overdue + due today, most urgent first
-  const focus=[];
-  clients.forEach(c=>{
-    if(c.vatDate&&!c.vatDone&&c.vatDate<todayISO) focus.push({client:c.name,impl:c.implementor||'',type:'VAT',label:'VAT overdue',urgent:2,dot:'#a32d2d',bg:'#feecec',fg:'#a32d2d'});
-    else if(c.vatDate&&!c.vatDone&&c.vatDate===todayISO) focus.push({client:c.name,impl:c.implementor||'',type:'VAT',label:'VAT today',urgent:1,dot:'#856404',bg:'#fff3cd',fg:'#856404'});
-    if(c.stkDate&&!c.stkDone&&c.stkDate<todayISO) focus.push({client:c.name,impl:c.implementor||'',type:'STK',label:'Stock overdue',urgent:2,dot:'#a32d2d',bg:'#feecec',fg:'#a32d2d'});
-    else if(c.stkDate&&!c.stkDone&&c.stkDate===todayISO) focus.push({client:c.name,impl:c.implementor||'',type:'STK',label:'Stock today',urgent:1,dot:'#7a6500',bg:'#fef9c3',fg:'#7a6500'});
-    if(c.liveDate&&c.liveDate===todayISO) focus.push({client:c.name,impl:c.implementor||'',type:'LIVE',label:'Go-Live today',urgent:1,dot:'#065f46',bg:'#d1fae5',fg:'#065f46'});
-  });
-  focus.sort((a,b)=>b.urgent-a.urgent);
-
-  // recent activity
-  const recent=(auditLog||[]).slice(0,6);
-  function relTime(ts){
-    const d=new Date(ts),s=Math.round((now-d)/1000);
-    if(isNaN(s))return'';
-    if(s<60)return'just now';
-    const m=Math.round(s/60);if(m<60)return m+'m ago';
-    const h=Math.round(m/60);if(h<24)return h+'h ago';
-    const dd=Math.round(h/24);if(dd<7)return dd+'d ago';
-    return d.getDate()+' '+months[d.getMonth()].slice(0,3);
-  }
-
   // smart banner subline
   const attention=vatOverdue+stkOverdue;
-  const dueToday=focus.filter(f=>f.urgent===1).length;
+  const dueToday=clients.filter(c=>(c.vatDate&&!c.vatDone&&c.vatDate===todayISO)||(c.stkDate&&!c.stkDone&&c.stkDate===todayISO)||(c.liveDate&&c.liveDate===todayISO)).length;
+  const avPal=['#3b6cc7','#8b5cf6','#f59e0b','#10b981','#ec4899','#06b6d4','#ef4444','#6366f1','#0ea5e9','#84cc16'];
   let subline;
   if(attention) subline=`⚠️ <b>${attention}</b> item${attention!==1?'s':''} need${attention===1?'s':''} attention${dueToday?` · <b>${dueToday}</b> due today`:''}`;
   else if(dueToday) subline=`<b>${dueToday}</b> task${dueToday!==1?'s':''} due today — you're on track ✓`;
@@ -2858,121 +2789,67 @@ function renderHomeDashboard(){
   </div>
 
   <div class="hv-card" style="margin-bottom:1.25rem">
-    <div class="hv-card-hdr">
-      <div class="hv-card-title">Onboarding Pipeline</div>
-      <span style="font-size:11px;color:var(--text-3)">${total} client${total!==1?'s':''} tracked</span>
-    </div>
-    <div class="hv-pipe-list">
-      ${pipeline.map(p=>{const pct=Math.round(p.n/Math.max(1,total)*100);return`
-        <div class="hv-pipe-stage" onclick="goClients(${JSON.stringify(p.go).replace(/"/g,'&quot;')})">
-          <div class="hv-pipe-top">
-            <span class="hv-pipe-icon">${p.icon}</span>
-            <span class="hv-pipe-lbl">${p.key}</span>
-            <span class="hv-pipe-count">${p.n}<span style="color:var(--text-3);font-weight:500"> / ${total}</span></span>
-            <span class="hv-pipe-pct">${pct}%</span>
-          </div>
-          <div class="hv-pipe-bar-wrap"><div class="hv-pipe-bar" style="width:${pct}%;background:linear-gradient(90deg,${p.color},${p.color}cc)"></div></div>
-        </div>`;}).join('')}
+    <div class="hv-card-hdr"><div class="hv-card-title">Status Overview</div></div>
+    <div style="display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+      <div style="position:relative;width:140px;height:140px;flex-shrink:0"><canvas id="hv-chart-status" width="140" height="140"></canvas>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+          <div style="font-size:24px;font-weight:800;color:var(--text);line-height:1">${total}</div>
+          <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em">clients</div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:200px;display:flex;flex-wrap:wrap;gap:8px">
+        ${statusData.map(s=>`
+          <div onclick="goClients({status:'${s.key}'})" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:9px;background:var(--bg);border:1px solid var(--border-sm);transition:all .14s" onmouseover="this.style.borderColor='${s.color}'" onmouseout="this.style.borderColor='var(--border-sm)'">
+            <div style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
+            <div style="font-size:12px;color:var(--text-2)">${s.key}</div>
+            <div style="font-size:14px;font-weight:800;color:var(--text)">${s.n}</div>
+          </div>`).join('')}
+      </div>
     </div>
   </div>
 
   <div class="hv-grid">
-    <div class="hv-card">
-      <div class="hv-card-hdr"><div class="hv-card-title">Status Overview</div></div>
-      <div style="display:flex;align-items:center;gap:16px">
-        <div style="position:relative;width:140px;height:140px;flex-shrink:0"><canvas id="hv-chart-status" width="140" height="140"></canvas>
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-            <div style="font-size:24px;font-weight:800;color:var(--text);line-height:1">${total}</div>
-            <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em">clients</div>
-          </div>
-        </div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:7px">
-          ${statusData.map(s=>`
-            <div onclick="goClients({status:'${s.key}'})" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:6px;transition:background .13s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
-              <div style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
-              <div style="font-size:12px;color:var(--text-2);flex:1">${s.key}</div>
-              <div style="font-size:13px;font-weight:700;color:var(--text)">${s.n}</div>
-            </div>`).join('')}
-        </div>
-      </div>
-    </div>
-
     <div class="hv-card">
       <div class="hv-card-hdr">
         <div class="hv-card-title">By Implementor</div>
         <button class="hv-card-link" onclick="goClients({})">View all →</button>
       </div>
-      <div class="hv-impl-list">
-        ${implData.map(im=>`
-          <div class="hv-impl-row" onclick="goClients({impl:'${esc(im.name)}'})">
-            <div class="hv-impl-avatar">${im.name.slice(0,2).toUpperCase()}</div>
-            <div class="hv-impl-info">
-              <div style="display:flex;align-items:center;gap:6px">
-                <span class="hv-impl-name">${esc(im.name)}</span>
-                ${im.isMe?'<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:#d1dcf7;color:#1e3a6e;font-weight:700">you</span>':''}
-                ${im.overdue?`<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:#feecec;color:#a32d2d;font-weight:700">${im.overdue} overdue</span>`:''}
-              </div>
-              <div class="hv-impl-bar-wrap"><div class="hv-impl-bar" style="width:${Math.round(im.count/maxImpl*100)}%"></div></div>
+      <div class="hv-tilegrid">
+        ${implData.map((im,i)=>`
+          <div class="hv-tile" onclick="goClients({impl:'${esc(im.name)}'})">
+            <div class="hv-tile-head">
+              <div class="hv-tile-av" style="background:${avPal[i%avPal.length]}">${im.name.slice(0,2).toUpperCase()}</div>
+              ${im.isMe?'<span class="hv-tile-you">you</span>':''}
             </div>
-            <div class="hv-impl-count">${im.count}</div>
+            <div class="hv-tile-num">${im.count}</div>
+            <div class="hv-tile-name">${esc(im.name)}</div>
+            ${im.overdue?`<div class="hv-tile-od">${im.overdue} overdue</div>`:''}
           </div>`).join('')}
-        ${unassigned?`<div class="hv-impl-row" onclick="goClients({impl:''})">
-          <div class="hv-impl-avatar" style="background:var(--surface2);color:var(--text-3)">—</div>
-          <div class="hv-impl-info"><div class="hv-impl-name" style="color:var(--text-3)">Unassigned</div>
-            <div class="hv-impl-bar-wrap"><div class="hv-impl-bar" style="width:${Math.round(unassigned/maxImpl*100)}%;background:var(--border-md)"></div></div>
-          </div>
-          <div class="hv-impl-count" style="color:var(--text-3)">${unassigned}</div>
+        ${unassigned?`<div class="hv-tile" onclick="goClients({impl:''})">
+          <div class="hv-tile-head"><div class="hv-tile-av" style="background:var(--text-3)">—</div></div>
+          <div class="hv-tile-num" style="color:var(--text-3)">${unassigned}</div>
+          <div class="hv-tile-name">Unassigned</div>
         </div>`:''}
       </div>
     </div>
-  </div>
 
-  <div class="hv-grid">
     <div class="hv-card">
       <div class="hv-card-hdr">
-        <div class="hv-card-title">Today's Focus</div>
-        ${focus.length?`<span style="font-size:11px;font-weight:700;color:#a32d2d">${focus.length}</span>`:''}
+        <div class="hv-card-title">By Manager</div>
+        <button class="hv-card-link" onclick="goClients({})">View all →</button>
       </div>
-      ${focus.length?`<div class="hv-upcoming-list">
-        ${focus.slice(0,6).map(f=>`
-          <div class="hv-focus-item" onclick="goClients({impl:'${esc(f.impl)}'})">
-            <div class="hv-focus-dot" style="background:${f.dot}"></div>
-            <div class="hv-focus-client">${esc(f.client)}</div>
-            <div class="hv-focus-tag" style="background:${f.bg};color:${f.fg}">${f.label}</div>
-          </div>`).join('')}
-        ${focus.length>6?`<div style="font-size:12px;color:var(--text-3);padding:.3rem .2rem">+${focus.length-6} more…</div>`:''}
-      </div>`:`<div class="hv-focus-empty"><div class="em">🎉</div><div style="font-size:13px;font-weight:600;color:var(--text-2)">Nothing due today</div><div style="font-size:12px;margin-top:2px">No overdue items either — great work!</div></div>`}
-    </div>
-
-    <div class="hv-card">
-      <div class="hv-card-hdr"><div class="hv-card-title">Recent Activity</div></div>
-      ${recent.length?`<div class="hv-act-list">
-        ${recent.map((a,i)=>`
-          <div class="hv-act">
-            <div class="hv-act-rail"><div class="hv-act-dot"></div>${i<recent.length-1?'<div class="hv-act-line"></div>':''}</div>
-            <div class="hv-act-body">
-              <div class="hv-act-txt"><b>${esc(a.user||'Someone')}</b> ${esc(a.action||'updated')}${a.target?` <b>${esc(a.target)}</b>`:''}${a.detail?` — ${esc(a.detail)}`:''}</div>
-              <div class="hv-act-time">${relTime(a.ts)}</div>
-            </div>
-          </div>`).join('')}
-      </div>`:`<div style="font-size:13px;color:var(--text-3);padding:.5rem .2rem">No recent activity yet.</div>`}
+      ${mgrSet.length?`<div class="hv-tilegrid">
+        ${mgrSet.map((m,i)=>{
+          const n=clients.filter(c=>c.mgr===m).length;
+          return`<div class="hv-tile" onclick="goClients({mgr:'${esc(m)}'})">
+            <div class="hv-tile-head"><div class="hv-tile-av" style="background:${avPal[(i+3)%avPal.length]}">${m.slice(0,2).toUpperCase()}</div></div>
+            <div class="hv-tile-num">${n}</div>
+            <div class="hv-tile-name">${esc(m)}</div>
+          </div>`;
+        }).join('')}
+      </div>`:'<div style="font-size:13px;color:var(--text-3);padding:.5rem .2rem">No managers assigned yet.</div>'}
     </div>
   </div>
-
-  ${mgrSet.length?`<div class="hv-card" style="margin-bottom:1.25rem">
-    <div class="hv-card-hdr"><div class="hv-card-title">By Manager</div></div>
-    <div class="hv-mgr-grid">
-      <div class="hv-mgr-chip" onclick="goClients({})">
-        <span class="hv-mgr-n">${total}</span> All
-      </div>
-      ${mgrSet.map(m=>{
-        const n=clients.filter(c=>c.mgr===m).length;
-        return`<div class="hv-mgr-chip" onclick="goClients({mgr:'${esc(m)}'})">
-          <span class="hv-mgr-n">${n}</span> ${esc(m)}
-        </div>`;
-      }).join('')}
-    </div>
-  </div>`:''}
 
   <div class="hv-card">
     <div class="hv-card-hdr">
