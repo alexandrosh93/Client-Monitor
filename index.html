@@ -715,7 +715,7 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
     <!-- Add user view -->
     <div id="um-add-view" style="display:none">
       <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:.85rem">New User</div>
-      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Username</label><input id="um-add-login" type="text" placeholder="jsmith  or  john@company.com"></div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Username <span style="font-weight:400;color:var(--text-3)">(used to login)</span></label><input id="um-add-username" type="text" placeholder="e.g. jsmith"></div>
       <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Full Name</label><input id="um-add-fullname" type="text" placeholder="e.g. John Smith"></div>
       <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Password</label><input id="um-add-pass" type="password" placeholder="Minimum 6 characters"></div>
       <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Role</label><select id="um-add-role"><option value="user">User</option><option value="admin">Admin</option></select></div>
@@ -729,8 +729,9 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
     <div id="um-edit-view" style="display:none">
       <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:.85rem">Edit User</div>
       <input type="hidden" id="um-edit-id">
-      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Username / Email</label><input id="um-edit-email" type="text" placeholder="jsmith  or  john@company.com"></div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Username <span style="font-weight:400;color:var(--text-3)">(used to login)</span></label><input id="um-edit-username" type="text" placeholder="e.g. jsmith"></div>
       <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Full Name</label><input id="um-edit-fullname" type="text" placeholder="e.g. John Smith"></div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Email <span style="font-weight:400;color:var(--text-3)">(optional — leave blank to use username@avps.local)</span></label><input id="um-edit-email" type="text" placeholder="john@company.com  or  leave blank"></div>
       <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Role</label><select id="um-edit-role"><option value="user">User</option><option value="admin">Admin</option></select></div>
       <div style="border-top:1px solid var(--border-md);padding-top:.75rem;margin:.75rem 0 .6rem">
         <div class="mf"><label class="lbl">New Password <span style="font-weight:400;color:var(--text-3)">(leave blank to keep current)</span></label><input id="um-edit-pass" type="password" placeholder="Leave blank to keep"></div>
@@ -1138,7 +1139,8 @@ const S_ORDER=['Active','Not started','Dormant','Pending Follow-Up','Completed']
 let clients=[],nextId=1,mGrade=0;
 let implementors=[];
 let auditLog=[];   // [{ts, user, action, target, detail}]
-let currentUser=''; // set on login
+let currentUser=''; // username (login identifier)
+let currentFullName=''; // full name for display
 let isAdminUser=false;
 const expanded=new Set();
 let selStatuses=new Set();
@@ -2786,7 +2788,7 @@ function renderHomeDashboard(){
   <div class="hv-banner">
     <div class="hv-avatar">${initials||'?'}</div>
     <div class="hv-banner-text">
-      <div class="hv-greeting">${greeting}, ${esc(currentUser)}</div>
+      <div class="hv-greeting">${greeting}, ${esc(currentFullName)}</div>
       <div class="hv-date">${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}</div>
       ${subline?`<div class="hv-banner-sub">${subline}</div>`:''}
     </div>
@@ -3110,10 +3112,10 @@ function umShowAdd(){
   document.getElementById('um-list-view').style.display='none';
   document.getElementById('um-add-view').style.display='';
   document.getElementById('um-edit-view').style.display='none';
-  ['um-add-login','um-add-fullname','um-add-pass'].forEach(id=>document.getElementById(id).value='');
+  ['um-add-username','um-add-fullname','um-add-pass'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('um-add-role').value='user';
   document.getElementById('um-add-err').textContent='';
-  document.getElementById('um-add-login').focus();
+  document.getElementById('um-add-username').focus();
 }
 function umOpenEdit(userId){
   const u=_umUsers.find(x=>x.id===userId);if(!u)return;
@@ -3121,43 +3123,46 @@ function umOpenEdit(userId){
   document.getElementById('um-add-view').style.display='none';
   document.getElementById('um-edit-view').style.display='';
   document.getElementById('um-edit-id').value=u.id;
-  document.getElementById('um-edit-email').value=u.email;
+  document.getElementById('um-edit-username').value=u.username;
   document.getElementById('um-edit-fullname').value=u.full_name||'';
+  document.getElementById('um-edit-email').value=u.email.endsWith('@avps.local')?'':u.email;
   document.getElementById('um-edit-role').value=u.role==='admin'?'admin':'user';
   document.getElementById('um-edit-pass').value='';
   document.getElementById('um-edit-err').textContent='';
-  document.getElementById('um-edit-email').focus();
+  document.getElementById('um-edit-username').focus();
 }
 async function umCreateUser(){
-  const login=document.getElementById('um-add-login').value.trim();
+  const username=document.getElementById('um-add-username').value.trim();
   const fullname=document.getElementById('um-add-fullname').value.trim();
   const pass=document.getElementById('um-add-pass').value;
   const role=document.getElementById('um-add-role').value;
   const err=document.getElementById('um-add-err');
-  if(!login||!fullname||!pass){err.textContent='All fields are required.';return;}
+  if(!username||!fullname||!pass){err.textContent='All fields are required.';return;}
+  if(!/^[a-zA-Z0-9._@-]+$/.test(username)){err.textContent='Username can only contain letters, numbers, . _ @ -';return;}
   if(pass.length<6){err.textContent='Password must be at least 6 characters.';return;}
   err.textContent='Creating…';
-  const {error}=await sb.rpc('admin_create_user',{p_login:login,p_password:pass,p_username:login,p_full_name:fullname,p_role:role});
+  const {error}=await sb.rpc('admin_create_user',{p_login:username,p_password:pass,p_username:username,p_full_name:fullname,p_role:role});
   if(error){err.textContent='Error: '+error.message;return;}
-  audit('Users',currentUser,'Created user: '+login);
+  audit('Users',currentUser,'Created user: '+username);
   toast('User created.');
   umShowList();
   await umLoadUsers();
 }
 async function umSaveEdit(){
   const id=document.getElementById('um-edit-id').value;
-  const emailRaw=document.getElementById('um-edit-email').value.trim();
+  const username=document.getElementById('um-edit-username').value.trim();
   const fullname=document.getElementById('um-edit-fullname').value.trim();
+  const emailRaw=document.getElementById('um-edit-email').value.trim();
   const role=document.getElementById('um-edit-role').value;
   const pass=document.getElementById('um-edit-pass').value;
   const err=document.getElementById('um-edit-err');
-  if(!emailRaw){err.textContent='Username / email is required.';return;}
+  if(!username){err.textContent='Username is required.';return;}
   if(!fullname){err.textContent='Full name is required.';return;}
-  const newEmail=emailRaw.includes('@')?emailRaw.toLowerCase():emailRaw.toLowerCase()+'@avps.local';
-  const newUsername=emailRaw.includes('@')?emailRaw.split('@')[0].toLowerCase():emailRaw.toLowerCase();
   err.textContent='Saving…';
-  const {error}=await sb.rpc('admin_update_user',{p_user_id:id,p_username:newUsername,p_full_name:fullname,p_role:role});
+  const {error}=await sb.rpc('admin_update_user',{p_user_id:id,p_username:username,p_full_name:fullname,p_role:role});
   if(error){err.textContent='Error: '+error.message;return;}
+  // Update email: use explicit email if provided, otherwise username@avps.local
+  const newEmail=emailRaw?emailRaw.toLowerCase():username.toLowerCase()+'@avps.local';
   const origEmail=(_umUsers.find(u=>u.id===id)||{}).email||'';
   if(newEmail!==origEmail){
     const {error:ee}=await sb.rpc('admin_update_email',{p_user_id:id,p_new_email:newEmail});
@@ -3168,7 +3173,7 @@ async function umSaveEdit(){
     const {error:pe}=await sb.rpc('admin_set_password',{p_user_id:id,p_password:pass});
     if(pe){err.textContent='Saved, password error: '+pe.message;return;}
   }
-  audit('Users',currentUser,'Updated user: '+newUsername);
+  audit('Users',currentUser,'Updated user: '+username);
   toast('User updated.');
   umShowList();
   await umLoadUsers();
@@ -3312,6 +3317,7 @@ async function doLogin(){
 }
 async function onAuthed(user){
   currentUser=(user.user_metadata&&user.user_metadata.username)||user.email.split('@')[0];
+  currentFullName=(user.user_metadata&&user.user_metadata.full_name)||currentUser;
   const role=(user.app_metadata&&user.app_metadata.role)||(user.user_metadata&&user.user_metadata.role)||'user';
   isAdminUser=role==='admin';
   document.getElementById('login-screen').classList.add('hidden');
