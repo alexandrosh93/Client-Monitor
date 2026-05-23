@@ -1031,14 +1031,14 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
     <div style="border-top:1px solid var(--border-md);padding-top:.85rem">
       <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.65rem">Add Implementor</div>
       <div class="mf" style="margin-bottom:.55rem">
-        <label class="lbl">Pick from app users <span style="font-weight:400;color:var(--text-3)">(auto-fills name &amp; email)</span></label>
+        <label class="lbl">Pick from app users <span style="font-weight:400;color:var(--text-3)">(auto-fills name)</span></label>
         <select id="impl-user-pick" onchange="implPickUser()" style="font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;width:100%">
           <option value="">— Select user —</option>
         </select>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:.55rem">
-        <div class="mf" style="flex:1;margin:0"><label class="lbl">Display name</label><input id="impl-input" type="text" placeholder="e.g. AH" onkeydown="if(event.key==='Enter')addImpl()"></div>
-        <div class="mf" style="flex:2;margin:0"><label class="lbl">Email</label><input id="impl-email-input" type="email" placeholder="implementor@company.com" onkeydown="if(event.key==='Enter')addImpl()"></div>
+      <div class="mf" style="margin-bottom:.55rem">
+        <label class="lbl">Display name</label>
+        <input id="impl-input" type="text" placeholder="e.g. AH" onkeydown="if(event.key==='Enter')addImpl()">
       </div>
       <button class="btn-primary" onclick="addImpl()">Add Implementor</button>
       <div id="impl-add-err" style="font-size:12px;color:#a32d2d;min-height:16px;margin-top:.4rem"></div>
@@ -1159,7 +1159,6 @@ const S_ORDER=['Active','Not started','Dormant','Pending Follow-Up','Completed']
 
 let clients=[],nextId=1,mGrade=0;
 let implementors=[];
-let implementorEmails=new Map();
 let auditLog=[];   // [{ts, user, action, target, detail}]
 let currentUser=''; // set on login
 let isAdminUser=false;
@@ -1364,13 +1363,11 @@ async function load(){
       toast('Implementors failed to load: '+(iRes.error.message||'unknown error'));
     }
     implementors=(iRes.data||[]).map(r=>r.name);
-    implementorEmails=new Map((iRes.data||[]).map(r=>[r.name,r.email||'']));
     // Safety net: never show an empty list when clients already reference implementors
     if(!implementors.length){
       const derived=[...new Set(clients.map(c=>c.implementor).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
       if(derived.length){
         implementors=derived;
-        implementorEmails=new Map(derived.map(n=>[n,'']));
         // If the table loaded fine but was simply empty, persist the recovered names
         if(!iRes.error){
           sb.from('implementors').insert(derived.map(name=>({name}))).then(({error})=>{if(error)console.error('Seed implementors error:',error);});
@@ -2284,7 +2281,6 @@ function populateImplSelects(){
 async function openImplMgr(){
   renderImplList();
   document.getElementById('impl-input').value='';
-  document.getElementById('impl-email-input').value='';
   document.getElementById('impl-add-err').textContent='';
   // populate user picker
   const pick=document.getElementById('impl-user-pick');
@@ -2309,7 +2305,6 @@ function implPickUser(){
   if(!val)return;
   const u=JSON.parse(val);
   document.getElementById('impl-input').value=u.name;
-  document.getElementById('impl-email-input').value=u.email||'';
 }
 function renderImplList(){
   const el=document.getElementById('impl-list');
@@ -2318,11 +2313,11 @@ function renderImplList(){
     return;
   }
   el.innerHTML=implementors.map((name,i)=>{
-    const email=implementorEmails.get(name)||'';
+    const n=clients.filter(c=>c.implementor===name).length;
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border-sm);gap:8px">
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:600">${esc(name)}</div>
-        <div style="font-size:11px;color:var(--text-3);margin-top:1px">${email?esc(email):'<span style="color:#ccc">No email set</span>'}</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:1px">${n} client${n!==1?'s':''} assigned</div>
       </div>
       <button onclick="removeImpl(${i})" style="font-size:11px;padding:2px 8px;border:1px solid #f7c1c1;border-radius:5px;background:transparent;color:#a32d2d;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0">Remove</button>
     </div>`;
@@ -2330,30 +2325,31 @@ function renderImplList(){
 }
 async function addImpl(){
   const name=document.getElementById('impl-input').value.trim();
-  const email=document.getElementById('impl-email-input').value.trim();
   const err=document.getElementById('impl-add-err');
   if(!name){err.textContent='Enter a display name.';return;}
   if(implementors.includes(name)){err.textContent='That name already exists.';return;}
   err.textContent='Saving…';
-  const {error}=await sb.from('implementors').insert({name,email:email||null});
+  const {error}=await sb.from('implementors').insert({name});
   if(error){err.textContent='Error: '+error.message;return;}
   implementors.push(name);
   implementors.sort((a,b)=>a.localeCompare(b));
-  implementorEmails.set(name,email||'');
   renderImplList();populateImplFilter();
   document.getElementById('impl-input').value='';
-  document.getElementById('impl-email-input').value='';
   document.getElementById('impl-user-pick').value='';
   err.textContent='';
   toast('Implementor added.');
 }
 async function removeImpl(i){
   const name=implementors[i];
-  if(!confirm(`Remove implementor "${name}"? Their clients will have no implementor assigned.`))return;
+  if(!name)return;
+  const assigned=clients.filter(c=>c.implementor===name).length;
+  const msg=assigned
+    ? `Remove implementor "${name}"?\n\n${assigned} client${assigned!==1?'s':''} ${assigned!==1?'are':'is'} assigned to them and will be left with no implementor.\n\nThis cannot be undone.`
+    : `Remove implementor "${name}"?\n\nThis cannot be undone.`;
+  if(!confirm(msg))return;
   const {error}=await sb.from('implementors').delete().eq('name',name);
   if(error){toast('Error: '+error.message);return;}
   implementors.splice(i,1);
-  implementorEmails.delete(name);
   clients.forEach(c=>{if(c.implementor===name)c.implementor='';});
   saveNow();render();renderImplList();populateImplFilter();
   toast(`"${name}" removed.`);
