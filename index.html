@@ -3158,16 +3158,11 @@ async function umSaveEdit(){
   const err=document.getElementById('um-edit-err');
   if(!username){err.textContent='Username is required.';return;}
   if(!fullname){err.textContent='Full name is required.';return;}
-  err.textContent='Saving…';
-  const {error}=await sb.rpc('admin_update_user',{p_user_id:id,p_username:username,p_full_name:fullname,p_role:role});
-  if(error){err.textContent='Error: '+error.message;return;}
-  // Update email: use explicit email if provided, otherwise username@avps.local
+  // Email: use explicit value if given, otherwise auto-generate from username
   const newEmail=emailRaw?emailRaw.toLowerCase():username.toLowerCase()+'@avps.local';
-  const origEmail=(_umUsers.find(u=>u.id===id)||{}).email||'';
-  if(newEmail!==origEmail){
-    const {error:ee}=await sb.rpc('admin_update_email',{p_user_id:id,p_new_email:newEmail});
-    if(ee){err.textContent='Saved but email error: '+ee.message;return;}
-  }
+  err.textContent='Saving…';
+  const {error}=await sb.rpc('admin_update_user',{p_user_id:id,p_username:username,p_full_name:fullname,p_role:role,p_new_email:newEmail});
+  if(error){err.textContent='Error: '+error.message;return;}
   if(pass){
     if(pass.length<6){err.textContent='Saved but password must be 6+ characters.';return;}
     const {error:pe}=await sb.rpc('admin_set_password',{p_user_id:id,p_password:pass});

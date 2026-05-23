@@ -8,8 +8,8 @@
 DROP FUNCTION IF EXISTS admin_list_users();
 DROP FUNCTION IF EXISTS admin_create_user(text,text,text,text);
 DROP FUNCTION IF EXISTS admin_create_user(text,text,text,text,text);
-DROP FUNCTION IF EXISTS admin_update_user(uuid,text,text);
 DROP FUNCTION IF EXISTS admin_update_user(uuid,text,text,text);
+DROP FUNCTION IF EXISTS admin_update_user(uuid,text,text,text,text);
 DROP FUNCTION IF EXISTS admin_update_email(uuid,text);
 DROP FUNCTION IF EXISTS admin_set_password(uuid,text);
 DROP FUNCTION IF EXISTS admin_delete_user(uuid);
@@ -80,9 +80,9 @@ BEGIN
 END;
 $$;
 
--- Update user username, full name and role (admin only)
+-- Update user username, full name, role and email (admin only)
 CREATE FUNCTION admin_update_user(
-  p_user_id uuid, p_username text, p_full_name text, p_role text
+  p_user_id uuid, p_username text, p_full_name text, p_role text, p_new_email text
 )
 RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public
@@ -93,13 +93,23 @@ BEGIN
     coalesce(auth.jwt()->'user_metadata'->>'role','') = 'admin'
   ) THEN RAISE EXCEPTION 'Not authorized'; END IF;
 
+  -- Update metadata and email in auth.users atomically
   UPDATE auth.users
   SET raw_user_meta_data = coalesce(raw_user_meta_data,'{}') ||
         jsonb_build_object('username', p_username, 'full_name', p_full_name),
       raw_app_meta_data = coalesce(raw_app_meta_data,'{}') ||
         jsonb_build_object('role', p_role),
+      email = p_new_email,
+      email_confirmed_at = now(),
       updated_at = now()
   WHERE id = p_user_id;
+
+  -- Keep auth.identities in sync
+  UPDATE auth.identities
+  SET provider_id = p_new_email,
+      identity_data = identity_data || jsonb_build_object('email', p_new_email),
+      updated_at = now()
+  WHERE user_id = p_user_id AND provider = 'email';
 END;
 $$;
 
