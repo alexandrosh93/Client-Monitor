@@ -344,18 +344,25 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-qbtn-primary{background:#fff;color:#1e3a6e;border-color:#fff}
 .hv-qbtn-primary:hover{background:rgba(255,255,255,.9)}
 /* status overview — segmented bar */
-.hv-sbar{display:flex;width:100%;height:42px;border-radius:10px;overflow:hidden;background:var(--surface2)}
-.hv-sbar-seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;cursor:pointer;transition:filter .15s;min-width:0;border-right:2px solid var(--surface)}
+@keyframes hvBarReveal{from{clip-path:inset(0 100% 0 0 round 10px)}to{clip-path:inset(0 0% 0 0 round 10px)}}
+.hv-sbar-wrap{position:relative;margin-bottom:14px}
+.hv-sbar{display:flex;width:100%;height:46px;border-radius:10px;overflow:hidden;background:var(--surface2);animation:hvBarReveal .7s cubic-bezier(.4,0,.2,1)}
+.hv-sbar-seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;cursor:pointer;transition:filter .15s,opacity .18s;min-width:0;border-right:2px solid var(--surface)}
 .hv-sbar-seg:last-child{border-right:none}
-.hv-sbar-seg:hover{filter:brightness(1.08)}
 .hv-sbar-seg span{text-shadow:0 1px 2px rgba(0,0,0,.18)}
-.hv-slegend{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:14px}
-.hv-sleg{display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:9px;background:var(--bg);border:1px solid var(--border-sm);cursor:pointer;transition:all .14s}
-.hv-sleg:hover{border-color:var(--accent);transform:translateY(-1px)}
-.hv-sleg-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
-.hv-sleg-name{font-size:12px;color:var(--text-2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hv-sleg-num{font-size:14px;font-weight:800;color:var(--text)}
-.hv-sleg-pct{font-size:11px;color:var(--text-3);min-width:34px;text-align:right}
+.hv-stip{position:absolute;bottom:calc(100% + 8px);transform:translateX(-50%);background:rgba(15,23,42,.92);color:#fff;padding:5px 11px;border-radius:8px;font-size:11.5px;font-weight:600;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;z-index:20;backdrop-filter:blur(6px)}
+.hv-stip.show{opacity:1}
+.hv-stip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(15,23,42,.92)}
+.hv-slegend{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.hv-sleg{position:relative;overflow:hidden;display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:9px;background:var(--bg);border:1px solid var(--border-sm);cursor:pointer;transition:all .18s}
+.hv-sleg:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(0,0,0,.08)}
+.hv-sleg-fill{position:absolute;left:0;top:0;bottom:0;opacity:.09;pointer-events:none;border-radius:inherit;transition:width .5s ease}
+.hv-sleg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;position:relative;z-index:1}
+.hv-sleg-name{font-size:12px;color:var(--text-2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;z-index:1}
+.hv-sleg-num{font-size:14px;font-weight:800;color:var(--text);position:relative;z-index:1}
+.hv-sleg-pct{font-size:11px;color:var(--text-3);min-width:34px;text-align:right;position:relative;z-index:1}
+.hv-hl{opacity:1!important;filter:brightness(1.1)!important}
+.hv-dim{opacity:.25!important}
 @media(max-width:960px){.hv-grid{grid-template-columns:1fr}.hv-grid-3{grid-template-columns:1fr}}
 @media(max-width:600px){.hv-banner{flex-wrap:wrap}.hv-banner-actions{width:100%;flex-direction:row;flex-wrap:wrap}.hv-qbtn{flex:1}.hv-greeting{font-size:18px}}
 /* ═══════ TABLET (769px – 1024px) ═══════ */
@@ -2643,6 +2650,32 @@ function scrollToClient(id){
 
 /* ── VIEW TOGGLE ── */
 let currentView='list';
+function hvHover(key){
+  document.querySelectorAll('[data-status]').forEach(el=>{
+    el.classList.toggle('hv-hl',el.dataset.status===key);
+    el.classList.toggle('hv-dim',el.dataset.status!==key);
+  });
+}
+function hvUnhover(){
+  document.querySelectorAll('[data-status]').forEach(el=>{el.classList.remove('hv-hl','hv-dim');});
+}
+function hvSegEnter(el){
+  hvHover(el.dataset.status);
+  const tip=document.getElementById('hv-stip');
+  if(!tip)return;
+  const wrap=el.closest('.hv-sbar-wrap');
+  if(!wrap)return;
+  const wRect=wrap.getBoundingClientRect();
+  const eRect=el.getBoundingClientRect();
+  tip.textContent=el.dataset.label;
+  tip.style.left=(eRect.left-wRect.left+eRect.width/2)+'px';
+  tip.classList.add('show');
+}
+function hvSegLeave(){
+  hvUnhover();
+  const tip=document.getElementById('hv-stip');
+  if(tip)tip.classList.remove('show');
+}
 function setView(v){
   currentView=v;
   // leaving the home (login) dashboard
@@ -2768,13 +2801,16 @@ function renderHomeDashboard(){
       <span style="font-size:11px;color:var(--text-3)">${total} client${total!==1?'s':''}</span>
     </div>
     ${total?`
-    <div class="hv-sbar">
-      ${statusData.map(s=>{const pct=Math.round(s.n/total*100);return`
-        <div class="hv-sbar-seg" title="${s.key}: ${s.n} (${pct}%)" onclick="goClients({status:'${s.key}'})" style="width:${s.n/total*100}%;background:${s.color}">${pct>=9?`<span>${s.n}</span>`:''}</div>`;}).join('')}
+    <div class="hv-sbar-wrap">
+      <div class="hv-stip" id="hv-stip"></div>
+      <div class="hv-sbar">
+        ${statusData.map(s=>{const pct=s.n/total*100;const rnd=Math.round(pct);return`<div class="hv-sbar-seg" data-status="${s.key}" data-label="${s.key} · ${s.n} client${s.n!==1?'s':''} (${rnd}%)" onmouseenter="hvSegEnter(this)" onmouseleave="hvSegLeave()" onclick="goClients({status:'${s.key}'})" style="width:${pct}%;background:${s.color}">${rnd>=9?`<span>${s.n}</span>`:''}</div>`;}).join('')}
+      </div>
     </div>
     <div class="hv-slegend">
       ${statusData.map(s=>{const pct=Math.round(s.n/total*100);return`
-        <div class="hv-sleg" onclick="goClients({status:'${s.key}'})">
+        <div class="hv-sleg" data-status="${s.key}" onmouseenter="hvHover('${s.key}')" onmouseleave="hvUnhover()" onclick="goClients({status:'${s.key}'})">
+          <div class="hv-sleg-fill" style="background:${s.color};width:${pct}%"></div>
           <span class="hv-sleg-dot" style="background:${s.color}"></span>
           <span class="hv-sleg-name">${s.key}</span>
           <span class="hv-sleg-num">${s.n}</span>
