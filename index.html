@@ -2187,14 +2187,12 @@ function openVatReport(){
   html+=`<span class="vat-pill" style="background:#fff3cd;color:#856404">${thisWeek.length} this week</span>
     <span class="vat-pill vp-pending">${previous.length} overdue</span>
     <span class="vat-pill" style="background:#e8f0fe;color:#1d4ed8">${next.length} upcoming</span>
-    ${noDate.length?`<span class="vat-pill vp-nodate">${noDate.length} no date</span>`:''}
     <span class="vat-pill vp-done">${done.length} completed</span>
   </div>`;
 
   html+=section('This week','#856404','#fff3cd',thisWeek);
   html+=section('Overdue','#a32d2d','#feecec',previous);
   html+=section('Upcoming','#1d4ed8','#e8f0fe',next);
-  html+=section('No date set','#6b6960','#f0efe9',noDate,false);
   if(done.length){
     html+=`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#1e3a6e;background:#e8eef8;border-radius:6px;padding:4px 10px;margin:.85rem 0 .4rem;display:inline-block">Completed (${done.length})</div>
     <table class="vat-report-table">
@@ -2516,14 +2514,12 @@ function openStkReport(){
   html+=`<span class="vat-pill" style="background:#fef9c3;color:#7a6500">${thisWeek.length} this week</span>
     <span class="vat-pill" style="background:#fef3c7;color:#92400e">${previous.length} overdue</span>
     <span class="vat-pill" style="background:#e8f0fe;color:#1d4ed8">${next.length} upcoming</span>
-    ${noDate.length?`<span class="vat-pill vp-nodate">${noDate.length} no date</span>`:''}
     <span class="vat-pill vp-done">${done.length} completed</span>
   </div>`;
 
   html+=section('This week','#7a6500','#fef9c3',thisWeek);
   html+=section('Overdue','#92400e','#fef3c7',previous);
   html+=section('Upcoming','#1d4ed8','#e8f0fe',next);
-  html+=section('No date set','#6b6960','#f0efe9',noDate,false);
   if(done.length){
     const implCol=showImpl?'<th>Implementor</th>':'';
     const implColData=c=>showImpl?`<td>${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:'—'}</td>`:'';
