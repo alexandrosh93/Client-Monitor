@@ -27,6 +27,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Client Monitor — A.V.PremierSoft</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -295,50 +296,53 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .login-btn:hover{box-shadow:0 5px 18px rgba(30,58,110,.4);transform:translateY(-1px)}
 .login-err{font-size:12px;color:#a32d2d;margin-top:.6rem;min-height:18px;text-align:center}
 /* ═══════ HOME DASHBOARD ═══════ */
-#home-view{display:none;padding:1.75rem 1.5rem 3rem;max-width:1100px;margin:0 auto}
+#home-view{display:none;padding:1.5rem 1.5rem 4rem;max-width:1200px;margin:0 auto}
 #home-view.active{display:block}
-.hv-welcome{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap}
-.hv-greeting{font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.03em;line-height:1.1}
-.hv-sub{font-size:13px;color:var(--text-3);margin-top:5px}
-.hv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.75rem}
-.hv-stat{background:var(--surface);border:1px solid var(--border-md);border-radius:14px;padding:1rem 1.1rem;cursor:pointer;transition:all .17s;text-decoration:none;display:block}
-.hv-stat:hover{border-color:var(--accent);box-shadow:0 4px 16px rgba(30,58,110,.12);transform:translateY(-2px)}
-.hv-stat-val{font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1;color:var(--text)}
-.hv-stat-lbl{font-size:11px;font-weight:600;color:var(--text-3);margin-top:5px;text-transform:uppercase;letter-spacing:.04em}
-.hv-section{margin-bottom:1.75rem}
-.hv-section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
-.hv-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3)}
-.hv-section-link{font-size:12px;color:var(--accent);cursor:pointer;text-decoration:none;font-weight:500}
-.hv-section-link:hover{text-decoration:underline}
-.hv-impl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-.hv-impl-card{background:var(--surface);border:1px solid var(--border-md);border-radius:14px;padding:1rem 1.1rem;cursor:pointer;transition:all .17s;position:relative;overflow:hidden}
-.hv-impl-card:hover{border-color:var(--accent);box-shadow:0 4px 16px rgba(30,58,110,.12);transform:translateY(-2px)}
-.hv-impl-card.me{border-color:#a8bfe8;background:linear-gradient(135deg,#eef3ff,#f5f8ff)}
-.hv-impl-card.me::after{content:'you';position:absolute;top:8px;right:10px;font-size:9px;font-weight:700;color:#1e3a6e;background:#d1dcf7;border-radius:5px;padding:1px 5px;letter-spacing:.04em;text-transform:uppercase}
-.hv-impl-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
-.hv-impl-count{font-size:28px;font-weight:800;color:var(--accent);letter-spacing:-.03em;line-height:1}
-.hv-impl-meta{font-size:11px;color:var(--text-3);margin-top:4px}
-.hv-impl-alert{color:#a32d2d;font-weight:600}
-.hv-status-row{display:flex;flex-wrap:wrap;gap:8px}
-.hv-status-chip{padding:9px 18px;border-radius:99px;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;border:2px solid transparent;display:flex;align-items:center;gap:6px}
-.hv-status-chip:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.12)}
-.hv-status-chip .hv-chip-n{font-size:16px;font-weight:800}
-.hv-upcoming{display:flex;flex-direction:column;gap:6px}
-.hv-event{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--surface);border:1px solid var(--border-md);border-radius:10px;cursor:pointer;transition:background .15s}
-.hv-event:hover{background:var(--surface2)}
-.hv-event-date{font-size:12px;font-weight:700;color:var(--text-2);min-width:70px}
-.hv-event-type{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600;white-space:nowrap}
-.hv-event-client{font-size:13px;font-weight:600;color:var(--text);flex:1}
-.hv-event-meta{font-size:11px;color:var(--text-3)}
-.hv-empty{font-size:13px;color:var(--text-3);padding:.5rem 0}
-.hv-view-all{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:99px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .17s;box-shadow:0 3px 12px rgba(30,58,110,.3)}
-.hv-view-all:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 5px 18px rgba(30,58,110,.4)}
-@media(max-width:768px){
-  #home-view{padding:1rem 1rem 3rem}
-  .hv-greeting{font-size:20px}
-  .hv-stat-val{font-size:24px}
-  .hv-impl-count{font-size:22px}
-}
+.hv-banner{background:linear-gradient(135deg,#1a2f5e 0%,#1e3a6e 45%,#2d52a0 100%);border-radius:18px;padding:1.6rem 2rem;color:#fff;display:flex;align-items:center;gap:1.25rem;margin-bottom:1.25rem;box-shadow:0 8px 32px rgba(30,58,110,.28)}
+.hv-avatar{width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.18);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:-.01em;border:2px solid rgba(255,255,255,.25)}
+.hv-banner-text{flex:1}
+.hv-greeting{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.025em;line-height:1.2}
+.hv-date{font-size:12px;color:rgba(255,255,255,.65);margin-top:4px;letter-spacing:.01em}
+.hv-banner-actions{display:flex;gap:8px;flex-shrink:0}
+.hv-view-all{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:99px;background:rgba(255,255,255,.15);color:#fff;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.3);font-family:'DM Sans',sans-serif;transition:all .17s;backdrop-filter:blur(4px)}
+.hv-view-all:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+.hv-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1.25rem}
+.hv-stat{background:var(--surface);border:1px solid var(--border-md);border-radius:14px;padding:1rem 1.1rem;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.hv-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.hv-stat:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1)}
+.hv-stat-val{font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.hv-stat-lbl{font-size:10px;font-weight:700;color:var(--text-3);margin-top:5px;text-transform:uppercase;letter-spacing:.05em}
+.hv-stat-sub{font-size:10px;color:var(--text-3);margin-top:2px}
+.hv-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;align-items:start}
+.hv-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.25rem;align-items:start}
+.hv-card{background:var(--surface);border:1px solid var(--border-md);border-radius:14px;padding:1.1rem 1.25rem}
+.hv-card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem}
+.hv-card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3)}
+.hv-card-link{font-size:12px;color:var(--accent);cursor:pointer;font-weight:500;background:none;border:none;font-family:inherit;padding:0}
+.hv-card-link:hover{text-decoration:underline}
+.hv-impl-list{display:flex;flex-direction:column;gap:8px}
+.hv-impl-row{display:flex;align-items:center;gap:10px;cursor:pointer;padding:6px 8px;border-radius:8px;transition:background .14s}
+.hv-impl-row:hover{background:var(--surface2)}
+.hv-impl-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#e8eef8,#d1dcf7);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#1e3a6e;flex-shrink:0}
+.hv-impl-info{flex:1;min-width:0}
+.hv-impl-name{font-size:13px;font-weight:600;color:var(--text)}
+.hv-impl-bar-wrap{height:5px;background:var(--surface2);border-radius:99px;margin-top:3px;overflow:hidden}
+.hv-impl-bar{height:100%;background:linear-gradient(90deg,#2d52a0,#5b8ee8);border-radius:99px;transition:width .4s}
+.hv-impl-count{font-size:13px;font-weight:700;color:var(--accent);flex-shrink:0}
+.hv-impl-badge{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:700;flex-shrink:0}
+.hv-mgr-grid{display:flex;flex-wrap:wrap;gap:8px}
+.hv-mgr-chip{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:var(--surface2);border:1.5px solid var(--border-md);color:var(--text);transition:all .16s}
+.hv-mgr-chip:hover{border-color:var(--accent);color:var(--accent);background:var(--surface);transform:translateY(-1px)}
+.hv-mgr-chip .hv-mgr-n{font-size:15px;font-weight:800;color:var(--accent)}
+.hv-upcoming-list{display:flex;flex-direction:column;gap:5px}
+.hv-event{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border:1px solid var(--border-sm);border-radius:9px;cursor:pointer;transition:all .14s}
+.hv-event:hover{background:var(--surface2);border-color:var(--border-md);transform:translateX(2px)}
+.hv-event-date{font-size:11px;font-weight:700;color:var(--text-2);min-width:76px;white-space:nowrap}
+.hv-event-badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.hv-event-client{font-size:13px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hv-event-impl{font-size:11px;color:var(--text-3);white-space:nowrap}
+@media(max-width:960px){.hv-stats{grid-template-columns:repeat(3,1fr)}.hv-grid{grid-template-columns:1fr}.hv-grid-3{grid-template-columns:1fr}}
+@media(max-width:600px){.hv-stats{grid-template-columns:repeat(2,1fr)}.hv-banner{flex-wrap:wrap}.hv-banner-actions{width:100%}.hv-greeting{font-size:18px}}
 /* ═══════ TABLET (769px – 1024px) ═══════ */
 @media(min-width:769px) and (max-width:1024px){
   .control-bar{flex-direction:column;gap:6px;align-items:stretch}
@@ -2670,18 +2674,19 @@ function goClients(opts={}){
   // scroll top
   window.scrollTo({top:0,behavior:'smooth'});
 }
+let _hvCharts={};
 function renderHomeDashboard(){
   const el=document.getElementById('home-view');
-  if(!el||!clients.length&&!implementors.length)return;
+  if(!el)return;
   const now=new Date();
   const hour=now.getHours();
   const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
-  const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const dateLabel=`${dayNames[now.getDay()]}, ${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const todayISO=now.toISOString().slice(0,10);
+  const initials=currentUser.split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);
 
-  // compute stats
+  // stats
   const total=clients.length;
   const active=clients.filter(c=>c.status==='Active').length;
   const vatOverdue=clients.filter(c=>!c.vatDone&&c.vatDate&&c.vatDate<todayISO).length;
@@ -2692,150 +2697,182 @@ function renderHomeDashboard(){
     return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
   }).length;
 
-  // upcoming events next 14 days
-  const future14=new Date(now);future14.setDate(future14.getDate()+14);
-  const future14ISO=future14.toISOString().slice(0,10);
-  const events=[];
-  clients.forEach(c=>{
-    if(c.vatDate&&!c.vatDone&&c.vatDate>=todayISO&&c.vatDate<=future14ISO)
-      events.push({date:c.vatDate,type:'VAT',client:c.name,impl:c.implementor,id:c.id});
-    if(c.stkDate&&!c.stkDone&&c.stkDate>=todayISO&&c.stkDate<=future14ISO)
-      events.push({date:c.stkDate,type:'STK',client:c.name,impl:c.implementor,id:c.id});
-    if(c.liveDate&&c.liveDate>=todayISO&&c.liveDate<=future14ISO)
-      events.push({date:c.liveDate,type:'LIVE',client:c.name,impl:c.implementor,id:c.id});
-  });
-  events.sort((a,b)=>a.date.localeCompare(b.date));
-
-  // stat cards
-  const statCards=[
-    {val:total,lbl:'Total Clients',color:'var(--text)',action:'{}'},
-    {val:active,lbl:'Active',color:'#1e3a6e',action:'{status:"Active"}'},
-    {val:vatOverdue,lbl:'Overdue VAT',color:vatOverdue?'#a32d2d':'var(--text)',action:'{vat:"overdue"}'},
-    {val:stkOverdue,lbl:'Overdue STK',color:stkOverdue?'#856404':'var(--text)',action:'{stk:"overdue"}'},
-    {val:liveMonth,lbl:'Live This Month',color:'#065f46',action:'{live:"month"}'},
+  // status data for chart
+  const statusDef=[
+    {key:'Active',color:'#3b6cc7',bg:'#e8eef8',fg:'#1e3a6e'},
+    {key:'Not started',color:'#9ca3af',bg:'#f0efe9',fg:'#6b6960'},
+    {key:'Dormant',color:'#f59e0b',bg:'#fdf0db',fg:'#8a5a1a'},
+    {key:'Pending Follow-Up',color:'#8b5cf6',bg:'#ede9fe',fg:'#5b21b6'},
+    {key:'Completed',color:'#6b7280',bg:'#e8e8e8',fg:'#555'},
   ];
+  const statusData=statusDef.map(s=>({...s,n:clients.filter(c=>c.status===s.key).length})).filter(s=>s.n>0);
 
-  // implementor cards
-  const implCards=implementors.map(name=>{
+  // implementors
+  const maxImpl=Math.max(1,...implementors.map(n=>clients.filter(c=>c.implementor===n).length));
+  const implData=implementors.map(name=>{
     const mine=clients.filter(c=>c.implementor===name);
-    const overdue=mine.filter(c=>
-      (!c.vatDone&&c.vatDate&&c.vatDate<todayISO)||
-      (!c.stkDone&&c.stkDate&&c.stkDate<todayISO)
-    ).length;
+    const overdue=mine.filter(c=>(!c.vatDone&&c.vatDate&&c.vatDate<todayISO)||(!c.stkDone&&c.stkDate&&c.stkDate<todayISO)).length;
     const isMe=name.toLowerCase()===currentUser.toLowerCase();
     return {name,count:mine.length,overdue,isMe};
   }).sort((a,b)=>b.count-a.count);
-
-  // unassigned
   const unassigned=clients.filter(c=>!c.implementor).length;
 
-  // status breakdown
-  const statuses=[
-    {key:'Active',bg:'#e8eef8',color:'#1e3a6e'},
-    {key:'Not started',bg:'#f0efe9',color:'#6b6960'},
-    {key:'Dormant',bg:'#fdf0db',color:'#8a5a1a'},
-    {key:'Pending Follow-Up',bg:'#ede9fe',color:'#5b21b6'},
-    {key:'Completed',bg:'#e8e8e8',color:'#555'},
-  ];
+  // managers
+  const mgrSet=[...new Set(clients.map(c=>c.mgr).filter(Boolean))].sort();
 
-  // event type styles
-  const typeStyle={
-    VAT:{bg:'#fff3cd',color:'#856404',label:'⚑ VAT'},
-    STK:{bg:'#fef9c3',color:'#7a6500',label:'📦 STK'},
-    LIVE:{bg:'#d1fae5',color:'#065f46',label:'🚀 Live'},
-  };
+  // upcoming events
+  const f14=new Date(now);f14.setDate(f14.getDate()+14);
+  const f14ISO=f14.toISOString().slice(0,10);
+  const events=[];
+  clients.forEach(c=>{
+    if(c.vatDate&&!c.vatDone&&c.vatDate>=todayISO&&c.vatDate<=f14ISO) events.push({date:c.vatDate,type:'VAT',client:c.name,impl:c.implementor||''});
+    if(c.stkDate&&!c.stkDone&&c.stkDate>=todayISO&&c.stkDate<=f14ISO) events.push({date:c.stkDate,type:'STK',client:c.name,impl:c.implementor||''});
+    if(c.liveDate&&c.liveDate>=todayISO&&c.liveDate<=f14ISO) events.push({date:c.liveDate,type:'LIVE',client:c.name,impl:c.implementor||''});
+  });
+  events.sort((a,b)=>a.date.localeCompare(b.date));
 
-  function fmtDate(iso){
-    const d=new Date(iso+'T00:00:00');
-    const diff=Math.round((d-now)/86400000);
-    const day=dayNames[d.getDay()].slice(0,3);
-    const mon=monthNames[d.getMonth()].slice(0,3);
-    if(diff===0)return'<strong style="color:#a32d2d">Today</strong>';
-    if(diff===1)return'<strong style="color:#856404">Tomorrow</strong>';
-    return `${day} ${d.getDate()} ${mon}`;
+  const evBadge={VAT:{bg:'#fff3cd',color:'#856404',lbl:'⚑ VAT'},STK:{bg:'#fef9c3',color:'#7a6500',lbl:'📦 STK'},LIVE:{bg:'#d1fae5',color:'#065f46',lbl:'🚀 Live'}};
+
+  function fmtD(iso){
+    const d=new Date(iso+'T00:00:00'),diff=Math.round((d-now)/86400000);
+    if(diff===0)return'<span style="color:#a32d2d;font-weight:800">Today</span>';
+    if(diff===1)return'<span style="color:#856404;font-weight:700">Tomorrow</span>';
+    return `${days[d.getDay()].slice(0,3)} ${d.getDate()} ${months[d.getMonth()].slice(0,3)}`;
   }
 
-  let h=`
-  <div class="hv-welcome">
-    <div>
-      <div class="hv-greeting">${greeting}, ${currentUser}</div>
-      <div class="hv-sub">${dateLabel}</div>
+  el.innerHTML=`
+  <div class="hv-banner">
+    <div class="hv-avatar">${initials||'?'}</div>
+    <div class="hv-banner-text">
+      <div class="hv-greeting">${greeting}, ${esc(currentUser)}</div>
+      <div class="hv-date">${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}</div>
     </div>
-    <button class="hv-view-all" onclick="goClients({})">View all clients →</button>
+    <div class="hv-banner-actions">
+      <button class="hv-view-all" onclick="goClients({})">All Clients →</button>
+    </div>
   </div>
 
   <div class="hv-stats">
-    ${statCards.map(s=>`
-      <div class="hv-stat" onclick="goClients(${s.action})">
-        <div class="hv-stat-val" style="color:${s.color}">${s.val}</div>
-        <div class="hv-stat-lbl">${s.lbl}</div>
-      </div>`).join('')}
-  </div>`;
+    <div class="hv-stat" style="--ac:#1e3a6e" onclick="goClients({})">
+      <div class="hv-stat-val" style="color:#1e3a6e">${total}</div>
+      <div class="hv-stat-lbl">Total Clients</div>
+    </div>
+    <div class="hv-stat" onclick="goClients({status:'Active'})">
+      <div class="hv-stat-val" style="color:#1e3a6e">${active}</div>
+      <div class="hv-stat-lbl">Active</div>
+      <div class="hv-stat-sub">${Math.round(active/Math.max(1,total)*100)}% of total</div>
+    </div>
+    <div class="hv-stat" onclick="goClients({})">
+      <div class="hv-stat-val" style="color:${vatOverdue?'#a32d2d':'var(--text)'}">${vatOverdue}</div>
+      <div class="hv-stat-lbl">Overdue VAT</div>
+      <div class="hv-stat-sub">${vatOverdue?'Needs attention':'All clear'}</div>
+    </div>
+    <div class="hv-stat" onclick="goClients({})">
+      <div class="hv-stat-val" style="color:${stkOverdue?'#856404':'var(--text)'}">${stkOverdue}</div>
+      <div class="hv-stat-lbl">Overdue STK</div>
+      <div class="hv-stat-sub">${stkOverdue?'Needs attention':'All clear'}</div>
+    </div>
+    <div class="hv-stat" onclick="goClients({})">
+      <div class="hv-stat-val" style="color:#065f46">${liveMonth}</div>
+      <div class="hv-stat-lbl">Live This Month</div>
+      <div class="hv-stat-sub">${months[now.getMonth()]}</div>
+    </div>
+  </div>
 
-  // implementors section
-  if(implCards.length){
-    h+=`<div class="hv-section">
-      <div class="hv-section-hdr">
-        <div class="hv-section-title">By Implementor</div>
-        <span class="hv-section-link" onclick="goClients({})">View all →</span>
+  <div class="hv-grid">
+    <div class="hv-card">
+      <div class="hv-card-hdr"><div class="hv-card-title">Status Overview</div></div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="position:relative;width:140px;height:140px;flex-shrink:0"><canvas id="hv-chart-status" width="140" height="140"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <div style="font-size:24px;font-weight:800;color:var(--text);line-height:1">${total}</div>
+            <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em">clients</div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:7px">
+          ${statusData.map(s=>`
+            <div onclick="goClients({status:'${s.key}'})" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:6px;transition:background .13s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+              <div style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
+              <div style="font-size:12px;color:var(--text-2);flex:1">${s.key}</div>
+              <div style="font-size:13px;font-weight:700;color:var(--text)">${s.n}</div>
+            </div>`).join('')}
+        </div>
       </div>
-      <div class="hv-impl-grid">
-        ${implCards.map(im=>`
-          <div class="hv-impl-card${im.isMe?' me':''}" onclick="goClients({impl:'${im.name}'})">
-            <div class="hv-impl-name">${esc(im.name)}</div>
-            <div class="hv-impl-count">${im.count}</div>
-            <div class="hv-impl-meta">
-              client${im.count!==1?'s':''}
-              ${im.overdue?`· <span class="hv-impl-alert">${im.overdue} overdue</span>`:''}
+    </div>
+
+    <div class="hv-card">
+      <div class="hv-card-hdr">
+        <div class="hv-card-title">By Implementor</div>
+        <button class="hv-card-link" onclick="goClients({})">View all →</button>
+      </div>
+      <div class="hv-impl-list">
+        ${implData.map(im=>`
+          <div class="hv-impl-row" onclick="goClients({impl:'${esc(im.name)}'})">
+            <div class="hv-impl-avatar">${im.name.slice(0,2).toUpperCase()}</div>
+            <div class="hv-impl-info">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span class="hv-impl-name">${esc(im.name)}</span>
+                ${im.isMe?'<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:#d1dcf7;color:#1e3a6e;font-weight:700">you</span>':''}
+                ${im.overdue?`<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:#feecec;color:#a32d2d;font-weight:700">${im.overdue} overdue</span>`:''}
+              </div>
+              <div class="hv-impl-bar-wrap"><div class="hv-impl-bar" style="width:${Math.round(im.count/maxImpl*100)}%"></div></div>
             </div>
+            <div class="hv-impl-count">${im.count}</div>
           </div>`).join('')}
-        ${unassigned?`<div class="hv-impl-card" onclick="goClients({impl:''})">
-          <div class="hv-impl-name" style="color:var(--text-3)">Unassigned</div>
+        ${unassigned?`<div class="hv-impl-row" onclick="goClients({impl:''})">
+          <div class="hv-impl-avatar" style="background:var(--surface2);color:var(--text-3)">—</div>
+          <div class="hv-impl-info"><div class="hv-impl-name" style="color:var(--text-3)">Unassigned</div>
+            <div class="hv-impl-bar-wrap"><div class="hv-impl-bar" style="width:${Math.round(unassigned/maxImpl*100)}%;background:var(--border-md)"></div></div>
+          </div>
           <div class="hv-impl-count" style="color:var(--text-3)">${unassigned}</div>
-          <div class="hv-impl-meta">client${unassigned!==1?'s':''}</div>
         </div>`:''}
       </div>
-    </div>`;
-  }
-
-  // status section
-  h+=`<div class="hv-section">
-    <div class="hv-section-hdr">
-      <div class="hv-section-title">By Status</div>
     </div>
-    <div class="hv-status-row">
-      ${statuses.map(s=>{
-        const n=clients.filter(c=>c.status===s.key).length;
-        if(!n)return'';
-        return`<div class="hv-status-chip" style="background:${s.bg};color:${s.color}" onclick="goClients({status:'${s.key}'})">
-          <span class="hv-chip-n">${n}</span> ${s.key}
+  </div>
+
+  ${mgrSet.length?`<div class="hv-card" style="margin-bottom:1.25rem">
+    <div class="hv-card-hdr"><div class="hv-card-title">By Manager</div></div>
+    <div class="hv-mgr-grid">
+      <div class="hv-mgr-chip" onclick="goClients({})">
+        <span class="hv-mgr-n">${total}</span> All
+      </div>
+      ${mgrSet.map(m=>{
+        const n=clients.filter(c=>c.mgr===m).length;
+        return`<div class="hv-mgr-chip" onclick="goClients({mgr:'${esc(m)}'})">
+          <span class="hv-mgr-n">${n}</span> ${esc(m)}
         </div>`;
       }).join('')}
     </div>
+  </div>`:''}
+
+  <div class="hv-card">
+    <div class="hv-card-hdr">
+      <div class="hv-card-title">Upcoming — next 14 days</div>
+      ${events.length?`<button class="hv-card-link" onclick="openVatReport()">${events.length} event${events.length!==1?'s':''} →</button>`:''}
+    </div>
+    <div class="hv-upcoming-list">
+      ${events.length?events.slice(0,10).map(ev=>`
+        <div class="hv-event" onclick="goClients({impl:'${esc(ev.impl)}'})">
+          <div class="hv-event-date">${fmtD(ev.date)}</div>
+          <div class="hv-event-badge" style="background:${evBadge[ev.type].bg};color:${evBadge[ev.type].color}">${evBadge[ev.type].lbl}</div>
+          <div class="hv-event-client">${esc(ev.client)}</div>
+          <div class="hv-event-impl">${esc(ev.impl||'—')}</div>
+        </div>`).join('')+(events.length>10?`<div style="font-size:12px;color:var(--text-3);padding:.4rem .5rem">+${events.length-10} more…</div>`:'')
+      :'<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No upcoming events in the next 14 days. ✓</div>'}
+    </div>
   </div>`;
 
-  // upcoming events
-  h+=`<div class="hv-section">
-    <div class="hv-section-hdr">
-      <div class="hv-section-title">Upcoming (next 14 days)</div>
-      ${events.length?`<span class="hv-section-link" onclick="openVatReport()">${events.length} event${events.length!==1?'s':''}</span>`:''}
-    </div>
-    <div class="hv-upcoming">`;
-  if(events.length){
-    h+=events.slice(0,8).map(ev=>`
-      <div class="hv-event" onclick="goClients({impl:'${esc(ev.impl||'')}'})" title="Filter to ${esc(ev.impl||'unassigned')}">
-        <div class="hv-event-date">${fmtDate(ev.date)}</div>
-        <div class="hv-event-type" style="background:${typeStyle[ev.type].bg};color:${typeStyle[ev.type].color}">${typeStyle[ev.type].label}</div>
-        <div class="hv-event-client">${esc(ev.client)}</div>
-        <div class="hv-event-meta">${esc(ev.impl||'—')}</div>
-      </div>`).join('');
-    if(events.length>8)h+=`<div class="hv-empty">+${events.length-8} more — open VAT or STK report to see all</div>`;
-  }else{
-    h+=`<div class="hv-empty">No events in the next 14 days.</div>`;
+  // destroy old charts then create new
+  Object.values(_hvCharts).forEach(c=>{try{c.destroy();}catch(e){}});
+  _hvCharts={};
+  const ctx=document.getElementById('hv-chart-status');
+  if(ctx&&statusData.length){
+    _hvCharts.status=new Chart(ctx,{
+      type:'doughnut',
+      data:{labels:statusData.map(s=>s.key),datasets:[{data:statusData.map(s=>s.n),backgroundColor:statusData.map(s=>s.color),borderWidth:2,borderColor:'var(--surface)',hoverOffset:4}]},
+      options:{cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}`}}},animation:{duration:600}}
+    });
   }
-  h+=`</div></div>`;
-
-  el.innerHTML=h;
 }
 
 /* ── DASHBOARD ── */
