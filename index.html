@@ -1031,12 +1031,6 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
     <div style="border-top:1px solid var(--border-md);padding-top:.85rem">
       <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.65rem">Add Implementor</div>
       <div class="mf" style="margin-bottom:.55rem">
-        <label class="lbl">Pick from app users <span style="font-weight:400;color:var(--text-3)">(auto-fills name)</span></label>
-        <select id="impl-user-pick" onchange="implPickUser()" style="font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;width:100%">
-          <option value="">— Select user —</option>
-        </select>
-      </div>
-      <div class="mf" style="margin-bottom:.55rem">
         <label class="lbl">Display name</label>
         <input id="impl-input" type="text" placeholder="e.g. AH" onkeydown="if(event.key==='Enter')addImpl()">
       </div>
@@ -2278,33 +2272,11 @@ function populateImplSelects(){
   const mImpl=document.getElementById('m-impl');
   if(mImpl){const cur=mImpl.value;mImpl.innerHTML=implOptions(cur);mImpl.value=cur;}
 }
-async function openImplMgr(){
+function openImplMgr(){
   renderImplList();
   document.getElementById('impl-input').value='';
   document.getElementById('impl-add-err').textContent='';
-  // populate user picker
-  const pick=document.getElementById('impl-user-pick');
-  pick.innerHTML='<option value="">— Select user —</option>';
-  try{
-    const {data}=await sb.rpc('admin_list_users');
-    if(data){
-      const existing=new Set(implementors.map(n=>n.toLowerCase()));
-      data.forEach(u=>{
-        if(existing.has(u.username.toLowerCase()))return;
-        const opt=document.createElement('option');
-        opt.value=JSON.stringify({name:u.username,email:u.email.endsWith('@avps.local')?'':u.email});
-        opt.textContent=u.username+(u.email.endsWith('@avps.local')?'':' — '+u.email);
-        pick.appendChild(opt);
-      });
-    }
-  }catch(e){}
   document.getElementById('impl-modal').classList.add('open');
-}
-function implPickUser(){
-  const val=document.getElementById('impl-user-pick').value;
-  if(!val)return;
-  const u=JSON.parse(val);
-  document.getElementById('impl-input').value=u.name;
 }
 function renderImplList(){
   const el=document.getElementById('impl-list');
@@ -2335,7 +2307,6 @@ async function addImpl(){
   implementors.sort((a,b)=>a.localeCompare(b));
   renderImplList();populateImplFilter();
   document.getElementById('impl-input').value='';
-  document.getElementById('impl-user-pick').value='';
   err.textContent='';
   toast('Implementor added.');
 }
@@ -2347,6 +2318,9 @@ async function removeImpl(i){
     ? `Remove implementor "${name}"?\n\n${assigned} client${assigned!==1?'s':''} ${assigned!==1?'are':'is'} assigned to them and will be left with no implementor.\n\nThis cannot be undone.`
     : `Remove implementor "${name}"?\n\nThis cannot be undone.`;
   if(!confirm(msg))return;
+  const pwd=prompt('Enter the delete password to confirm:');
+  if(pwd===null)return;
+  if(pwd!=='0000'){toast('Wrong password — implementor not removed.');return;}
   const {error}=await sb.from('implementors').delete().eq('name',name);
   if(error){toast('Error: '+error.message);return;}
   implementors.splice(i,1);
