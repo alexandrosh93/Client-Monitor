@@ -1194,6 +1194,7 @@ function setSyncMsg(msg,color){
 }
 
 /* ── CONFIG ── */
+const CFG_KEY='cm_config';
 function getCfg(){try{return JSON.parse(localStorage.getItem(CFG_KEY)||'{}');}catch{return {};}}
 function hasCfg(){return false;}
 
@@ -1372,6 +1373,7 @@ async function load(){
 async function openSettings(){
   setSyncMsg('');
   document.getElementById('settings-modal').classList.add('open');
+  updateBackupStatus();
 }
 
 function showConnectedBanner(gistId){
@@ -1410,7 +1412,7 @@ function starsHtml(n,size){
 }
 
 /* ── DROPDOWNS ── */
-const openDD={sf:false,sort:false,fi:false,fm:false,export:false};
+const openDD={sf:false,sort:false,fi:false,fm:false,fmgr:false,fcity:false,export:false};
 function toggleDD(key){
   const wasOpen=openDD[key];
   Object.keys(openDD).forEach(k=>{
@@ -1650,9 +1652,6 @@ function sortList(list){
   if(sortMode==='impl'){
     return [...list].sort((a,b)=>(a.implementor||'').localeCompare(b.implementor||'')||a.name.localeCompare(b.name));
   }
-  if(sortMode==='impl'){
-    return [...list].sort((a,b)=>(a.implementor||'').localeCompare(b.implementor||'')||a.name.localeCompare(b.name));
-  }
   if(sortMode==='name'){
     return [...list].sort((a,b)=>a.name.localeCompare(b.name));
   }
@@ -1784,12 +1783,10 @@ function buildRow(c){
 
   // progress
   const prog=clientProgress(c);
-  const progressBar=`<div class="rh-progress" title="${prog.done}/${prog.total} milestones complete">
+  const progressBar=`<div class="rh-progress" title="${prog.pct}% complete">
     <div class="progress-track"><div class="progress-fill" style="width:${prog.pct}%;background:${prog.color}"></div></div>
     <span class="progress-pct" style="color:${prog.color}">${prog.pct}%</span>
   </div>`;
-
-  const hasAcc=c.modules.includes('Accounting');
 
   // VAT contact date — compact, shown for ALL clients
   const vatReminderCell=`
@@ -2221,7 +2218,7 @@ function printVatReport(){
   w.document.write(`<!DOCTYPE html><html><head><title>VAT Training Report</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}-webkit-print-color-adjust:exact;print-color-adjust:exact;
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     body{font-family:'DM Sans',sans-serif;padding:1.5cm 2cm;font-size:12px;color:#1a1917}
     h1{font-size:18px;font-weight:600;color:#1e3a6e;margin-bottom:4px}
     .sub{font-size:11px;color:#888;margin-bottom:1.2rem}
@@ -2370,6 +2367,7 @@ document.getElementById('m-grade').addEventListener('click',e=>{if(e.target.data
 function toggleExpandAll(){
   const btn=document.getElementById('expand-btn');
   const allIds=getFiltered().map(c=>c.id);
+  if(!allIds.length)return;
   const allExpanded=allIds.every(id=>expanded.has(id));
   if(allExpanded){
     allIds.forEach(id=>expanded.delete(id));
@@ -2396,6 +2394,7 @@ function buildStkBanner(){
   const dismissKey='stk_banner_dismiss';
   const todayStr=new Date().toDateString();
   const dismissed=localStorage.getItem(dismissKey)===todayStr;
+  if(dismissed){document.getElementById('stk-banner').style.display='none';return;}
 
   const now=new Date();
   const todayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -2582,6 +2581,7 @@ function buildVatBanner(){
   const dismissKey='vat_banner_dismiss';
   const todayStr=new Date().toDateString();
   const dismissed=localStorage.getItem(dismissKey)===todayStr;
+  if(dismissed){document.getElementById('vat-banner').style.display='none';return;}
 
   const now=new Date();
   const todayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -3220,7 +3220,7 @@ function renderAuditTable(){
   const fu=document.getElementById('audit-f-user').value;
   const fa=document.getElementById('audit-f-action').value;
   const fs=document.getElementById('audit-f-search').value.toLowerCase();
-  let entries=[...auditLog].reverse();
+  let entries=[...auditLog];
   if(fu)entries=entries.filter(e=>e.user===fu);
   if(fa)entries=entries.filter(e=>e.action===fa);
   if(fs)entries=entries.filter(e=>(e.target+e.detail+e.user).toLowerCase().includes(fs));
@@ -3261,10 +3261,10 @@ function renderAuditTable(){
     }).join('')
     +'</tbody></table>';
 }
-function resetAuditTrail(){
+async function resetAuditTrail(){
   if(!confirm('Reset the entire audit trail? This cannot be undone.'))return;
   auditLog=[];
-  save();
+  await sb.from('audit_log').delete().not('ts','is',null);
   renderAuditTable();
   toast('Audit trail cleared.');
 }
@@ -3538,7 +3538,7 @@ buildVatBanner();buildStkBanner();
 sb.auth.onAuthStateChange(async(event,session)=>{
   if(event==='PASSWORD_RECOVERY'&&session){
     await onAuthed(session.user);
-    openModal('chpwd-modal');
+    document.getElementById('chpwd-modal').classList.add('open');
     const e=document.getElementById('chpwd-err');
     if(e)e.textContent='Enter your new password below.';
   }
