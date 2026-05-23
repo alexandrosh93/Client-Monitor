@@ -1352,15 +1352,31 @@ async function load(){
   try{
     const [cRes,iRes,mRes,aRes]=await Promise.all([
       sb.from('clients').select('*').order('id'),
-      sb.from('implementors').select('name, email').order('name'),
+      sb.from('implementors').select('*').order('name'),
       sb.from('modules').select('name'),
       sb.from('audit_log').select('*').order('ts',{ascending:false}).limit(500)
     ]);
     if(cRes.error)throw cRes.error;
     clients=(cRes.data||[]).map(dbToClient);
     nextId=clients.length>0?Math.max(...clients.map(c=>c.id))+1:1;
+    if(iRes.error){
+      console.error('Implementors load error:',iRes.error);
+      toast('Implementors failed to load: '+(iRes.error.message||'unknown error'));
+    }
     implementors=(iRes.data||[]).map(r=>r.name);
     implementorEmails=new Map((iRes.data||[]).map(r=>[r.name,r.email||'']));
+    // Safety net: never show an empty list when clients already reference implementors
+    if(!implementors.length){
+      const derived=[...new Set(clients.map(c=>c.implementor).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+      if(derived.length){
+        implementors=derived;
+        implementorEmails=new Map(derived.map(n=>[n,'']));
+        // If the table loaded fine but was simply empty, persist the recovered names
+        if(!iRes.error){
+          sb.from('implementors').insert(derived.map(name=>({name}))).then(({error})=>{if(error)console.error('Seed implementors error:',error);});
+        }
+      }
+    }
     if(mRes.data&&mRes.data.length)ALL_MODS=mRes.data.map(r=>r.name);
     if(aRes.data)auditLog=aRes.data.map(r=>({ts:r.ts,user:r.user,action:r.action,target:r.target||'',detail:r.detail||''}));
     setSyncStatus('ok','Supabase ✓');
