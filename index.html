@@ -294,6 +294,51 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .login-btn{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:11px;border:none;border-radius:var(--radius);background:linear-gradient(135deg,#1e3a6e,#2d52a0);color:#fff;cursor:pointer;margin-top:.25rem;transition:all .18s;box-shadow:0 3px 12px rgba(30,58,110,.3)}
 .login-btn:hover{box-shadow:0 5px 18px rgba(30,58,110,.4);transform:translateY(-1px)}
 .login-err{font-size:12px;color:#a32d2d;margin-top:.6rem;min-height:18px;text-align:center}
+/* ═══════ HOME DASHBOARD ═══════ */
+#home-view{display:none;padding:1.75rem 1.5rem 3rem;max-width:1100px;margin:0 auto}
+#home-view.active{display:block}
+.hv-welcome{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap}
+.hv-greeting{font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.03em;line-height:1.1}
+.hv-sub{font-size:13px;color:var(--text-3);margin-top:5px}
+.hv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.75rem}
+.hv-stat{background:var(--surface);border:1px solid var(--border-md);border-radius:14px;padding:1rem 1.1rem;cursor:pointer;transition:all .17s;text-decoration:none;display:block}
+.hv-stat:hover{border-color:var(--accent);box-shadow:0 4px 16px rgba(30,58,110,.12);transform:translateY(-2px)}
+.hv-stat-val{font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1;color:var(--text)}
+.hv-stat-lbl{font-size:11px;font-weight:600;color:var(--text-3);margin-top:5px;text-transform:uppercase;letter-spacing:.04em}
+.hv-section{margin-bottom:1.75rem}
+.hv-section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.hv-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3)}
+.hv-section-link{font-size:12px;color:var(--accent);cursor:pointer;text-decoration:none;font-weight:500}
+.hv-section-link:hover{text-decoration:underline}
+.hv-impl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.hv-impl-card{background:var(--surface);border:1px solid var(--border-md);border-radius:14px;padding:1rem 1.1rem;cursor:pointer;transition:all .17s;position:relative;overflow:hidden}
+.hv-impl-card:hover{border-color:var(--accent);box-shadow:0 4px 16px rgba(30,58,110,.12);transform:translateY(-2px)}
+.hv-impl-card.me{border-color:#a8bfe8;background:linear-gradient(135deg,#eef3ff,#f5f8ff)}
+.hv-impl-card.me::after{content:'you';position:absolute;top:8px;right:10px;font-size:9px;font-weight:700;color:#1e3a6e;background:#d1dcf7;border-radius:5px;padding:1px 5px;letter-spacing:.04em;text-transform:uppercase}
+.hv-impl-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.hv-impl-count{font-size:28px;font-weight:800;color:var(--accent);letter-spacing:-.03em;line-height:1}
+.hv-impl-meta{font-size:11px;color:var(--text-3);margin-top:4px}
+.hv-impl-alert{color:#a32d2d;font-weight:600}
+.hv-status-row{display:flex;flex-wrap:wrap;gap:8px}
+.hv-status-chip{padding:9px 18px;border-radius:99px;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;border:2px solid transparent;display:flex;align-items:center;gap:6px}
+.hv-status-chip:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.hv-status-chip .hv-chip-n{font-size:16px;font-weight:800}
+.hv-upcoming{display:flex;flex-direction:column;gap:6px}
+.hv-event{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--surface);border:1px solid var(--border-md);border-radius:10px;cursor:pointer;transition:background .15s}
+.hv-event:hover{background:var(--surface2)}
+.hv-event-date{font-size:12px;font-weight:700;color:var(--text-2);min-width:70px}
+.hv-event-type{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600;white-space:nowrap}
+.hv-event-client{font-size:13px;font-weight:600;color:var(--text);flex:1}
+.hv-event-meta{font-size:11px;color:var(--text-3)}
+.hv-empty{font-size:13px;color:var(--text-3);padding:.5rem 0}
+.hv-view-all{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:99px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .17s;box-shadow:0 3px 12px rgba(30,58,110,.3)}
+.hv-view-all:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 5px 18px rgba(30,58,110,.4)}
+@media(max-width:768px){
+  #home-view{padding:1rem 1rem 3rem}
+  .hv-greeting{font-size:20px}
+  .hv-stat-val{font-size:24px}
+  .hv-impl-count{font-size:22px}
+}
 /* ═══════ TABLET (769px – 1024px) ═══════ */
 @media(min-width:769px) and (max-width:1024px){
   .control-bar{flex-direction:column;gap:6px;align-items:stretch}
@@ -478,6 +523,16 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
     <span id="sync-label-side" style="flex:1">Local only</span>
     <button id="refresh-btn-side" class="refresh-btn no-print" onclick="event.stopPropagation();manualRefresh();closeSideMenu()" title="Refresh now" style="display:none;font-size:14px;padding:1px 4px">↻</button>
   </div>
+
+  <!-- Home -->
+  <button class="smenu-item" onclick="goHome();closeSideMenu()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e3a6e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </button>
+  <button class="smenu-item" onclick="goClients({});closeSideMenu()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    All Clients
+  </button>
 
   <!-- SECTION: Work -->
   <div style="padding:.7rem 1rem .25rem;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)">Work</div>
@@ -796,6 +851,7 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 </div>
 
 <main>
+  <div id="home-view"></div>
   <div class="control-bar no-print">
     <!-- STAT PILLS -->
     <div class="stats-group" id="stats-row"></div>
@@ -1271,6 +1327,7 @@ async function load(){
     toast('Could not load from Supabase. Check connection.');
   }
   render();buildVatBanner();buildStkBanner();
+  if(document.getElementById('home-view').classList.contains('active'))renderHomeDashboard();
   startAutoRefresh();
 }
 
@@ -2592,6 +2649,195 @@ function setView(v){
   if(v==='dash')renderDashboard();
 }
 
+/* ── HOME VIEW ── */
+function goHome(){
+  document.getElementById('home-view').classList.add('active');
+  document.querySelector('.control-bar').style.display='none';
+  document.getElementById('list').style.display='none';
+  document.getElementById('dashboard').style.display='none';
+  renderHomeDashboard();
+}
+function goClients(opts={}){
+  document.getElementById('home-view').classList.remove('active');
+  document.querySelector('.control-bar').style.display='';
+  selStatuses.clear(); selImpls.clear(); selMgr=''; selCity='';
+  if(opts.status) selStatuses.add(opts.status);
+  if(opts.impl!==undefined) selImpls.add(opts.impl);
+  if(opts.mgr)    selMgr=opts.mgr;
+  updateSFUI(); updateFIUI();
+  setView('list');
+  render();
+  // scroll top
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderHomeDashboard(){
+  const el=document.getElementById('home-view');
+  if(!el||!clients.length&&!implementors.length)return;
+  const now=new Date();
+  const hour=now.getHours();
+  const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
+  const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dateLabel=`${dayNames[now.getDay()]}, ${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+  const todayISO=now.toISOString().slice(0,10);
+
+  // compute stats
+  const total=clients.length;
+  const active=clients.filter(c=>c.status==='Active').length;
+  const vatOverdue=clients.filter(c=>!c.vatDone&&c.vatDate&&c.vatDate<todayISO).length;
+  const stkOverdue=clients.filter(c=>!c.stkDone&&c.stkDate&&c.stkDate<todayISO).length;
+  const liveMonth=clients.filter(c=>{
+    if(!c.liveDate)return false;
+    const d=new Date(c.liveDate+'T00:00:00');
+    return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+  }).length;
+
+  // upcoming events next 14 days
+  const future14=new Date(now);future14.setDate(future14.getDate()+14);
+  const future14ISO=future14.toISOString().slice(0,10);
+  const events=[];
+  clients.forEach(c=>{
+    if(c.vatDate&&!c.vatDone&&c.vatDate>=todayISO&&c.vatDate<=future14ISO)
+      events.push({date:c.vatDate,type:'VAT',client:c.name,impl:c.implementor,id:c.id});
+    if(c.stkDate&&!c.stkDone&&c.stkDate>=todayISO&&c.stkDate<=future14ISO)
+      events.push({date:c.stkDate,type:'STK',client:c.name,impl:c.implementor,id:c.id});
+    if(c.liveDate&&c.liveDate>=todayISO&&c.liveDate<=future14ISO)
+      events.push({date:c.liveDate,type:'LIVE',client:c.name,impl:c.implementor,id:c.id});
+  });
+  events.sort((a,b)=>a.date.localeCompare(b.date));
+
+  // stat cards
+  const statCards=[
+    {val:total,lbl:'Total Clients',color:'var(--text)',action:'{}'},
+    {val:active,lbl:'Active',color:'#1e3a6e',action:'{status:"Active"}'},
+    {val:vatOverdue,lbl:'Overdue VAT',color:vatOverdue?'#a32d2d':'var(--text)',action:'{vat:"overdue"}'},
+    {val:stkOverdue,lbl:'Overdue STK',color:stkOverdue?'#856404':'var(--text)',action:'{stk:"overdue"}'},
+    {val:liveMonth,lbl:'Live This Month',color:'#065f46',action:'{live:"month"}'},
+  ];
+
+  // implementor cards
+  const implCards=implementors.map(name=>{
+    const mine=clients.filter(c=>c.implementor===name);
+    const overdue=mine.filter(c=>
+      (!c.vatDone&&c.vatDate&&c.vatDate<todayISO)||
+      (!c.stkDone&&c.stkDate&&c.stkDate<todayISO)
+    ).length;
+    const isMe=name.toLowerCase()===currentUser.toLowerCase();
+    return {name,count:mine.length,overdue,isMe};
+  }).sort((a,b)=>b.count-a.count);
+
+  // unassigned
+  const unassigned=clients.filter(c=>!c.implementor).length;
+
+  // status breakdown
+  const statuses=[
+    {key:'Active',bg:'#e8eef8',color:'#1e3a6e'},
+    {key:'Not started',bg:'#f0efe9',color:'#6b6960'},
+    {key:'Dormant',bg:'#fdf0db',color:'#8a5a1a'},
+    {key:'Pending Follow-Up',bg:'#ede9fe',color:'#5b21b6'},
+    {key:'Completed',bg:'#e8e8e8',color:'#555'},
+  ];
+
+  // event type styles
+  const typeStyle={
+    VAT:{bg:'#fff3cd',color:'#856404',label:'⚑ VAT'},
+    STK:{bg:'#fef9c3',color:'#7a6500',label:'📦 STK'},
+    LIVE:{bg:'#d1fae5',color:'#065f46',label:'🚀 Live'},
+  };
+
+  function fmtDate(iso){
+    const d=new Date(iso+'T00:00:00');
+    const diff=Math.round((d-now)/86400000);
+    const day=dayNames[d.getDay()].slice(0,3);
+    const mon=monthNames[d.getMonth()].slice(0,3);
+    if(diff===0)return'<strong style="color:#a32d2d">Today</strong>';
+    if(diff===1)return'<strong style="color:#856404">Tomorrow</strong>';
+    return `${day} ${d.getDate()} ${mon}`;
+  }
+
+  let h=`
+  <div class="hv-welcome">
+    <div>
+      <div class="hv-greeting">${greeting}, ${currentUser}</div>
+      <div class="hv-sub">${dateLabel}</div>
+    </div>
+    <button class="hv-view-all" onclick="goClients({})">View all clients →</button>
+  </div>
+
+  <div class="hv-stats">
+    ${statCards.map(s=>`
+      <div class="hv-stat" onclick="goClients(${s.action})">
+        <div class="hv-stat-val" style="color:${s.color}">${s.val}</div>
+        <div class="hv-stat-lbl">${s.lbl}</div>
+      </div>`).join('')}
+  </div>`;
+
+  // implementors section
+  if(implCards.length){
+    h+=`<div class="hv-section">
+      <div class="hv-section-hdr">
+        <div class="hv-section-title">By Implementor</div>
+        <span class="hv-section-link" onclick="goClients({})">View all →</span>
+      </div>
+      <div class="hv-impl-grid">
+        ${implCards.map(im=>`
+          <div class="hv-impl-card${im.isMe?' me':''}" onclick="goClients({impl:'${im.name}'})">
+            <div class="hv-impl-name">${esc(im.name)}</div>
+            <div class="hv-impl-count">${im.count}</div>
+            <div class="hv-impl-meta">
+              client${im.count!==1?'s':''}
+              ${im.overdue?`· <span class="hv-impl-alert">${im.overdue} overdue</span>`:''}
+            </div>
+          </div>`).join('')}
+        ${unassigned?`<div class="hv-impl-card" onclick="goClients({impl:''})">
+          <div class="hv-impl-name" style="color:var(--text-3)">Unassigned</div>
+          <div class="hv-impl-count" style="color:var(--text-3)">${unassigned}</div>
+          <div class="hv-impl-meta">client${unassigned!==1?'s':''}</div>
+        </div>`:''}
+      </div>
+    </div>`;
+  }
+
+  // status section
+  h+=`<div class="hv-section">
+    <div class="hv-section-hdr">
+      <div class="hv-section-title">By Status</div>
+    </div>
+    <div class="hv-status-row">
+      ${statuses.map(s=>{
+        const n=clients.filter(c=>c.status===s.key).length;
+        if(!n)return'';
+        return`<div class="hv-status-chip" style="background:${s.bg};color:${s.color}" onclick="goClients({status:'${s.key}'})">
+          <span class="hv-chip-n">${n}</span> ${s.key}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+
+  // upcoming events
+  h+=`<div class="hv-section">
+    <div class="hv-section-hdr">
+      <div class="hv-section-title">Upcoming (next 14 days)</div>
+      ${events.length?`<span class="hv-section-link" onclick="openVatReport()">${events.length} event${events.length!==1?'s':''}</span>`:''}
+    </div>
+    <div class="hv-upcoming">`;
+  if(events.length){
+    h+=events.slice(0,8).map(ev=>`
+      <div class="hv-event" onclick="goClients({impl:'${esc(ev.impl||'')}'})" title="Filter to ${esc(ev.impl||'unassigned')}">
+        <div class="hv-event-date">${fmtDate(ev.date)}</div>
+        <div class="hv-event-type" style="background:${typeStyle[ev.type].bg};color:${typeStyle[ev.type].color}">${typeStyle[ev.type].label}</div>
+        <div class="hv-event-client">${esc(ev.client)}</div>
+        <div class="hv-event-meta">${esc(ev.impl||'—')}</div>
+      </div>`).join('');
+    if(events.length>8)h+=`<div class="hv-empty">+${events.length-8} more — open VAT or STK report to see all</div>`;
+  }else{
+    h+=`<div class="hv-empty">No events in the next 14 days.</div>`;
+  }
+  h+=`</div></div>`;
+
+  el.innerHTML=h;
+}
+
 /* ── DASHBOARD ── */
 function renderDashboard(){
   const el=document.getElementById('dashboard');
@@ -3014,6 +3260,7 @@ async function onAuthed(user){
     const btus=document.getElementById('btn-users-side');if(btus)btus.style.display='flex';
   }
   await load();
+  goHome();
 }
 async function doLogout(){
   try{await sb.auth.signOut();}catch(e){}
