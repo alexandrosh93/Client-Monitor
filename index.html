@@ -319,15 +319,15 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3)}
 .hv-card-link{font-size:12px;color:var(--accent);cursor:pointer;font-weight:500;background:none;border:none;font-family:inherit;padding:0}
 .hv-card-link:hover{text-decoration:underline}
-.hv-tilegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
-.hv-tile{position:relative;background:var(--bg);border:1px solid var(--border-sm);border-radius:13px;padding:12px 13px;cursor:pointer;transition:all .16s}
-.hv-tile:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.08)}
-.hv-tile-head{display:flex;align-items:center;justify-content:space-between;min-height:32px;margin-bottom:8px}
-.hv-tile-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:.01em}
-.hv-tile-you{font-size:9px;padding:2px 6px;border-radius:5px;background:#d1dcf7;color:#1e3a6e;font-weight:700}
-.hv-tile-num{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--text)}
-.hv-tile-name{font-size:12px;font-weight:600;color:var(--text-2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hv-tile-od{margin-top:7px;font-size:10px;font-weight:700;color:#a32d2d;background:#feecec;display:inline-block;padding:2px 8px;border-radius:6px}
+.hv-tilegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:7px}
+.hv-tile{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--border-sm);border-radius:10px;padding:6px 10px;cursor:pointer;transition:all .15s}
+.hv-tile:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.07)}
+.hv-tile-av{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:.01em}
+.hv-tile-info{flex:1;min-width:0}
+.hv-tile-name{font-size:12.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:5px}
+.hv-tile-num{font-size:17px;font-weight:800;letter-spacing:-.02em;color:var(--text);flex-shrink:0}
+.hv-tile-you{font-size:8px;padding:1px 5px;border-radius:4px;background:#d1dcf7;color:#1e3a6e;font-weight:700;flex-shrink:0}
+.hv-tile-od{font-size:10px;font-weight:700;color:#a32d2d;margin-top:1px}
 .hv-upcoming-list{display:flex;flex-direction:column;gap:5px}
 .hv-event{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border:1px solid var(--border-sm);border-radius:9px;cursor:pointer;transition:all .14s}
 .hv-event:hover{background:var(--surface2);border-color:var(--border-md);transform:translateX(2px)}
@@ -2828,18 +2828,17 @@ function renderHomeDashboard(){
       <div class="hv-tilegrid">
         ${implData.map((im,i)=>`
           <div class="hv-tile" onclick="goClients({impl:'${esc(im.name)}'})">
-            <div class="hv-tile-head">
-              <div class="hv-tile-av" style="background:${avPal[i%avPal.length]}">${im.name.slice(0,2).toUpperCase()}</div>
-              ${im.isMe?'<span class="hv-tile-you">you</span>':''}
+            <div class="hv-tile-av" style="background:${avPal[i%avPal.length]}">${im.name.slice(0,2).toUpperCase()}</div>
+            <div class="hv-tile-info">
+              <div class="hv-tile-name">${esc(im.name)}${im.isMe?'<span class="hv-tile-you">you</span>':''}</div>
+              ${im.overdue?`<div class="hv-tile-od">${im.overdue} overdue</div>`:''}
             </div>
             <div class="hv-tile-num">${im.count}</div>
-            <div class="hv-tile-name">${esc(im.name)}</div>
-            ${im.overdue?`<div class="hv-tile-od">${im.overdue} overdue</div>`:''}
           </div>`).join('')}
         ${unassigned?`<div class="hv-tile" onclick="goClients({impl:''})">
-          <div class="hv-tile-head"><div class="hv-tile-av" style="background:var(--text-3)">—</div></div>
+          <div class="hv-tile-av" style="background:var(--text-3)">—</div>
+          <div class="hv-tile-info"><div class="hv-tile-name" style="color:var(--text-3)">Unassigned</div></div>
           <div class="hv-tile-num" style="color:var(--text-3)">${unassigned}</div>
-          <div class="hv-tile-name">Unassigned</div>
         </div>`:''}
       </div>
     </div>
@@ -2853,9 +2852,9 @@ function renderHomeDashboard(){
         ${mgrSet.map((m,i)=>{
           const n=clients.filter(c=>c.mgr===m).length;
           return`<div class="hv-tile" onclick="goClients({mgr:'${esc(m)}'})">
-            <div class="hv-tile-head"><div class="hv-tile-av" style="background:${avPal[(i+3)%avPal.length]}">${m.slice(0,2).toUpperCase()}</div></div>
+            <div class="hv-tile-av" style="background:${avPal[(i+3)%avPal.length]}">${m.slice(0,2).toUpperCase()}</div>
+            <div class="hv-tile-info"><div class="hv-tile-name">${esc(m)}</div></div>
             <div class="hv-tile-num">${n}</div>
-            <div class="hv-tile-name">${esc(m)}</div>
           </div>`;
         }).join('')}
       </div>`:'<div style="font-size:13px;color:var(--text-3);padding:.5rem .2rem">No managers assigned yet.</div>'}
