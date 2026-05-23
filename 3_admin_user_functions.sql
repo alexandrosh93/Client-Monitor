@@ -4,8 +4,15 @@
 -- After running, user management works directly from the app
 -- ══════════════════════════════════════════════════════
 
+-- Drop first to allow return-type changes
+DROP FUNCTION IF EXISTS admin_list_users();
+DROP FUNCTION IF EXISTS admin_create_user(text,text,text,text);
+DROP FUNCTION IF EXISTS admin_update_user(uuid,text,text);
+DROP FUNCTION IF EXISTS admin_set_password(uuid,text);
+DROP FUNCTION IF EXISTS admin_delete_user(uuid);
+
 -- List all users (admin only)
-CREATE OR REPLACE FUNCTION admin_list_users()
+CREATE FUNCTION admin_list_users()
 RETURNS TABLE(id uuid, email text, username text, role text, created_at timestamptz)
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public
 AS $$
@@ -15,17 +22,19 @@ BEGIN
     coalesce(auth.jwt()->'user_metadata'->>'role','') = 'admin'
   ) THEN RAISE EXCEPTION 'Not authorized'; END IF;
   RETURN QUERY
-  SELECT u.id, u.email,
-    coalesce(u.raw_user_meta_data->>'username', split_part(u.email,'@',1)) AS username,
-    coalesce(u.raw_app_meta_data->>'role', u.raw_user_meta_data->>'role', 'user') AS role,
-    u.created_at
+  SELECT
+    u.id::uuid,
+    u.email::text,
+    coalesce(u.raw_user_meta_data->>'username', split_part(u.email::text,'@',1))::text AS username,
+    coalesce(u.raw_app_meta_data->>'role', u.raw_user_meta_data->>'role', 'user')::text AS role,
+    u.created_at::timestamptz
   FROM auth.users u ORDER BY u.created_at;
 END;
 $$;
 
 -- Create a new user (admin only)
 -- p_login: username (becomes username@avps.local) or full email
-CREATE OR REPLACE FUNCTION admin_create_user(
+CREATE FUNCTION admin_create_user(
   p_login text, p_password text, p_username text, p_role text
 )
 RETURNS uuid
@@ -68,7 +77,7 @@ END;
 $$;
 
 -- Update user display name and role (admin only)
-CREATE OR REPLACE FUNCTION admin_update_user(
+CREATE FUNCTION admin_update_user(
   p_user_id uuid, p_username text, p_role text
 )
 RETURNS void
@@ -91,7 +100,7 @@ END;
 $$;
 
 -- Reset any user's password (admin only)
-CREATE OR REPLACE FUNCTION admin_set_password(p_user_id uuid, p_password text)
+CREATE FUNCTION admin_set_password(p_user_id uuid, p_password text)
 RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public
 AS $$
@@ -109,7 +118,7 @@ END;
 $$;
 
 -- Delete a user (admin only)
-CREATE OR REPLACE FUNCTION admin_delete_user(p_user_id uuid)
+CREATE FUNCTION admin_delete_user(p_user_id uuid)
 RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public
 AS $$
