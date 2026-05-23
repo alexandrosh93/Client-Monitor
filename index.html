@@ -312,22 +312,22 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3)}
 .hv-card-link{font-size:12px;color:var(--accent);cursor:pointer;font-weight:500;background:none;border:none;font-family:inherit;padding:0}
 .hv-card-link:hover{text-decoration:underline}
-.hv-cardgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:7px}
-.hv-pcard{position:relative;background:var(--bg);border:1px solid var(--border-sm);border-radius:11px;padding:9px 10px 8px;cursor:pointer;transition:all .16s;overflow:hidden}
-.hv-pcard::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--pc,var(--accent));transform:scaleX(0);transform-origin:left;transition:transform .2s}
-.hv-pcard:hover{border-color:var(--pc,var(--accent));transform:translateY(-2px);box-shadow:0 7px 18px rgba(0,0,0,.09)}
-.hv-pcard:hover::after{transform:scaleX(1)}
-.hv-pcard:hover .hv-pcta{color:var(--pc,var(--accent))}
-.hv-pcard:hover .hv-pcta b{transform:translateX(3px)}
-.hv-pc-top{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px}
-.hv-pc-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:.01em}
-.hv-pc-num{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--text)}
-.hv-pc-name{font-size:11.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px}
-.hv-pc-lbl{font-size:9.5px;color:var(--text-3);margin-top:2px}
-.hv-pc-od{font-size:9px;font-weight:700;color:#a32d2d;background:#feecec;padding:1px 5px;border-radius:5px}
-.hv-pcta{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;color:var(--text-3);margin-top:6px;text-transform:uppercase;letter-spacing:.03em;transition:color .16s}
-.hv-pcta b{font-weight:700;transition:transform .16s}
-.hv-pc-you{font-size:8px;padding:1px 5px;border-radius:4px;background:#d1dcf7;color:#1e3a6e;font-weight:700;flex-shrink:0}
+@keyframes hvBarIn{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.hv-ilist{display:flex;flex-direction:column;gap:2px}
+.hv-irow{display:flex;align-items:center;gap:8px;padding:6px 5px;border-radius:8px;cursor:pointer;transition:background .14s}
+.hv-irow:hover{background:var(--surface2)}
+.hv-irow:hover .hv-iarrow{transform:translateX(3px);color:var(--accent)}
+.hv-irank{font-size:9px;font-weight:800;color:var(--text-3);min-width:14px;text-align:right;flex-shrink:0}
+.hv-iav{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:#fff;flex-shrink:0}
+.hv-iinfo{flex:1;min-width:0}
+.hv-iname{font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.hv-ibar{height:4px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.hv-ibar-fill{height:100%;border-radius:3px;animation:hvBarIn .55s cubic-bezier(.4,0,.2,1) both}
+.hv-iend{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.hv-icount{font-size:13px;font-weight:800;color:var(--text)}
+.hv-iarrow{font-size:11px;color:var(--text-3);transition:transform .14s,color .14s}
+.hv-iod{font-size:9px;font-weight:700;color:#a32d2d;background:#feecec;padding:1px 5px;border-radius:5px}
+.hv-iyou{font-size:8px;padding:1px 5px;border-radius:4px;background:#d1dcf7;color:#1e3a6e;font-weight:700;flex-shrink:0}
 .hv-upcoming-list{display:flex;flex-direction:column;gap:5px}
 .hv-event{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border:1px solid var(--border-sm);border-radius:9px;cursor:pointer;transition:all .14s}
 .hv-event:hover{background:var(--surface2);border-color:var(--border-md);transform:translateX(2px)}
@@ -2825,25 +2825,25 @@ function renderHomeDashboard(){
         <div class="hv-card-title">By Implementor</div>
         <button class="hv-card-link" onclick="goClients({})">View all →</button>
       </div>
-      <div class="hv-cardgrid">
-        ${implData.map((im,i)=>{const c=avPal[i%avPal.length];return`
-          <div class="hv-pcard" style="--pc:${c}" onclick="goClients({impl:'${esc(im.name)}'})">
-            <div class="hv-pc-top">
-              <div class="hv-pc-av" style="background:${c}">${im.name.slice(0,2).toUpperCase()}</div>
-              <div class="hv-pc-num">${im.count}</div>
+      <div class="hv-ilist">
+        ${implData.map((im,i)=>{const c=avPal[i%avPal.length];const pct=Math.round(im.count/Math.max(1,total)*100);return`
+          <div class="hv-irow" onclick="goClients({impl:'${esc(im.name)}'})">
+            <span class="hv-irank">#${i+1}</span>
+            <div class="hv-iav" style="background:${c}">${im.name.slice(0,2).toUpperCase()}</div>
+            <div class="hv-iinfo">
+              <div class="hv-iname">${esc(im.name)}${im.isMe?'<span class="hv-iyou">you</span>':''}${im.overdue?`<span class="hv-iod">${im.overdue} overdue</span>`:''}</div>
+              <div class="hv-ibar"><div class="hv-ibar-fill" style="width:${pct}%;background:${c};animation-delay:${i*60}ms"></div></div>
             </div>
-            <div class="hv-pc-name">${esc(im.name)}${im.isMe?'<span class="hv-pc-you">you</span>':''}</div>
-            <div class="hv-pc-lbl">${im.overdue?`<span class="hv-pc-od">${im.overdue} overdue</span>`:`client${im.count!==1?'s':''}`}</div>
-            <div class="hv-pcta">View clients <b>→</b></div>
+            <div class="hv-iend"><span class="hv-icount">${im.count}</span><span class="hv-iarrow">→</span></div>
           </div>`;}).join('')}
-        ${unassigned?`<div class="hv-pcard" onclick="goClients({impl:''})">
-          <div class="hv-pc-top">
-            <div class="hv-pc-av" style="background:var(--text-3)">—</div>
-            <div class="hv-pc-num" style="color:var(--text-3)">${unassigned}</div>
+        ${unassigned?`<div class="hv-irow" onclick="goClients({impl:''})">
+          <span class="hv-irank"></span>
+          <div class="hv-iav" style="background:var(--text-3);opacity:.55">—</div>
+          <div class="hv-iinfo">
+            <div class="hv-iname" style="color:var(--text-3)">Unassigned</div>
+            <div class="hv-ibar"><div class="hv-ibar-fill" style="width:${Math.round(unassigned/Math.max(1,total)*100)}%;background:var(--text-3);animation-delay:${implData.length*60}ms"></div></div>
           </div>
-          <div class="hv-pc-name" style="color:var(--text-3)">Unassigned</div>
-          <div class="hv-pc-lbl">client${unassigned!==1?'s':''}</div>
-          <div class="hv-pcta">View clients <b>→</b></div>
+          <div class="hv-iend"><span class="hv-icount" style="color:var(--text-3)">${unassigned}</span><span class="hv-iarrow">→</span></div>
         </div>`:''}
       </div>
     </div>
@@ -2853,17 +2853,17 @@ function renderHomeDashboard(){
         <div class="hv-card-title">By Manager</div>
         <button class="hv-card-link" onclick="goClients({})">View all →</button>
       </div>
-      ${mgrSet.length?`<div class="hv-cardgrid">
+      ${mgrSet.length?`<div class="hv-ilist">
         ${mgrSet.map((m,i)=>{
-          const n=clients.filter(c=>c.mgr===m).length;const c=avPal[(i+3)%avPal.length];
-          return`<div class="hv-pcard" style="--pc:${c}" onclick="goClients({mgr:'${esc(m)}'})">
-            <div class="hv-pc-top">
-              <div class="hv-pc-av" style="background:${c}">${m.slice(0,2).toUpperCase()}</div>
-              <div class="hv-pc-num">${n}</div>
+          const n=clients.filter(c=>c.mgr===m).length;const c=avPal[(i+3)%avPal.length];const pct=Math.round(n/Math.max(1,total)*100);
+          return`<div class="hv-irow" onclick="goClients({mgr:'${esc(m)}'})">
+            <span class="hv-irank">#${i+1}</span>
+            <div class="hv-iav" style="background:${c}">${m.slice(0,2).toUpperCase()}</div>
+            <div class="hv-iinfo">
+              <div class="hv-iname">${esc(m)}</div>
+              <div class="hv-ibar"><div class="hv-ibar-fill" style="width:${pct}%;background:${c};animation-delay:${i*60}ms"></div></div>
             </div>
-            <div class="hv-pc-name">${esc(m)}</div>
-            <div class="hv-pc-lbl">client${n!==1?'s':''}</div>
-            <div class="hv-pcta">View clients <b>→</b></div>
+            <div class="hv-iend"><span class="hv-icount">${n}</span><span class="hv-iarrow">→</span></div>
           </div>`;
         }).join('')}
       </div>`:'<div style="font-size:13px;color:var(--text-3);padding:.5rem .2rem">No managers assigned yet.</div>'}
