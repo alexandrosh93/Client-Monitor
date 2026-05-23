@@ -1363,7 +1363,6 @@ async function load(){
     toast('Could not load from Supabase. Check connection.');
   }
   render();buildVatBanner();buildStkBanner();
-  if(document.getElementById('home-view').classList.contains('active'))renderHomeDashboard();
   startAutoRefresh();
 }
 
