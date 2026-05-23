@@ -2647,6 +2647,11 @@ function scrollToClient(id){
 let currentView='list';
 function setView(v){
   currentView=v;
+  // leaving the home (login) dashboard
+  const home=document.getElementById('home-view');
+  if(home)home.classList.remove('active');
+  const cb=document.querySelector('.control-bar');
+  if(cb)cb.style.display='';
   const listEl=document.getElementById('list');
   const dashEl=document.getElementById('dashboard');
   if(listEl)listEl.style.display=v==='list'?'block':'none';
