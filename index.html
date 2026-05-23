@@ -305,13 +305,6 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-banner-actions{display:flex;gap:8px;flex-shrink:0}
 .hv-view-all{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:99px;background:rgba(255,255,255,.15);color:#fff;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.3);font-family:'DM Sans',sans-serif;transition:all .17s;backdrop-filter:blur(4px)}
 .hv-view-all:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
-.hv-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1.25rem}
-.hv-stat{background:var(--surface);border:1px solid var(--border-md);border-radius:14px;padding:1rem 1.1rem;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
-.hv-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;background:var(--ac,transparent)}
-.hv-stat:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1)}
-.hv-stat-val{font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1}
-.hv-stat-lbl{font-size:10px;font-weight:700;color:var(--text-3);margin-top:5px;text-transform:uppercase;letter-spacing:.05em}
-.hv-stat-sub{font-size:10px;color:var(--text-3);margin-top:2px}
 .hv-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;align-items:start}
 .hv-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.25rem;align-items:start}
 .hv-card{background:var(--surface);border:1px solid var(--border-md);border-radius:14px;padding:1.1rem 1.25rem}
@@ -350,8 +343,6 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-qbtn:hover{background:rgba(255,255,255,.24);border-color:rgba(255,255,255,.45)}
 .hv-qbtn-primary{background:#fff;color:#1e3a6e;border-color:#fff}
 .hv-qbtn-primary:hover{background:rgba(255,255,255,.9)}
-/* stat icon */
-.hv-stat-icon{position:absolute;top:11px;right:13px;font-size:17px;opacity:.45;line-height:1}
 /* status overview — segmented bar */
 .hv-sbar{display:flex;width:100%;height:42px;border-radius:10px;overflow:hidden;background:var(--surface2)}
 .hv-sbar-seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;cursor:pointer;transition:filter .15s;min-width:0;border-right:2px solid var(--surface)}
@@ -365,8 +356,8 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-sleg-name{font-size:12px;color:var(--text-2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hv-sleg-num{font-size:14px;font-weight:800;color:var(--text)}
 .hv-sleg-pct{font-size:11px;color:var(--text-3);min-width:34px;text-align:right}
-@media(max-width:960px){.hv-stats{grid-template-columns:repeat(3,1fr)}.hv-grid{grid-template-columns:1fr}.hv-grid-3{grid-template-columns:1fr}}
-@media(max-width:600px){.hv-stats{grid-template-columns:repeat(2,1fr)}.hv-banner{flex-wrap:wrap}.hv-banner-actions{width:100%;flex-direction:row;flex-wrap:wrap}.hv-qbtn{flex:1}.hv-greeting{font-size:18px}}
+@media(max-width:960px){.hv-grid{grid-template-columns:1fr}.hv-grid-3{grid-template-columns:1fr}}
+@media(max-width:600px){.hv-banner{flex-wrap:wrap}.hv-banner-actions{width:100%;flex-direction:row;flex-wrap:wrap}.hv-qbtn{flex:1}.hv-greeting{font-size:18px}}
 /* ═══════ TABLET (769px – 1024px) ═══════ */
 @media(min-width:769px) and (max-width:1024px){
   .control-bar{flex-direction:column;gap:6px;align-items:stretch}
@@ -2702,14 +2693,8 @@ function renderHomeDashboard(){
 
   // stats
   const total=clients.length;
-  const active=clients.filter(c=>c.status==='Active').length;
   const vatOverdue=clients.filter(c=>!c.vatDone&&c.vatDate&&c.vatDate<todayISO).length;
   const stkOverdue=clients.filter(c=>!c.stkDone&&c.stkDate&&c.stkDate<todayISO).length;
-  const liveMonth=clients.filter(c=>{
-    if(!c.liveDate)return false;
-    const d=new Date(c.liveDate+'T00:00:00');
-    return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
-  }).length;
 
   // status data for chart
   const statusDef=[
@@ -2774,39 +2759,6 @@ function renderHomeDashboard(){
     <div class="hv-banner-actions">
       <button class="hv-qbtn hv-qbtn-primary" onclick="openAdd()">＋ Add Client</button>
       <button class="hv-qbtn" onclick="goClients({})">All Clients →</button>
-    </div>
-  </div>
-
-  <div class="hv-stats">
-    <div class="hv-stat" style="--ac:#1e3a6e" onclick="goClients({})">
-      <div class="hv-stat-icon">👥</div>
-      <div class="hv-stat-val" style="color:#1e3a6e">${total}</div>
-      <div class="hv-stat-lbl">Total Clients</div>
-      <div class="hv-stat-sub">${implementors.length} implementor${implementors.length!==1?'s':''}</div>
-    </div>
-    <div class="hv-stat" style="--ac:#3b6cc7" onclick="goClients({status:'Active'})">
-      <div class="hv-stat-icon">⚡</div>
-      <div class="hv-stat-val" style="color:#1e3a6e">${active}</div>
-      <div class="hv-stat-lbl">Active</div>
-      <div class="hv-stat-sub">${Math.round(active/Math.max(1,total)*100)}% of total</div>
-    </div>
-    <div class="hv-stat" style="--ac:${vatOverdue?'#a32d2d':'#10b981'}" onclick="openVatReport()">
-      <div class="hv-stat-icon">⚑</div>
-      <div class="hv-stat-val" style="color:${vatOverdue?'#a32d2d':'var(--text)'}">${vatOverdue}</div>
-      <div class="hv-stat-lbl">Overdue VAT</div>
-      <div class="hv-stat-sub">${vatOverdue?'Needs attention':'All clear ✓'}</div>
-    </div>
-    <div class="hv-stat" style="--ac:${stkOverdue?'#856404':'#10b981'}" onclick="openStkReport()">
-      <div class="hv-stat-icon">📦</div>
-      <div class="hv-stat-val" style="color:${stkOverdue?'#856404':'var(--text)'}">${stkOverdue}</div>
-      <div class="hv-stat-lbl">Overdue STK</div>
-      <div class="hv-stat-sub">${stkOverdue?'Needs attention':'All clear ✓'}</div>
-    </div>
-    <div class="hv-stat" style="--ac:#10b981" onclick="goClients({})">
-      <div class="hv-stat-icon">🚀</div>
-      <div class="hv-stat-val" style="color:#065f46">${liveMonth}</div>
-      <div class="hv-stat-lbl">Live This Month</div>
-      <div class="hv-stat-sub">${months[now.getMonth()]}</div>
     </div>
   </div>
 
