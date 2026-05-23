@@ -319,17 +319,22 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3)}
 .hv-card-link{font-size:12px;color:var(--accent);cursor:pointer;font-weight:500;background:none;border:none;font-family:inherit;padding:0}
 .hv-card-link:hover{text-decoration:underline}
-.hv-flt-hint{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.04em}
-.hv-flist{display:flex;flex-direction:column;gap:1px}
-.hv-frow{display:flex;align-items:center;gap:8px;padding:4px 7px;border-radius:7px;cursor:pointer;border:1px solid transparent;transition:all .14s}
-.hv-frow:hover{background:var(--surface2);border-color:var(--border-md)}
-.hv-frow:hover .hv-fchev{color:var(--accent);transform:translateX(2px)}
-.hv-fav{width:23px;height:23px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:.01em}
-.hv-fname{flex:1;min-width:0;font-size:12.5px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hv-fnum{font-size:14px;font-weight:800;color:var(--text);flex-shrink:0}
-.hv-fod{font-size:9px;font-weight:700;color:#a32d2d;background:#feecec;padding:1px 5px;border-radius:4px;flex-shrink:0}
-.hv-fchev{font-size:16px;line-height:1;color:var(--text-3);flex-shrink:0;transition:all .14s}
-.hv-fyou{font-size:8px;padding:1px 4px;border-radius:4px;background:#d1dcf7;color:#1e3a6e;font-weight:700;flex-shrink:0}
+.hv-cardgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:9px}
+.hv-pcard{position:relative;background:var(--bg);border:1px solid var(--border-sm);border-radius:13px;padding:12px 13px 10px;cursor:pointer;transition:all .16s;overflow:hidden}
+.hv-pcard::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--pc,var(--accent));transform:scaleX(0);transform-origin:left;transition:transform .2s}
+.hv-pcard:hover{border-color:var(--pc,var(--accent));transform:translateY(-2px);box-shadow:0 7px 18px rgba(0,0,0,.09)}
+.hv-pcard:hover::after{transform:scaleX(1)}
+.hv-pcard:hover .hv-pcta{color:var(--pc,var(--accent))}
+.hv-pcard:hover .hv-pcta b{transform:translateX(3px)}
+.hv-pc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.hv-pc-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:.01em}
+.hv-pc-num{font-size:23px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--text)}
+.hv-pc-name{font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:5px}
+.hv-pc-lbl{font-size:10px;color:var(--text-3);margin-top:2px}
+.hv-pc-od{font-size:9px;font-weight:700;color:#a32d2d;background:#feecec;padding:1px 6px;border-radius:5px}
+.hv-pcta{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;color:var(--text-3);margin-top:8px;text-transform:uppercase;letter-spacing:.03em;transition:color .16s}
+.hv-pcta b{font-weight:700;transition:transform .16s}
+.hv-pc-you{font-size:8px;padding:1px 5px;border-radius:4px;background:#d1dcf7;color:#1e3a6e;font-weight:700;flex-shrink:0}
 .hv-upcoming-list{display:flex;flex-direction:column;gap:5px}
 .hv-event{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border:1px solid var(--border-sm);border-radius:9px;cursor:pointer;transition:all .14s}
 .hv-event:hover{background:var(--surface2);border-color:var(--border-md);transform:translateX(2px)}
@@ -2830,22 +2835,27 @@ function renderHomeDashboard(){
     <div class="hv-card">
       <div class="hv-card-hdr">
         <div class="hv-card-title">By Implementor</div>
-        <span class="hv-flt-hint">👆 click to filter</span>
+        <button class="hv-card-link" onclick="goClients({})">View all →</button>
       </div>
-      <div class="hv-flist">
-        ${implData.map((im,i)=>`
-          <div class="hv-frow" onclick="goClients({impl:'${esc(im.name)}'})">
-            <div class="hv-fav" style="background:${avPal[i%avPal.length]}">${im.name.slice(0,2).toUpperCase()}</div>
-            <div class="hv-fname">${esc(im.name)}${im.isMe?'<span class="hv-fyou">you</span>':''}</div>
-            ${im.overdue?`<span class="hv-fod" title="overdue">${im.overdue}</span>`:''}
-            <span class="hv-fnum">${im.count}</span>
-            <span class="hv-fchev">›</span>
-          </div>`).join('')}
-        ${unassigned?`<div class="hv-frow" onclick="goClients({impl:''})">
-          <div class="hv-fav" style="background:var(--text-3)">—</div>
-          <div class="hv-fname" style="color:var(--text-3)">Unassigned</div>
-          <span class="hv-fnum" style="color:var(--text-3)">${unassigned}</span>
-          <span class="hv-fchev">›</span>
+      <div class="hv-cardgrid">
+        ${implData.map((im,i)=>{const c=avPal[i%avPal.length];return`
+          <div class="hv-pcard" style="--pc:${c}" onclick="goClients({impl:'${esc(im.name)}'})">
+            <div class="hv-pc-top">
+              <div class="hv-pc-av" style="background:${c}">${im.name.slice(0,2).toUpperCase()}</div>
+              <div class="hv-pc-num">${im.count}</div>
+            </div>
+            <div class="hv-pc-name">${esc(im.name)}${im.isMe?'<span class="hv-pc-you">you</span>':''}</div>
+            <div class="hv-pc-lbl">${im.overdue?`<span class="hv-pc-od">${im.overdue} overdue</span>`:`client${im.count!==1?'s':''}`}</div>
+            <div class="hv-pcta">View clients <b>→</b></div>
+          </div>`;}).join('')}
+        ${unassigned?`<div class="hv-pcard" onclick="goClients({impl:''})">
+          <div class="hv-pc-top">
+            <div class="hv-pc-av" style="background:var(--text-3)">—</div>
+            <div class="hv-pc-num" style="color:var(--text-3)">${unassigned}</div>
+          </div>
+          <div class="hv-pc-name" style="color:var(--text-3)">Unassigned</div>
+          <div class="hv-pc-lbl">client${unassigned!==1?'s':''}</div>
+          <div class="hv-pcta">View clients <b>→</b></div>
         </div>`:''}
       </div>
     </div>
@@ -2853,16 +2863,19 @@ function renderHomeDashboard(){
     <div class="hv-card">
       <div class="hv-card-hdr">
         <div class="hv-card-title">By Manager</div>
-        <span class="hv-flt-hint">👆 click to filter</span>
+        <button class="hv-card-link" onclick="goClients({})">View all →</button>
       </div>
-      ${mgrSet.length?`<div class="hv-flist">
+      ${mgrSet.length?`<div class="hv-cardgrid">
         ${mgrSet.map((m,i)=>{
-          const n=clients.filter(c=>c.mgr===m).length;
-          return`<div class="hv-frow" onclick="goClients({mgr:'${esc(m)}'})">
-            <div class="hv-fav" style="background:${avPal[(i+3)%avPal.length]}">${m.slice(0,2).toUpperCase()}</div>
-            <div class="hv-fname">${esc(m)}</div>
-            <span class="hv-fnum">${n}</span>
-            <span class="hv-fchev">›</span>
+          const n=clients.filter(c=>c.mgr===m).length;const c=avPal[(i+3)%avPal.length];
+          return`<div class="hv-pcard" style="--pc:${c}" onclick="goClients({mgr:'${esc(m)}'})">
+            <div class="hv-pc-top">
+              <div class="hv-pc-av" style="background:${c}">${m.slice(0,2).toUpperCase()}</div>
+              <div class="hv-pc-num">${n}</div>
+            </div>
+            <div class="hv-pc-name">${esc(m)}</div>
+            <div class="hv-pc-lbl">client${n!==1?'s':''}</div>
+            <div class="hv-pcta">View clients <b>→</b></div>
           </div>`;
         }).join('')}
       </div>`:'<div style="font-size:13px;color:var(--text-3);padding:.5rem .2rem">No managers assigned yet.</div>'}
