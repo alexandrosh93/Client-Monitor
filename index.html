@@ -1141,6 +1141,7 @@ let implementors=[];
 let auditLog=[];   // [{ts, user, action, target, detail}]
 let currentUser=''; // username (login identifier)
 let currentFullName=''; // full name for display
+let implDisplayNames={}; // username (lowercase) → full name
 let isAdminUser=false;
 const expanded=new Set();
 let selStatuses=new Set();
@@ -1329,11 +1330,12 @@ function importJSON(input){
 async function load(){
   setSyncStatus('spin','Loading…');
   try{
-    const [cRes,iRes,mRes,aRes]=await Promise.all([
+    const [cRes,iRes,mRes,aRes,dnRes]=await Promise.all([
       sb.from('clients').select('*').order('id'),
       sb.from('implementors').select('*').order('name'),
       sb.from('modules').select('name'),
-      sb.from('audit_log').select('*').order('ts',{ascending:false}).limit(500)
+      sb.from('audit_log').select('*').order('ts',{ascending:false}).limit(500),
+      sb.rpc('get_display_names')
     ]);
     if(cRes.error)throw cRes.error;
     clients=(cRes.data||[]).map(dbToClient);
@@ -1356,6 +1358,7 @@ async function load(){
     }
     if(mRes.data&&mRes.data.length)ALL_MODS=mRes.data.map(r=>r.name);
     if(aRes.data)auditLog=aRes.data.map(r=>({ts:r.ts,user:r.user,action:r.action,target:r.target||'',detail:r.detail||''}));
+    if(dnRes.data){implDisplayNames={};dnRes.data.forEach(r=>{if(r.full_name)implDisplayNames[r.username.toLowerCase()]=r.full_name;});}
     setSyncStatus('ok','Supabase ✓');
   }catch(e){
     console.error('Load error:',e);
@@ -2829,13 +2832,13 @@ function renderHomeDashboard(){
         <button class="hv-card-link" onclick="goClients({})">View all →</button>
       </div>
       <div class="hv-cardgrid">
-        ${implData.map((im,i)=>{const c=avPal[i%avPal.length];return`
+        ${implData.map((im,i)=>{const c=avPal[i%avPal.length];const displayName=implDisplayNames[im.name.toLowerCase()]||im.name;return`
           <div class="hv-pcard" style="--pc:${c}" onclick="goClients({impl:'${esc(im.name)}'})">
             <div class="hv-pc-top">
               <div class="hv-pc-av" style="background:${c}">${im.name.slice(0,2).toUpperCase()}</div>
               <div class="hv-pc-num">${im.count}</div>
             </div>
-            <div class="hv-pc-name">${esc(im.name)}${im.isMe?'<span class="hv-pc-you">you</span>':''}</div>
+            <div class="hv-pc-name">${esc(displayName)}${im.isMe?'<span class="hv-pc-you">you</span>':''}</div>
             <div class="hv-pc-lbl">${im.overdue?`<span class="hv-pc-od">${im.overdue} overdue</span>`:`client${im.count!==1?'s':''}`}</div>
             <div class="hv-pcta">View clients <b>→</b></div>
           </div>`;}).join('')}
