@@ -2832,7 +2832,7 @@ function renderHomeDashboard(){
         <button class="hv-card-link" onclick="goClients({})">View all →</button>
       </div>
       <div class="hv-cardgrid">
-        ${implData.map((im,i)=>{const c=avPal[i%avPal.length];const displayName=implDisplayNames[im.name.toLowerCase()]||im.name;return`
+        ${implData.map((im,i)=>{const c=avPal[i%avPal.length];const displayName=(implDisplayNames[im.name.toLowerCase()]||im.name).split(' ')[0];return`
           <div class="hv-pcard" style="--pc:${c}" onclick="goClients({impl:'${esc(im.name)}'})">
             <div class="hv-pc-top">
               <div class="hv-pc-av" style="background:${c}">${im.name.slice(0,2).toUpperCase()}</div>
