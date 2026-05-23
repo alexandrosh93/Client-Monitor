@@ -715,8 +715,8 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
     <!-- Add user view -->
     <div id="um-add-view" style="display:none">
       <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:.85rem">New User</div>
-      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Display Name</label><input id="um-add-name" type="text" placeholder="e.g. John Smith"></div>
-      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Login (username or email)</label><input id="um-add-login" type="text" placeholder="jsmith  or  john@company.com"></div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Username</label><input id="um-add-login" type="text" placeholder="jsmith  or  john@company.com"></div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Full Name</label><input id="um-add-fullname" type="text" placeholder="e.g. John Smith"></div>
       <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Password</label><input id="um-add-pass" type="password" placeholder="Minimum 6 characters"></div>
       <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Role</label><select id="um-add-role"><option value="user">User</option><option value="admin">Admin</option></select></div>
       <div id="um-add-err" style="font-size:12px;color:#a32d2d;min-height:16px;margin:.3rem 0 .6rem"></div>
@@ -729,8 +729,8 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
     <div id="um-edit-view" style="display:none">
       <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:.85rem">Edit User</div>
       <input type="hidden" id="um-edit-id">
-      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Display Name</label><input id="um-edit-name" type="text"></div>
-      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Email / Login</label><input id="um-edit-email" type="text" placeholder="username or full email"></div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Username / Email</label><input id="um-edit-email" type="text" placeholder="jsmith  or  john@company.com"></div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Full Name</label><input id="um-edit-fullname" type="text" placeholder="e.g. John Smith"></div>
       <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Role</label><select id="um-edit-role"><option value="user">User</option><option value="admin">Admin</option></select></div>
       <div style="border-top:1px solid var(--border-md);padding-top:.75rem;margin:.75rem 0 .6rem">
         <div class="mf"><label class="lbl">New Password <span style="font-weight:400;color:var(--text-3)">(leave blank to keep current)</span></label><input id="um-edit-pass" type="password" placeholder="Leave blank to keep"></div>
@@ -3069,8 +3069,9 @@ function umRenderTable(){
   <div style="overflow-x:auto">
   <table style="width:100%;border-collapse:collapse;font-size:13px">
   <thead><tr style="border-bottom:2px solid var(--border-md)">
-    <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Display Name</th>
-    <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Email / Login</th>
+    <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Username</th>
+    <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Full Name</th>
+    <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Email</th>
     <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">Role</th>
     <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Added</th>
     <th style="width:76px"></th>
@@ -3087,8 +3088,9 @@ function umRenderTable(){
     const isMe=u.email.toLowerCase()===currentUser.toLowerCase()+'@avps.local'||u.email.toLowerCase()===currentUser.toLowerCase();
     const meBadge=isMe?`<span style="font-size:9px;padding:1px 5px;border-radius:5px;background:#f0f9f4;color:#2d7a4f;font-weight:600;margin-left:4px">you</span>`:'';
     h+=`<tr style="border-bottom:1px solid var(--border-sm);transition:background .1s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
-      <td style="padding:8px 8px;font-weight:500">${esc(u.username)}${meBadge}</td>
-      <td style="padding:8px 8px;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${emailDisplay}</td>
+      <td style="padding:8px 8px;font-weight:600;white-space:nowrap">${esc(u.username)}${meBadge}</td>
+      <td style="padding:8px 8px;font-size:12px;color:var(--text-2)">${esc(u.full_name||'—')}</td>
+      <td style="padding:8px 8px;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${emailDisplay}</td>
       <td style="padding:8px 8px">${badge}</td>
       <td style="padding:8px 8px;font-size:11px;color:var(--text-3);white-space:nowrap">${added}</td>
       <td style="padding:8px 4px;text-align:right;white-space:nowrap">
@@ -3108,10 +3110,10 @@ function umShowAdd(){
   document.getElementById('um-list-view').style.display='none';
   document.getElementById('um-add-view').style.display='';
   document.getElementById('um-edit-view').style.display='none';
-  ['um-add-name','um-add-login','um-add-pass'].forEach(id=>document.getElementById(id).value='');
+  ['um-add-login','um-add-fullname','um-add-pass'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('um-add-role').value='user';
   document.getElementById('um-add-err').textContent='';
-  document.getElementById('um-add-name').focus();
+  document.getElementById('um-add-login').focus();
 }
 function umOpenEdit(userId){
   const u=_umUsers.find(x=>x.id===userId);if(!u)return;
@@ -3119,53 +3121,54 @@ function umOpenEdit(userId){
   document.getElementById('um-add-view').style.display='none';
   document.getElementById('um-edit-view').style.display='';
   document.getElementById('um-edit-id').value=u.id;
-  document.getElementById('um-edit-name').value=u.username;
   document.getElementById('um-edit-email').value=u.email;
+  document.getElementById('um-edit-fullname').value=u.full_name||'';
   document.getElementById('um-edit-role').value=u.role==='admin'?'admin':'user';
   document.getElementById('um-edit-pass').value='';
   document.getElementById('um-edit-err').textContent='';
-  document.getElementById('um-edit-name').focus();
+  document.getElementById('um-edit-email').focus();
 }
 async function umCreateUser(){
-  const name=document.getElementById('um-add-name').value.trim();
   const login=document.getElementById('um-add-login').value.trim();
+  const fullname=document.getElementById('um-add-fullname').value.trim();
   const pass=document.getElementById('um-add-pass').value;
   const role=document.getElementById('um-add-role').value;
   const err=document.getElementById('um-add-err');
-  if(!name||!login||!pass){err.textContent='All fields are required.';return;}
+  if(!login||!fullname||!pass){err.textContent='All fields are required.';return;}
   if(pass.length<6){err.textContent='Password must be at least 6 characters.';return;}
   err.textContent='Creating…';
-  const {error}=await sb.rpc('admin_create_user',{p_login:login,p_password:pass,p_username:name,p_role:role});
+  const {error}=await sb.rpc('admin_create_user',{p_login:login,p_password:pass,p_username:login,p_full_name:fullname,p_role:role});
   if(error){err.textContent='Error: '+error.message;return;}
-  audit('Users',currentUser,'Created user: '+name);
+  audit('Users',currentUser,'Created user: '+login);
   toast('User created.');
   umShowList();
   await umLoadUsers();
 }
 async function umSaveEdit(){
   const id=document.getElementById('um-edit-id').value;
-  const name=document.getElementById('um-edit-name').value.trim();
   const emailRaw=document.getElementById('um-edit-email').value.trim();
+  const fullname=document.getElementById('um-edit-fullname').value.trim();
   const role=document.getElementById('um-edit-role').value;
   const pass=document.getElementById('um-edit-pass').value;
   const err=document.getElementById('um-edit-err');
-  if(!name){err.textContent='Name is required.';return;}
-  if(!emailRaw){err.textContent='Email / login is required.';return;}
+  if(!emailRaw){err.textContent='Username / email is required.';return;}
+  if(!fullname){err.textContent='Full name is required.';return;}
   const newEmail=emailRaw.includes('@')?emailRaw.toLowerCase():emailRaw.toLowerCase()+'@avps.local';
+  const newUsername=emailRaw.includes('@')?emailRaw.split('@')[0].toLowerCase():emailRaw.toLowerCase();
   err.textContent='Saving…';
-  const {error}=await sb.rpc('admin_update_user',{p_user_id:id,p_username:name,p_role:role});
+  const {error}=await sb.rpc('admin_update_user',{p_user_id:id,p_username:newUsername,p_full_name:fullname,p_role:role});
   if(error){err.textContent='Error: '+error.message;return;}
   const origEmail=(_umUsers.find(u=>u.id===id)||{}).email||'';
   if(newEmail!==origEmail){
     const {error:ee}=await sb.rpc('admin_update_email',{p_user_id:id,p_new_email:newEmail});
-    if(ee){err.textContent='Saved name/role but email error: '+ee.message;return;}
+    if(ee){err.textContent='Saved but email error: '+ee.message;return;}
   }
   if(pass){
     if(pass.length<6){err.textContent='Saved but password must be 6+ characters.';return;}
     const {error:pe}=await sb.rpc('admin_set_password',{p_user_id:id,p_password:pass});
     if(pe){err.textContent='Saved, password error: '+pe.message;return;}
   }
-  audit('Users',currentUser,'Updated user: '+name);
+  audit('Users',currentUser,'Updated user: '+newUsername);
   toast('User updated.');
   umShowList();
   await umLoadUsers();

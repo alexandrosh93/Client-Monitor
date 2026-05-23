@@ -7,14 +7,16 @@
 -- Drop first to allow return-type changes
 DROP FUNCTION IF EXISTS admin_list_users();
 DROP FUNCTION IF EXISTS admin_create_user(text,text,text,text);
+DROP FUNCTION IF EXISTS admin_create_user(text,text,text,text,text);
 DROP FUNCTION IF EXISTS admin_update_user(uuid,text,text);
+DROP FUNCTION IF EXISTS admin_update_user(uuid,text,text,text);
 DROP FUNCTION IF EXISTS admin_update_email(uuid,text);
 DROP FUNCTION IF EXISTS admin_set_password(uuid,text);
 DROP FUNCTION IF EXISTS admin_delete_user(uuid);
 
 -- List all users (admin only)
 CREATE FUNCTION admin_list_users()
-RETURNS TABLE(id uuid, email text, username text, role text, created_at timestamptz)
+RETURNS TABLE(id uuid, email text, username text, full_name text, role text, created_at timestamptz)
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public
 AS $$
 BEGIN
@@ -27,6 +29,7 @@ BEGIN
     u.id::uuid,
     u.email::text,
     coalesce(u.raw_user_meta_data->>'username', split_part(u.email::text,'@',1))::text AS username,
+    coalesce(u.raw_user_meta_data->>'full_name', '')::text AS full_name,
     coalesce(u.raw_app_meta_data->>'role', u.raw_user_meta_data->>'role', 'user')::text AS role,
     u.created_at::timestamptz
   FROM auth.users u ORDER BY u.created_at;
@@ -36,7 +39,7 @@ $$;
 -- Create a new user (admin only)
 -- p_login: username (becomes username@avps.local) or full email
 CREATE FUNCTION admin_create_user(
-  p_login text, p_password text, p_username text, p_role text
+  p_login text, p_password text, p_username text, p_full_name text, p_role text
 )
 RETURNS uuid
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public
@@ -60,7 +63,7 @@ BEGIN
     v_id, '00000000-0000-0000-0000-000000000000',
     v_email, crypt(p_password, gen_salt('bf')), now(),
     jsonb_build_object('provider','email','providers',ARRAY['email'],'role',p_role),
-    jsonb_build_object('username', p_username),
+    jsonb_build_object('username', p_username, 'full_name', p_full_name),
     now(), now(), 'authenticated', 'authenticated'
   );
 
@@ -77,9 +80,9 @@ BEGIN
 END;
 $$;
 
--- Update user display name and role (admin only)
+-- Update user username, full name and role (admin only)
 CREATE FUNCTION admin_update_user(
-  p_user_id uuid, p_username text, p_role text
+  p_user_id uuid, p_username text, p_full_name text, p_role text
 )
 RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public
@@ -92,7 +95,7 @@ BEGIN
 
   UPDATE auth.users
   SET raw_user_meta_data = coalesce(raw_user_meta_data,'{}') ||
-        jsonb_build_object('username', p_username),
+        jsonb_build_object('username', p_username, 'full_name', p_full_name),
       raw_app_meta_data = coalesce(raw_app_meta_data,'{}') ||
         jsonb_build_object('role', p_role),
       updated_at = now()
