@@ -2323,7 +2323,8 @@ function openAdd(){
   document.getElementById('m-status').value='Active';
   const ld=document.getElementById('m-livedate');if(ld)ld.value='';
   const mImpl=document.getElementById('m-impl');
-  if(mImpl)mImpl.innerHTML=implOptions('');
+  const defImpl=[...implementors].find(i=>i.toLowerCase()===currentUser.toLowerCase())||'';
+  if(mImpl)mImpl.innerHTML=implOptions(defImpl);
   // populate module checkboxes dynamically
   const mc=document.getElementById('mods-check');
   if(mc){mc.innerHTML=ALL_MODS.map(m=>`<label onclick="tMod(this)"><input type="checkbox" value="${m}"> ${m}</label>`).join('');}
