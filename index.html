@@ -343,26 +343,21 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-qbtn:hover{background:rgba(255,255,255,.24);border-color:rgba(255,255,255,.45)}
 .hv-qbtn-primary{background:#fff;color:#1e3a6e;border-color:#fff}
 .hv-qbtn-primary:hover{background:rgba(255,255,255,.9)}
-/* status overview — segmented bar */
-@keyframes hvBarReveal{from{clip-path:inset(0 100% 0 0 round 10px)}to{clip-path:inset(0 0% 0 0 round 10px)}}
-.hv-sbar-wrap{position:relative;margin-bottom:14px}
-.hv-sbar{display:flex;width:100%;height:46px;border-radius:10px;overflow:hidden;background:var(--surface2);animation:hvBarReveal .7s cubic-bezier(.4,0,.2,1)}
-.hv-sbar-seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;cursor:pointer;transition:filter .15s,opacity .18s;min-width:0;border-right:2px solid var(--surface)}
-.hv-sbar-seg:last-child{border-right:none}
-.hv-sbar-seg span{text-shadow:0 1px 2px rgba(0,0,0,.18)}
-.hv-stip{position:absolute;bottom:calc(100% + 8px);transform:translateX(-50%);background:rgba(15,23,42,.92);color:#fff;padding:5px 11px;border-radius:8px;font-size:11.5px;font-weight:600;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;z-index:20;backdrop-filter:blur(6px)}
-.hv-stip.show{opacity:1}
-.hv-stip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(15,23,42,.92)}
-.hv-slegend{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
-.hv-sleg{position:relative;overflow:hidden;display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:9px;background:var(--bg);border:1px solid var(--border-sm);cursor:pointer;transition:all .18s}
-.hv-sleg:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(0,0,0,.08)}
-.hv-sleg-fill{position:absolute;left:0;top:0;bottom:0;opacity:.09;pointer-events:none;border-radius:inherit;transition:width .5s ease}
-.hv-sleg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;position:relative;z-index:1}
-.hv-sleg-name{font-size:12px;color:var(--text-2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;z-index:1}
-.hv-sleg-num{font-size:14px;font-weight:800;color:var(--text);position:relative;z-index:1}
-.hv-sleg-pct{font-size:11px;color:var(--text-3);min-width:34px;text-align:right;position:relative;z-index:1}
-.hv-hl{opacity:1!important;filter:brightness(1.1)!important}
-.hv-dim{opacity:.25!important}
+/* implementor workload bars */
+.hv-wl-row{display:flex;align-items:center;gap:10px;padding:7px 6px;cursor:pointer;border-radius:8px;transition:background .14s}
+.hv-wl-row:hover{background:var(--surface2)}
+.hv-wl-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0}
+.hv-wl-name{font-size:12px;font-weight:600;color:var(--text);min-width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hv-wl-track{flex:1;height:18px;border-radius:5px;overflow:hidden;background:var(--surface2);display:flex}
+.hv-wl-count{font-size:13px;font-weight:800;color:var(--text);min-width:22px;text-align:right;line-height:1}
+.hv-wl-od{font-size:9px;font-weight:700;color:#a32d2d;background:#feecec;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+/* manager bar list */
+.hv-mgr-row{display:flex;align-items:center;gap:10px;padding:6px 6px;cursor:pointer;border-radius:8px;transition:background .14s}
+.hv-mgr-row:hover{background:var(--surface2)}
+.hv-mgr-name{font-size:12px;font-weight:600;color:var(--text);min-width:64px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hv-mgr-track{flex:1;height:14px;border-radius:4px;overflow:hidden;background:var(--surface2)}
+.hv-mgr-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.hv-mgr-count{font-size:12px;font-weight:700;color:var(--text);min-width:20px;text-align:right}
 @media(max-width:960px){.hv-grid{grid-template-columns:1fr}.hv-grid-3{grid-template-columns:1fr}}
 @media(max-width:600px){.hv-banner{flex-wrap:wrap}.hv-banner-actions{width:100%;flex-direction:row;flex-wrap:wrap}.hv-qbtn{flex:1}.hv-greeting{font-size:18px}}
 /* ═══════ TABLET (769px – 1024px) ═══════ */
@@ -2652,32 +2647,6 @@ function scrollToClient(id){
 
 /* ── VIEW TOGGLE ── */
 let currentView='list';
-function hvHover(key){
-  document.querySelectorAll('[data-status]').forEach(el=>{
-    el.classList.toggle('hv-hl',el.dataset.status===key);
-    el.classList.toggle('hv-dim',el.dataset.status!==key);
-  });
-}
-function hvUnhover(){
-  document.querySelectorAll('[data-status]').forEach(el=>{el.classList.remove('hv-hl','hv-dim');});
-}
-function hvSegEnter(el){
-  hvHover(el.dataset.status);
-  const tip=document.getElementById('hv-stip');
-  if(!tip)return;
-  const wrap=el.closest('.hv-sbar-wrap');
-  if(!wrap)return;
-  const wRect=wrap.getBoundingClientRect();
-  const eRect=el.getBoundingClientRect();
-  tip.textContent=el.dataset.label;
-  tip.style.left=(eRect.left-wRect.left+eRect.width/2)+'px';
-  tip.classList.add('show');
-}
-function hvSegLeave(){
-  hvUnhover();
-  const tip=document.getElementById('hv-stip');
-  if(tip)tip.classList.remove('show');
-}
 function setView(v){
   currentView=v;
   // leaving the home (login) dashboard
@@ -2753,6 +2722,46 @@ function renderHomeDashboard(){
   // managers
   const mgrSet=[...new Set(clients.map(c=>c.mgr).filter(Boolean))].sort();
 
+  // workload bars — non-completed statuses per implementor
+  const wlOrder=['Active','Pending Follow-Up','Dormant','Not started'];
+  const wlColors={'Active':'#3b6cc7','Pending Follow-Up':'#8b5cf6','Dormant':'#f59e0b','Not started':'#9ca3af'};
+  const implWl=implData.map((im,i)=>{
+    const color=avPal[i%avPal.length];
+    const mine=clients.filter(c=>c.implementor===im.name&&c.status!=='Completed');
+    const bySt={};
+    mine.forEach(c=>{bySt[c.status]=(bySt[c.status]||0)+1;});
+    return {...im,color,bySt,active:mine.length};
+  });
+  const maxWl=Math.max(...implWl.map(im=>im.active),unassigned,1);
+
+  // VAT / STK donut data
+  const vatTotal=clients.filter(c=>c.vatDate).length;
+  const vatDone=clients.filter(c=>c.vatDate&&c.vatDone).length;
+  const vatOd=clients.filter(c=>c.vatDate&&!c.vatDone&&c.vatDate<todayISO).length;
+  const stkTotal=clients.filter(c=>c.stkDate).length;
+  const stkDn=clients.filter(c=>c.stkDate&&c.stkDone).length;
+  const stkOd=clients.filter(c=>c.stkDate&&!c.stkDone&&c.stkDate<todayISO).length;
+
+  // donut SVG builder
+  const DR=36,DC=42,DCIRC=+(2*Math.PI*DR).toFixed(2);
+  function donut(done,tot,color){
+    const pct=tot>0?Math.round(done/tot*100):0;
+    const filled=+(DCIRC*pct/100).toFixed(2);
+    return`<svg viewBox="0 0 84 84" width="84" height="84">
+      <circle cx="${DC}" cy="${DC}" r="${DR}" fill="none" stroke="var(--surface2)" stroke-width="9"/>
+      ${tot>0?`<circle cx="${DC}" cy="${DC}" r="${DR}" fill="none" stroke="${color}" stroke-width="9" stroke-dasharray="${filled} ${DCIRC}" transform="rotate(-90 ${DC} ${DC})" stroke-linecap="round"/>`:''}
+      <text x="${DC}" y="${DC-7}" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="800" fill="var(--text)" font-family="'DM Sans',sans-serif">${pct}%</text>
+      <text x="${DC}" y="${DC+9}" text-anchor="middle" dominant-baseline="middle" font-size="9.5" fill="var(--text-3)" font-family="'DM Sans',sans-serif">${done} / ${tot}</text>
+    </svg>`;
+  }
+
+  // manager active (non-completed) list
+  const mgrWl=mgrSet.map((m,i)=>{
+    const n=clients.filter(c=>c.mgr===m&&c.status!=='Completed').length;
+    return{m,n,color:avPal[(i+3)%avPal.length]};
+  }).filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
+  const maxMgr=Math.max(...mgrWl.map(x=>x.n),1);
+
   // upcoming events
   const f14=new Date(now);f14.setDate(f14.getDate()+14);
   const f14ISO=f14.toISOString().slice(0,10);
@@ -2799,54 +2808,52 @@ function renderHomeDashboard(){
 
   <div class="hv-card" style="margin-bottom:1.25rem">
     <div class="hv-card-hdr">
-      <div class="hv-card-title">Status Overview</div>
-      <span style="font-size:11px;color:var(--text-3)">${total} client${total!==1?'s':''}</span>
-    </div>
-    ${total?`
-    <div class="hv-sbar-wrap">
-      <div class="hv-stip" id="hv-stip"></div>
-      <div class="hv-sbar">
-        ${statusData.map(s=>{const pct=s.n/total*100;const rnd=Math.round(pct);return`<div class="hv-sbar-seg" data-status="${s.key}" data-label="${s.key} · ${s.n} client${s.n!==1?'s':''} (${rnd}%)" onmouseenter="hvSegEnter(this)" onmouseleave="hvSegLeave()" onclick="goClients({status:'${s.key}'})" style="width:${pct}%;background:${s.color}">${rnd>=9?`<span>${s.n}</span>`:''}</div>`;}).join('')}
+      <div class="hv-card-title">Implementor Workload</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        ${wlOrder.map(s=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:var(--text-3)"><span style="width:8px;height:8px;border-radius:2px;background:${wlColors[s]};display:inline-block"></span>${s}</span>`).join('')}
       </div>
     </div>
-    <div class="hv-slegend">
-      ${statusData.map(s=>{const pct=Math.round(s.n/total*100);return`
-        <div class="hv-sleg" data-status="${s.key}" onmouseenter="hvHover('${s.key}')" onmouseleave="hvUnhover()" onclick="goClients({status:'${s.key}'})">
-          <div class="hv-sleg-fill" style="background:${s.color};width:${pct}%"></div>
-          <span class="hv-sleg-dot" style="background:${s.color}"></span>
-          <span class="hv-sleg-name">${s.key}</span>
-          <span class="hv-sleg-num">${s.n}</span>
-          <span class="hv-sleg-pct">${pct}%</span>
-        </div>`;}).join('')}
-    </div>`:'<div style="font-size:13px;color:var(--text-3);padding:.5rem .2rem">No clients yet.</div>'}
+    <div style="display:flex;flex-direction:column;gap:1px">
+      ${implWl.map(im=>{
+        const displayName=(implDisplayNames[im.name.toLowerCase()]||im.name).split(' ')[0];
+        const segs=wlOrder.map(s=>{const n=im.bySt[s]||0;return n?`<div style="width:${n/maxWl*100}%;background:${wlColors[s]};height:100%;min-width:2px" title="${s}: ${n}"></div>`:''}).join('');
+        return`<div class="hv-wl-row" onclick="goClients({impl:'${esc(im.name)}'})">
+          <div class="hv-wl-av" style="background:${im.color}">${im.name.slice(0,2).toUpperCase()}</div>
+          <div class="hv-wl-name">${esc(displayName)}${im.isMe?'<span class="hv-pc-you" style="margin-left:4px">you</span>':''}</div>
+          <div class="hv-wl-track">${segs}</div>
+          <div class="hv-wl-count">${im.active}</div>
+          ${im.overdue?`<div class="hv-wl-od">⚠ ${im.overdue}</div>`:`<div style="width:48px"></div>`}
+        </div>`;
+      }).join('')}
+      ${unassigned?`<div class="hv-wl-row" onclick="goClients({impl:''})">
+        <div class="hv-wl-av" style="background:var(--text-3)">—</div>
+        <div class="hv-wl-name" style="color:var(--text-3)">Unassigned</div>
+        <div class="hv-wl-track"><div style="width:${unassigned/maxWl*100}%;background:var(--text-3);height:100%;opacity:.35"></div></div>
+        <div class="hv-wl-count" style="color:var(--text-3)">${unassigned}</div>
+        <div style="width:48px"></div>
+      </div>`:''}
+      ${!implWl.length&&!unassigned?'<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No clients assigned yet.</div>':''}
+    </div>
   </div>
 
-  <div class="hv-grid">
+  <div class="hv-grid" style="margin-bottom:1.25rem">
     <div class="hv-card">
       <div class="hv-card-hdr">
-        <div class="hv-card-title">By Implementor</div>
-        <button class="hv-card-link" onclick="goClients({})">View all →</button>
+        <div class="hv-card-title">Training Progress</div>
+        <button class="hv-card-link" onclick="openVatReport()">VAT report →</button>
       </div>
-      <div class="hv-cardgrid">
-        ${implData.map((im,i)=>{const c=avPal[i%avPal.length];const displayName=(implDisplayNames[im.name.toLowerCase()]||im.name).split(' ')[0];return`
-          <div class="hv-pcard" style="--pc:${c}" onclick="goClients({impl:'${esc(im.name)}'})">
-            <div class="hv-pc-top">
-              <div class="hv-pc-av" style="background:${c}">${im.name.slice(0,2).toUpperCase()}</div>
-              <div class="hv-pc-num">${im.count}</div>
-            </div>
-            <div class="hv-pc-name">${esc(displayName)}${im.isMe?'<span class="hv-pc-you">you</span>':''}</div>
-            <div class="hv-pc-lbl">${im.overdue?`<span class="hv-pc-od">${im.overdue} overdue</span>`:`client${im.count!==1?'s':''}`}</div>
-            <div class="hv-pcta">View clients <b>→</b></div>
-          </div>`;}).join('')}
-        ${unassigned?`<div class="hv-pcard" onclick="goClients({impl:''})">
-          <div class="hv-pc-top">
-            <div class="hv-pc-av" style="background:var(--text-3)">—</div>
-            <div class="hv-pc-num" style="color:var(--text-3)">${unassigned}</div>
-          </div>
-          <div class="hv-pc-name" style="color:var(--text-3)">Unassigned</div>
-          <div class="hv-pc-lbl">client${unassigned!==1?'s':''}</div>
-          <div class="hv-pcta">View clients <b>→</b></div>
-        </div>`:''}
+      <div style="display:flex;justify-content:space-around;align-items:center;padding:.4rem 0;gap:8px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)">VAT Training</div>
+          ${donut(vatDone,vatTotal,'#1d4ed8')}
+          ${vatOd?`<div style="font-size:10px;font-weight:700;color:#a32d2d">⚠ ${vatOd} overdue</div>`:`<div style="font-size:10px;color:var(--text-3)">${vatTotal>0?(vatDone===vatTotal?'All done ✓':'In progress'):'No dates set'}</div>`}
+        </div>
+        <div style="width:1px;background:var(--border-sm);align-self:stretch;margin:8px 0"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)">Stock Take</div>
+          ${donut(stkDn,stkTotal,'#7a6500')}
+          ${stkOd?`<div style="font-size:10px;font-weight:700;color:#a32d2d">⚠ ${stkOd} overdue</div>`:`<div style="font-size:10px;color:var(--text-3)">${stkTotal>0?(stkDn===stkTotal?'All done ✓':'In progress'):'No dates set'}</div>`}
+        </div>
       </div>
     </div>
 
@@ -2855,20 +2862,14 @@ function renderHomeDashboard(){
         <div class="hv-card-title">By Manager</div>
         <button class="hv-card-link" onclick="goClients({})">View all →</button>
       </div>
-      ${mgrSet.length?`<div class="hv-cardgrid">
-        ${mgrSet.map((m,i)=>{
-          const n=clients.filter(c=>c.mgr===m).length;const c=avPal[(i+3)%avPal.length];
-          return`<div class="hv-pcard" style="--pc:${c}" onclick="goClients({mgr:'${esc(m)}'})">
-            <div class="hv-pc-top">
-              <div class="hv-pc-av" style="background:${c}">${m.slice(0,2).toUpperCase()}</div>
-              <div class="hv-pc-num">${n}</div>
-            </div>
-            <div class="hv-pc-name">${esc(m)}</div>
-            <div class="hv-pc-lbl">client${n!==1?'s':''}</div>
-            <div class="hv-pcta">View clients <b>→</b></div>
-          </div>`;
-        }).join('')}
-      </div>`:'<div style="font-size:13px;color:var(--text-3);padding:.5rem .2rem">No managers assigned yet.</div>'}
+      ${mgrWl.length?`<div style="display:flex;flex-direction:column;gap:2px">
+        ${mgrWl.map(x=>`<div class="hv-mgr-row" onclick="goClients({mgr:'${esc(x.m)}'})">
+          <div class="hv-mgr-name">${esc(x.m)}</div>
+          <div class="hv-mgr-track"><div class="hv-mgr-fill" style="width:${x.n/maxMgr*100}%;background:${x.color};opacity:.75"></div></div>
+          <div class="hv-mgr-count">${x.n}</div>
+        </div>`).join('')}
+        <div style="font-size:10px;color:var(--text-3);margin-top:5px;padding:0 6px">Active clients (excl. completed)</div>
+      </div>`:'<div style="font-size:13px;color:var(--text-3);padding:.5rem 0">No managers assigned yet.</div>'}
     </div>
   </div>
 
