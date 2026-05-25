@@ -343,6 +343,13 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-qbtn:hover{background:rgba(255,255,255,.24);border-color:rgba(255,255,255,.45)}
 .hv-qbtn-primary{background:#fff;color:#1e3a6e;border-color:#fff}
 .hv-qbtn-primary:hover{background:rgba(255,255,255,.9)}
+@keyframes wlReveal{from{clip-path:inset(0 100% 0 0 round 5px)}to{clip-path:inset(0 0% 0 0 round 5px)}}
+.hv-wl-track{animation:wlReveal .55s cubic-bezier(.4,0,.2,1) both}
+.hv-wl-seg{height:100%;min-width:2px;transition:filter .15s,opacity .15s;cursor:pointer}
+.hv-wl-row:hover .hv-wl-seg{opacity:.45}
+.hv-wl-row:hover .hv-wl-seg:hover{opacity:1;filter:brightness(1.12)}
+#wl-tip{position:fixed;background:rgba(15,23,42,.92);color:#fff;padding:5px 11px;border-radius:7px;font-size:11px;font-weight:600;white-space:nowrap;pointer-events:none;z-index:999;opacity:0;transition:opacity .1s;backdrop-filter:blur(6px);transform:translateY(-4px)}
+#wl-tip.show{opacity:1}
 /* implementor workload bars */
 .hv-wl-row{display:flex;align-items:center;gap:10px;padding:7px 6px;cursor:pointer;border-radius:8px;transition:background .14s}
 .hv-wl-row:hover{background:var(--surface2)}
@@ -1107,6 +1114,7 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="wl-tip"></div>
 
 <script>
 const KEY='avps_v6';
@@ -2654,6 +2662,9 @@ function scrollToClient(id){
 
 /* ── VIEW TOGGLE ── */
 let currentView='list';
+function wlTipShow(text,e){const t=document.getElementById('wl-tip');if(!t)return;t.textContent=text;t.style.left=(e.clientX+14)+'px';t.style.top=(e.clientY-36)+'px';t.classList.add('show');}
+function wlTipMove(e){const t=document.getElementById('wl-tip');if(!t)return;t.style.left=(e.clientX+14)+'px';t.style.top=(e.clientY-36)+'px';}
+function wlTipHide(){const t=document.getElementById('wl-tip');if(t)t.classList.remove('show');}
 function setView(v){
   currentView=v;
   // leaving the home (login) dashboard
@@ -2809,13 +2820,20 @@ function renderHomeDashboard(){
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:1px">
-      ${implWl.map(im=>{
+      ${implWl.map((im,idx)=>{
         const displayName=(implDisplayNames[im.name.toLowerCase()]||im.name).split(' ')[0];
-        const segs=wlOrder.map(s=>{const n=im.bySt[s]||0;return n?`<div style="width:${n/maxWl*100}%;background:${wlColors[s]};height:100%;min-width:2px" title="${s}: ${n}"></div>`:''}).join('');
+        const segs=wlOrder.map(s=>{
+          const n=im.bySt[s]||0;
+          if(!n)return'';
+          const tip=`${s}: ${n} client${n!==1?'s':''}`;
+          return`<div class="hv-wl-seg" style="width:${n/maxWl*100}%;background:${wlColors[s]}"
+            onmouseenter="wlTipShow('${tip}',event)" onmousemove="wlTipMove(event)" onmouseleave="wlTipHide()"
+            onclick="event.stopPropagation();wlTipHide();goClients({impl:'${esc(im.name)}',status:'${s}'})"></div>`;
+        }).join('');
         return`<div class="hv-wl-row" onclick="goClients({impl:'${esc(im.name)}'})">
           <div class="hv-wl-av" style="background:${im.color}">${im.name.slice(0,2).toUpperCase()}</div>
           <div class="hv-wl-name">${esc(displayName)}${im.isMe?'<span class="hv-pc-you" style="margin-left:4px">you</span>':''}</div>
-          <div class="hv-wl-track">${segs}</div>
+          <div class="hv-wl-track" style="animation-delay:${idx*0.07}s">${segs}</div>
           <div class="hv-wl-count">${im.active}</div>
           ${im.overdue?`<div class="hv-wl-od">⚠ ${im.overdue}</div>`:''}
           ${im.completed?`<div class="hv-wl-done">✓ ${im.completed}</div>`:''}
