@@ -643,6 +643,7 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
   <!-- Right-aligned actions -->
   <div class="hdr-actions">
     <div class="view-toggle">
+      <button class="view-btn" id="vbtn-home" onclick="goHome()">⌂ Home</button>
       <button class="view-btn active" id="vbtn-list" onclick="setView('list')">☰ List</button>
       <button class="view-btn" id="vbtn-dash" onclick="setView('dash')">⊞ Dashboard</button>
     </div>
@@ -2664,6 +2665,7 @@ function setView(v){
   const dashEl=document.getElementById('dashboard');
   if(listEl)listEl.style.display=v==='list'?'block':'none';
   if(dashEl)dashEl.style.display=v==='dash'?'block':'none';
+  document.getElementById('vbtn-home').classList.remove('active');
   document.getElementById('vbtn-list').classList.toggle('active',v==='list');
   document.getElementById('vbtn-dash').classList.toggle('active',v==='dash');
   if(v==='dash')renderDashboard();
@@ -2675,6 +2677,9 @@ function goHome(){
   document.querySelector('.control-bar').style.display='none';
   document.getElementById('list').style.display='none';
   document.getElementById('dashboard').style.display='none';
+  document.getElementById('vbtn-home').classList.add('active');
+  document.getElementById('vbtn-list').classList.remove('active');
+  document.getElementById('vbtn-dash').classList.remove('active');
   renderHomeDashboard();
 }
 function goClients(opts={}){
@@ -2795,7 +2800,10 @@ function renderHomeDashboard(){
 
   <div class="hv-card" style="margin-bottom:1.25rem">
     <div class="hv-card-hdr">
-      <div class="hv-card-title">Implementor Workload</div>
+      <div>
+        <div class="hv-card-title">Implementor Workload</div>
+        <div style="font-size:10px;color:var(--text-3);margin-top:2px">Click a row to see all clients of that implementor</div>
+      </div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         ${wlOrder.map(s=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:var(--text-3)"><span style="width:8px;height:8px;border-radius:2px;background:${wlColors[s]};display:inline-block"></span>${s}</span>`).join('')}
       </div>
@@ -2828,7 +2836,10 @@ function renderHomeDashboard(){
   <div class="hv-grid" style="margin-bottom:1.25rem">
     <div class="hv-card">
       <div class="hv-card-hdr">
-        <div class="hv-card-title">By Manager</div>
+        <div>
+          <div class="hv-card-title">By Manager</div>
+          <div style="font-size:10px;color:var(--text-3);margin-top:2px">Click a row to filter by manager</div>
+        </div>
         <button class="hv-card-link" onclick="goClients({})">View all →</button>
       </div>
       ${mgrWl.length?`<div style="display:flex;flex-direction:column;gap:2px">
