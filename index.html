@@ -351,6 +351,9 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-wl-track{flex:1;height:18px;border-radius:5px;overflow:hidden;background:var(--surface2);display:flex}
 .hv-wl-count{font-size:13px;font-weight:800;color:var(--text);min-width:22px;text-align:right;line-height:1}
 .hv-wl-od{font-size:9px;font-weight:700;color:#a32d2d;background:#feecec;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+.hv-wl-done{font-size:9px;font-weight:700;color:#1e3a6e;background:#e8eef8;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+.hv-wl-arrow{font-size:13px;color:var(--text-3);flex-shrink:0;transition:color .14s,transform .14s}
+.hv-wl-row:hover .hv-wl-arrow{color:var(--accent);transform:translateX(3px)}
 /* manager bar list */
 .hv-mgr-row{display:flex;align-items:center;gap:10px;padding:6px 6px;cursor:pointer;border-radius:8px;transition:background .14s}
 .hv-mgr-row:hover{background:var(--surface2)}
@@ -358,6 +361,9 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-mgr-track{flex:1;height:14px;border-radius:4px;overflow:hidden;background:var(--surface2)}
 .hv-mgr-fill{height:100%;border-radius:4px;transition:width .4s ease}
 .hv-mgr-count{font-size:12px;font-weight:700;color:var(--text);min-width:20px;text-align:right}
+.hv-mgr-done{font-size:9px;font-weight:700;color:#1e3a6e;background:#e8eef8;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+.hv-mgr-arrow{font-size:13px;color:var(--text-3);flex-shrink:0;transition:color .14s,transform .14s}
+.hv-mgr-row:hover .hv-mgr-arrow{color:var(--accent);transform:translateX(3px)}
 @media(max-width:960px){.hv-grid{grid-template-columns:1fr}.hv-grid-3{grid-template-columns:1fr}}
 @media(max-width:600px){.hv-banner{flex-wrap:wrap}.hv-banner-actions{width:100%;flex-direction:row;flex-wrap:wrap}.hv-qbtn{flex:1}.hv-greeting{font-size:18px}}
 /* ═══════ TABLET (769px – 1024px) ═══════ */
@@ -2729,16 +2735,18 @@ function renderHomeDashboard(){
   const implWl=implData.map((im,i)=>{
     const color=avPal[i%avPal.length];
     const mine=clients.filter(c=>c.implementor===im.name&&c.status!=='Completed');
+    const completed=clients.filter(c=>c.implementor===im.name&&c.status==='Completed').length;
     const bySt={};
     mine.forEach(c=>{bySt[c.status]=(bySt[c.status]||0)+1;});
-    return {...im,color,bySt,active:mine.length};
+    return {...im,color,bySt,active:mine.length,completed};
   });
   const maxWl=Math.max(...implWl.map(im=>im.active),unassigned,1);
 
   // manager active (non-completed) list
   const mgrWl=mgrSet.map((m,i)=>{
     const n=clients.filter(c=>c.mgr===m&&c.status!=='Completed').length;
-    return{m,n,color:avPal[(i+3)%avPal.length]};
+    const completed=clients.filter(c=>c.mgr===m&&c.status==='Completed').length;
+    return{m,n,completed,color:avPal[(i+3)%avPal.length]};
   }).filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
   const maxMgr=Math.max(...mgrWl.map(x=>x.n),1);
 
@@ -2801,7 +2809,9 @@ function renderHomeDashboard(){
           <div class="hv-wl-name">${esc(displayName)}${im.isMe?'<span class="hv-pc-you" style="margin-left:4px">you</span>':''}</div>
           <div class="hv-wl-track">${segs}</div>
           <div class="hv-wl-count">${im.active}</div>
-          ${im.overdue?`<div class="hv-wl-od">⚠ ${im.overdue}</div>`:`<div style="width:48px"></div>`}
+          ${im.overdue?`<div class="hv-wl-od">⚠ ${im.overdue}</div>`:''}
+          ${im.completed?`<div class="hv-wl-done">✓ ${im.completed}</div>`:''}
+          <div class="hv-wl-arrow">→</div>
         </div>`;
       }).join('')}
       ${unassigned?`<div class="hv-wl-row" onclick="goClients({impl:''})">
@@ -2809,7 +2819,7 @@ function renderHomeDashboard(){
         <div class="hv-wl-name" style="color:var(--text-3)">Unassigned</div>
         <div class="hv-wl-track"><div style="width:${unassigned/maxWl*100}%;background:var(--text-3);height:100%;opacity:.35"></div></div>
         <div class="hv-wl-count" style="color:var(--text-3)">${unassigned}</div>
-        <div style="width:48px"></div>
+        <div class="hv-wl-arrow">→</div>
       </div>`:''}
       ${!implWl.length&&!unassigned?'<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No clients assigned yet.</div>':''}
     </div>
@@ -2826,6 +2836,8 @@ function renderHomeDashboard(){
           <div class="hv-mgr-name">${esc(x.m)}</div>
           <div class="hv-mgr-track"><div class="hv-mgr-fill" style="width:${x.n/maxMgr*100}%;background:${x.color};opacity:.75"></div></div>
           <div class="hv-mgr-count">${x.n}</div>
+          ${x.completed?`<div class="hv-mgr-done">✓ ${x.completed}</div>`:''}
+          <div class="hv-mgr-arrow">→</div>
         </div>`).join('')}
         <div style="font-size:10px;color:var(--text-3);margin-top:5px;padding:0 6px">Active clients (excl. completed)</div>
       </div>`:'<div style="font-size:13px;color:var(--text-3);padding:.5rem 0">No managers assigned yet.</div>'}
