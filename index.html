@@ -2838,19 +2838,19 @@ function renderHomeDashboard(){
       <div class="hv-card-hdr">
         <div>
           <div class="hv-card-title">By Manager</div>
-          <div style="font-size:10px;color:var(--text-3);margin-top:2px">Click a row to filter by manager</div>
+          <div style="font-size:10px;color:var(--text-3);margin-top:2px">Click a card to filter by manager</div>
         </div>
         <button class="hv-card-link" onclick="goClients({})">View all →</button>
       </div>
-      ${mgrWl.length?`<div style="display:flex;flex-direction:column;gap:2px">
-        ${mgrWl.map(x=>`<div class="hv-mgr-row" onclick="goClients({mgr:'${esc(x.m)}'})">
-          <div class="hv-mgr-name">${esc(x.m)}</div>
-          <div class="hv-mgr-track"><div class="hv-mgr-fill" style="width:${x.n/maxMgr*100}%;background:${x.color};opacity:.75"></div></div>
-          <div class="hv-mgr-count">${x.n}</div>
-          ${x.completed?`<div class="hv-mgr-done">✓ ${x.completed}</div>`:''}
-          <div class="hv-mgr-arrow">→</div>
+      ${mgrWl.length?`<div class="hv-cardgrid">
+        ${mgrWl.map(x=>`<div class="hv-pcard" style="--pc:${x.color}" onclick="goClients({mgr:'${esc(x.m)}'})">
+          <div class="hv-pc-top">
+            <div class="hv-pc-av" style="background:${x.color}">${x.m.slice(0,2).toUpperCase()}</div>
+            <div class="hv-pc-num">${x.n}</div>
+          </div>
+          <div class="hv-pc-name">${esc(x.m)}</div>
+          <div class="hv-pc-lbl">${x.completed?`<span style="color:#1e3a6e;font-weight:600">✓ ${x.completed} completed</span>`:`active client${x.n!==1?'s':''}`}</div>
         </div>`).join('')}
-        <div style="font-size:10px;color:var(--text-3);margin-top:5px;padding:0 6px">Active clients (excl. completed)</div>
       </div>`:'<div style="font-size:13px;color:var(--text-3);padding:.5rem 0">No managers assigned yet.</div>'}
     </div>
   </div>
