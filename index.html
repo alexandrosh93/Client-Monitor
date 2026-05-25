@@ -2735,27 +2735,6 @@ function renderHomeDashboard(){
   });
   const maxWl=Math.max(...implWl.map(im=>im.active),unassigned,1);
 
-  // VAT / STK donut data
-  const vatTotal=clients.filter(c=>c.vatDate).length;
-  const vatDone=clients.filter(c=>c.vatDate&&c.vatDone).length;
-  const vatOd=clients.filter(c=>c.vatDate&&!c.vatDone&&c.vatDate<todayISO).length;
-  const stkTotal=clients.filter(c=>c.stkDate).length;
-  const stkDn=clients.filter(c=>c.stkDate&&c.stkDone).length;
-  const stkOd=clients.filter(c=>c.stkDate&&!c.stkDone&&c.stkDate<todayISO).length;
-
-  // donut SVG builder
-  const DR=36,DC=42,DCIRC=+(2*Math.PI*DR).toFixed(2);
-  function donut(done,tot,color){
-    const pct=tot>0?Math.round(done/tot*100):0;
-    const filled=+(DCIRC*pct/100).toFixed(2);
-    return`<svg viewBox="0 0 84 84" width="84" height="84">
-      <circle cx="${DC}" cy="${DC}" r="${DR}" fill="none" stroke="var(--surface2)" stroke-width="9"/>
-      ${tot>0?`<circle cx="${DC}" cy="${DC}" r="${DR}" fill="none" stroke="${color}" stroke-width="9" stroke-dasharray="${filled} ${DCIRC}" transform="rotate(-90 ${DC} ${DC})" stroke-linecap="round"/>`:''}
-      <text x="${DC}" y="${DC-7}" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="800" fill="var(--text)" font-family="'DM Sans',sans-serif">${pct}%</text>
-      <text x="${DC}" y="${DC+9}" text-anchor="middle" dominant-baseline="middle" font-size="9.5" fill="var(--text-3)" font-family="'DM Sans',sans-serif">${done} / ${tot}</text>
-    </svg>`;
-  }
-
   // manager active (non-completed) list
   const mgrWl=mgrSet.map((m,i)=>{
     const n=clients.filter(c=>c.mgr===m&&c.status!=='Completed').length;
@@ -2837,26 +2816,6 @@ function renderHomeDashboard(){
   </div>
 
   <div class="hv-grid" style="margin-bottom:1.25rem">
-    <div class="hv-card">
-      <div class="hv-card-hdr">
-        <div class="hv-card-title">Training Progress</div>
-        <button class="hv-card-link" onclick="openVatReport()">VAT report →</button>
-      </div>
-      <div style="display:flex;justify-content:space-around;align-items:center;padding:.4rem 0;gap:8px">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)">VAT Training</div>
-          ${donut(vatDone,vatTotal,'#1d4ed8')}
-          ${vatOd?`<div style="font-size:10px;font-weight:700;color:#a32d2d">⚠ ${vatOd} overdue</div>`:`<div style="font-size:10px;color:var(--text-3)">${vatTotal>0?(vatDone===vatTotal?'All done ✓':'In progress'):'No dates set'}</div>`}
-        </div>
-        <div style="width:1px;background:var(--border-sm);align-self:stretch;margin:8px 0"></div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)">Stock Take</div>
-          ${donut(stkDn,stkTotal,'#7a6500')}
-          ${stkOd?`<div style="font-size:10px;font-weight:700;color:#a32d2d">⚠ ${stkOd} overdue</div>`:`<div style="font-size:10px;color:var(--text-3)">${stkTotal>0?(stkDn===stkTotal?'All done ✓':'In progress'):'No dates set'}</div>`}
-        </div>
-      </div>
-    </div>
-
     <div class="hv-card">
       <div class="hv-card-hdr">
         <div class="hv-card-title">By Manager</div>
