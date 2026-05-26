@@ -87,6 +87,11 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .stat.af .stat-n,.stat.af .stat-l{color:#1e3a6e}
 .stat-n{font-size:20px;font-weight:800;line-height:1;letter-spacing:-.5px}
 .stat-l{font-size:11px;color:var(--text-3);font-weight:500;letter-spacing:.02em}
+.stat-c-active{border-top:3px solid #3b6cc7}
+.stat-c-ns{border-top:3px solid #9ca3af}
+.stat-c-dormant{border-top:3px solid #f59e0b}
+.stat-c-pfu{border-top:3px solid #8b5cf6}
+.stat-c-completed{border-top:3px solid #6b7280}
 .sn-active{color:#1e3a6e}.sn-dormant{color:#8a5a1a}.sn-completed{color:#555}.sn-ns{color:#888}.sn-pfu{color:#5b21b6}
 /* TOOLBAR (inside filters-group) */
 .toolbar{display:contents}
@@ -1698,19 +1703,19 @@ function renderStats(){
     <div class="stat${selStatuses.size===0?' af':''}" onclick="setSF(null)">
       <span class="stat-n">${total}</span><span class="stat-l">All</span>
     </div>
-    <div class="stat${selStatuses.size===1&&selStatuses.has('Active')?' af':''}" onclick="setSF('Active')">
+    <div class="stat stat-c-active${selStatuses.size===1&&selStatuses.has('Active')?' af':''}" onclick="setSF('Active')">
       <span class="stat-n sn-active">${cnt('Active')}</span><span class="stat-l">Active</span>
     </div>
-    <div class="stat${selStatuses.size===1&&selStatuses.has('Not started')?' af':''}" onclick="setSF('Not started')">
+    <div class="stat stat-c-ns${selStatuses.size===1&&selStatuses.has('Not started')?' af':''}" onclick="setSF('Not started')">
       <span class="stat-n sn-ns">${cnt('Not started')}</span><span class="stat-l">Not started</span>
     </div>
-    <div class="stat${selStatuses.size===1&&selStatuses.has('Dormant')?' af':''}" onclick="setSF('Dormant')">
+    <div class="stat stat-c-dormant${selStatuses.size===1&&selStatuses.has('Dormant')?' af':''}" onclick="setSF('Dormant')">
       <span class="stat-n sn-dormant">${cnt('Dormant')}</span><span class="stat-l">Dormant</span>
     </div>
-    <div class="stat${selStatuses.size===1&&selStatuses.has('Pending Follow-Up')?' af':''}" onclick="setSF('Pending Follow-Up')">
+    <div class="stat stat-c-pfu${selStatuses.size===1&&selStatuses.has('Pending Follow-Up')?' af':''}" onclick="setSF('Pending Follow-Up')">
       <span class="stat-n sn-pfu">${cnt('Pending Follow-Up')}</span><span class="stat-l">Pending</span>
     </div>
-    <div class="stat${selStatuses.size===1&&selStatuses.has('Completed')?' af':''}" onclick="setSF('Completed')">
+    <div class="stat stat-c-completed${selStatuses.size===1&&selStatuses.has('Completed')?' af':''}" onclick="setSF('Completed')">
       <span class="stat-n sn-completed">${cnt('Completed')}</span><span class="stat-l">Completed</span>
     </div>
   `;
