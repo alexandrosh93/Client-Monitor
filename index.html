@@ -2054,6 +2054,9 @@ function saveCommentEdit(id,idx){
 }
 function deleteComment(id,idx){
   const c=clients.find(x=>x.id===id);if(!c)return;
+  const pwd=prompt('Enter password to delete this comment:');
+  if(pwd===null)return;
+  if(pwd!=='0000'){toast('Incorrect password.');return;}
   c.commentLog.splice(idx,1);
   c.comment=c.commentLog.length?c.commentLog[0].text:'';
   delete clogEdit[id+'-'+idx];
