@@ -362,6 +362,15 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-wl-track{flex:1;height:18px;border-radius:5px;overflow:hidden;background:var(--surface2);display:flex}
 .hv-wl-count{font-size:13px;font-weight:800;color:var(--text);min-width:22px;text-align:right;line-height:1}
 .hv-wl-od{font-size:9px;font-weight:700;color:#a32d2d;background:#feecec;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+.clog{display:flex;flex-direction:column;gap:4px;max-height:150px;overflow-y:auto;margin-top:5px}
+.clog-entry{background:var(--bg);border:1px solid var(--border-sm);border-radius:7px;padding:5px 9px}
+.clog-meta{font-size:10px;color:var(--text-3);margin-bottom:2px}
+.clog-text{font-size:12px;color:var(--text);line-height:1.5;word-break:break-word}
+.clog-add{display:flex;gap:6px;align-items:center}
+.clog-add input{flex:1;font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;transition:border-color .15s}
+.clog-add input:focus{border-color:var(--accent)}
+.clog-add button{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 12px;border-radius:var(--radius);border:none;background:var(--accent);color:#fff;cursor:pointer;font-weight:600;white-space:nowrap;transition:opacity .15s}
+.clog-add button:hover{opacity:.85}
 .hv-wl-done{font-size:9px;font-weight:700;color:#1e3a6e;background:#e8eef8;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
 .hv-wl-arrow{font-size:13px;color:var(--text-3);flex-shrink:0;transition:color .14s,transform .14s}
 .hv-wl-row:hover .hv-wl-arrow{color:var(--accent);transform:translateX(3px)}
@@ -1087,14 +1096,15 @@ const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 
 function dbToClient(r){return {id:r.id,name:r.name,contact:r.contact||'',city:r.city||'',mgr:r.mgr||'',
   implementor:r.implementor||'',status:r.status||'Not started',modules:r.modules||[],
-  grade:r.grade||0,comment:r.comment||'',todo:r.todo||'',
+  grade:r.grade||0,todo:r.todo||'',
+  ...((()=>{const raw=r.comment||'';let log=[];try{const p=JSON.parse(raw);if(Array.isArray(p))log=p;}catch(e){if(raw)log=[{text:raw,ts:null,user:''}];}return{comment:log.length?log[0].text:'',commentLog:log};})()),
   vatDate:r.vat_date||'',
   vatDone:r.vat_done||false,stkDate:r.stk_date||'',stkDone:r.stk_done||false,
   liveDate:r.live_date||'',progress:r.progress||0};}
 function clientToDb(c){const d=v=>v||null;
   return {id:c.id,name:c.name,contact:c.contact||'',city:c.city||'',mgr:c.mgr||'',
   implementor:c.implementor||'',status:c.status||'Not started',modules:c.modules||[],
-  grade:c.grade||0,comment:c.comment||'',todo:c.todo||'',
+  grade:c.grade||0,comment:c.commentLog&&c.commentLog.length?JSON.stringify(c.commentLog):(c.comment||null),todo:c.todo||'',
   vat_date:d(c.vatDate),
   vat_done:c.vatDone||false,stk_date:d(c.stkDate),stk_done:c.stkDone||false,
   live_date:d(c.liveDate),progress:c.progress||0};}
@@ -1909,7 +1919,18 @@ function buildRow(c){
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem">
         <div>
           <div class="xlbl">Comments</div>
-          <textarea class="xtarea" style="min-height:80px" onchange="fld(${c.id},'comment',this.value)">${c.comment||''}</textarea>
+          <div class="clog-add">
+            <input type="text" id="cinput-${c.id}" placeholder="Add a comment…" onkeydown="if(event.key==='Enter')addComment(${c.id})">
+            <button onclick="addComment(${c.id})">Add</button>
+          </div>
+          <div class="clog">
+            ${c.commentLog&&c.commentLog.length?c.commentLog.map(e=>{
+              const d=e.ts?new Date(e.ts):null;
+              const when=d?d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—';
+              const who=e.user||'';
+              return`<div class="clog-entry"><div class="clog-meta">${esc(who)}${who&&when?' · ':''}${when}</div><div class="clog-text">${esc(e.text)}</div></div>`;
+            }).join(''):'<div style="font-size:12px;color:var(--text-3);padding:4px 2px">No comments yet.</div>'}
+          </div>
         </div>
         <div>
           <div class="xlbl">📋 Notes</div>
@@ -1964,6 +1985,26 @@ function fld(id,k,v){
     });
   const was=expanded.has(id);render();if(was)expanded.add(id);
   buildVatBanner();buildStkBanner();
+}
+
+function addComment(id){
+  const input=document.getElementById('cinput-'+id);
+  if(!input)return;
+  const text=input.value.trim();
+  if(!text)return;
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  const entry={text,ts:new Date().toISOString(),user:currentUser};
+  c.commentLog=[entry,...(c.commentLog||[])];
+  c.comment=text;
+  input.value='';
+  audit('Edit',c.name,'Comment added: "'+text+'"');
+  const log=c.commentLog;
+  sb.from('clients').update({comment:JSON.stringify(log)}).eq('id',id)
+    .then(({error})=>{
+      if(error){console.error('Comment save error:',error);setSyncStatus('err','Save failed');}
+      else setSyncStatus('ok','Supabase ✓');
+    });
+  const was=expanded.has(id);render();if(was)expanded.add(id);
 }
 
 function clearReminder(id,type){
@@ -2300,10 +2341,12 @@ async function saveNew(){
     implementor:mImpl?mImpl.value:'',
     status:document.getElementById('m-status').value,
     modules:mods,grade:mGrade,
-    comment:document.getElementById('m-comment').value.trim(),
     vatDate:'',vatDone:false,stkDate:'',stkDone:false,
     liveDate:document.getElementById('m-livedate')?document.getElementById('m-livedate').value:'',
     progress:0,todo:''};
+  const initComment=document.getElementById('m-comment').value.trim();
+  newC.commentLog=initComment?[{text:initComment,ts:new Date().toISOString(),user:currentUser}]:[];
+  newC.comment=initComment;
   clients.push(newC);
   closeModal('add-modal');render();
   audit('Create',newC.name,'New client added');
