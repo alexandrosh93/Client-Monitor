@@ -371,6 +371,16 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .clog-add input:focus{border-color:var(--accent)}
 .clog-add button{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 12px;border-radius:var(--radius);border:none;background:var(--accent);color:#fff;cursor:pointer;font-weight:600;white-space:nowrap;transition:opacity .15s}
 .clog-add button:hover{opacity:.85}
+.clog-actions{float:right;display:flex;gap:2px;margin-left:6px}
+.clog-actions button{background:none;border:none;cursor:pointer;font-size:11px;color:var(--text-3);padding:0 3px;line-height:1;border-radius:3px;transition:color .15s,background .15s}
+.clog-actions button:hover{color:var(--accent);background:var(--border-sm)}
+.clog-edit-input{width:100%;font-family:'DM Sans',sans-serif;font-size:12px;padding:4px 7px;border:1px solid var(--accent);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;box-sizing:border-box;margin-top:2px}
+.clog-edit-acts{display:flex;gap:4px;margin-top:4px}
+.clog-edit-acts button{font-family:'DM Sans',sans-serif;font-size:11px;padding:3px 8px;border-radius:var(--radius);border:none;cursor:pointer;font-weight:600}
+.clog-edit-acts .btn-save{background:var(--accent);color:#fff}.clog-edit-acts .btn-save:hover{opacity:.85}
+.clog-edit-acts .btn-cancel{background:var(--border-md);color:var(--text)}.clog-edit-acts .btn-cancel:hover{opacity:.85}
+.clog-load-more{width:100%;background:none;border:1px dashed var(--border-md);border-radius:var(--radius);color:var(--text-3);font-family:'DM Sans',sans-serif;font-size:11px;padding:4px;cursor:pointer;margin-top:3px;transition:color .15s,border-color .15s}
+.clog-load-more:hover{color:var(--accent);border-color:var(--accent)}
 .hv-wl-done{font-size:9px;font-weight:700;color:#1e3a6e;background:#e8eef8;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
 .hv-wl-arrow{font-size:13px;color:var(--text-3);flex-shrink:0;transition:color .14s,transform .14s}
 .hv-wl-row:hover .hv-wl-arrow{color:var(--accent);transform:translateX(3px)}
@@ -1123,6 +1133,8 @@ let currentFullName=''; // full name for display
 let implDisplayNames={}; // username (lowercase) → full name
 let isAdminUser=false;
 const expanded=new Set();
+const clogOpen=new Set();
+const clogEdit={};
 let selStatuses=new Set();
 let sortMode='status';
 let syncTimer=null;
@@ -1924,12 +1936,25 @@ function buildRow(c){
             <button onclick="addComment(${c.id})">Add</button>
           </div>
           <div class="clog">
-            ${c.commentLog&&c.commentLog.length?c.commentLog.map(e=>{
-              const d=e.ts?new Date(e.ts):null;
-              const when=d?d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—';
-              const who=e.user||'';
-              return`<div class="clog-entry"><div class="clog-meta">${esc(who)}${who&&when?' · ':''}${when}</div><div class="clog-text">${esc(e.text)}</div></div>`;
-            }).join(''):'<div style="font-size:12px;color:var(--text-3);padding:4px 2px">No comments yet.</div>'}
+            ${(()=>{
+              const log=c.commentLog||[];
+              if(!log.length)return'<div style="font-size:12px;color:var(--text-3);padding:4px 2px">No comments yet.</div>';
+              const showAll=clogOpen.has(c.id);
+              const visible=showAll?log:log.slice(0,1);
+              const rows=visible.map((e,idx)=>{
+                const d=e.ts?new Date(e.ts):null;
+                const when=d?d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—';
+                const who=e.user||'';
+                const key=c.id+'-'+idx;
+                if(clogEdit[key]){
+                  return`<div class="clog-entry"><input class="clog-edit-input" id="cedit-${c.id}-${idx}" value="${esc(e.text)}" onkeydown="if(event.key==='Enter')saveCommentEdit(${c.id},${idx});if(event.key==='Escape')cancelCommentEdit(${c.id},${idx})"><div class="clog-edit-acts"><button class="btn-save" onclick="saveCommentEdit(${c.id},${idx})">Save</button><button class="btn-cancel" onclick="cancelCommentEdit(${c.id},${idx})">Cancel</button></div></div>`;
+                }
+                return`<div class="clog-entry"><div class="clog-meta"><span class="clog-actions"><button onclick="editComment(${c.id},${idx})" title="Edit">✎</button><button onclick="deleteComment(${c.id},${idx})" title="Delete">×</button></span>${esc(who)}${who&&when?' · ':''}${when}</div><div class="clog-text">${esc(e.text)}</div></div>`;
+              }).join('');
+              const more=log.length-1;
+              const btn=more>0?`<button class="clog-load-more" onclick="clogToggle(${c.id})">${showAll?'▲ Show less':'▼ Load '+more+' more…'}</button>`:'';
+              return rows+btn;
+            })()}
           </div>
         </div>
         <div>
@@ -1987,24 +2012,52 @@ function fld(id,k,v){
   buildVatBanner();buildStkBanner();
 }
 
-function addComment(id){
-  const input=document.getElementById('cinput-'+id);
-  if(!input)return;
-  const text=input.value.trim();
-  if(!text)return;
-  const c=clients.find(x=>x.id===id);if(!c)return;
-  const entry={text,ts:new Date().toISOString(),user:currentUser};
-  c.commentLog=[entry,...(c.commentLog||[])];
-  c.comment=text;
-  input.value='';
-  audit('Edit',c.name,'Comment added: "'+text+'"');
-  const log=c.commentLog;
-  sb.from('clients').update({comment:JSON.stringify(log)}).eq('id',id)
+function _saveCommentLog(c){
+  sb.from('clients').update({comment:c.commentLog.length?JSON.stringify(c.commentLog):null}).eq('id',c.id)
     .then(({error})=>{
       if(error){console.error('Comment save error:',error);setSyncStatus('err','Save failed');}
       else setSyncStatus('ok','Supabase ✓');
     });
-  const was=expanded.has(id);render();if(was)expanded.add(id);
+}
+function _rerender(id){const was=expanded.has(id);render();if(was)expanded.add(id);}
+
+function addComment(id){
+  const input=document.getElementById('cinput-'+id);
+  if(!input)return;
+  const text=input.value.trim();if(!text)return;
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  c.commentLog=[{text,ts:new Date().toISOString(),user:currentUser},...(c.commentLog||[])];
+  c.comment=text;
+  input.value='';
+  audit('Edit',c.name,'Comment added: "'+text+'"');
+  _saveCommentLog(c);_rerender(id);
+}
+function clogToggle(id){
+  if(clogOpen.has(id))clogOpen.delete(id);else clogOpen.add(id);
+  _rerender(id);
+}
+function editComment(id,idx){
+  clogEdit[id+'-'+idx]=true;_rerender(id);
+}
+function cancelCommentEdit(id,idx){
+  delete clogEdit[id+'-'+idx];_rerender(id);
+}
+function saveCommentEdit(id,idx){
+  const input=document.getElementById('cedit-'+id+'-'+idx);if(!input)return;
+  const text=input.value.trim();
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  if(!text){deleteComment(id,idx);return;}
+  c.commentLog[idx].text=text;
+  if(idx===0)c.comment=text;
+  delete clogEdit[id+'-'+idx];
+  _saveCommentLog(c);_rerender(id);
+}
+function deleteComment(id,idx){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  c.commentLog.splice(idx,1);
+  c.comment=c.commentLog.length?c.commentLog[0].text:'';
+  delete clogEdit[id+'-'+idx];
+  _saveCommentLog(c);_rerender(id);
 }
 
 function clearReminder(id,type){
