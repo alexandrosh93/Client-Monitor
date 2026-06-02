@@ -1244,7 +1244,7 @@ async function pollForChanges(){
 function startAutoRefresh(){
   showRefreshButtons();
   clearInterval(autoRefreshInterval);
-  autoRefreshInterval=setInterval(pollForChanges,30000);
+  autoRefreshInterval=setInterval(pollForChanges,180000);
 }
 
 async function gistSaveSettings(){toast("Sync now handled by Supabase.");}
