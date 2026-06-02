@@ -131,8 +131,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .rh-name{font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.01em;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rh-sub{font-size:12px;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;line-height:1.4}
 .rh-contact{color:var(--text-2)}
-.mtg-tag{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#1e3a6e;background:linear-gradient(135deg,#dbeafe,#eff6ff);border-radius:5px;padding:2px 7px;border:1px solid rgba(30,58,110,.12);font-weight:500}
-.mtg-tag-none{display:none}
+.mtg-tag{display:none}.mtg-tag-none{display:none}
 /* GRADE on row — compact inline stars */
 .rh-grade{display:flex;align-items:center;gap:1px;white-space:nowrap}
 .rh-grade .gs{font-size:12px;color:#d0cec7}
@@ -576,11 +575,6 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
   <!-- SECTION: Work -->
   <div style="padding:.7rem 1rem .25rem;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)">Work</div>
 
-  <button class="smenu-item" onclick="openMeetPrep();closeSideMenu()">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
-    Meeting Prep
-  </button>
-
   <button class="smenu-item" onclick="openVatReport();closeSideMenu()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     VAT Reminders
@@ -799,46 +793,6 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
     </div>
     <div id="audit-table" style="max-height:420px;overflow-y:auto"></div>
     <div class="modal-btns"><button class="btn-cancel" onclick="closeModal('audit-modal')">Close</button></div>
-  </div>
-</div>
-
-<!-- Meeting Prep Modal -->
-<div class="modal-bg" id="meetprep-modal" onclick="bgClick(event,'meetprep-modal')">
-  <div class="modal modal-wide" style="max-width:700px;padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:90vh">
-    <!-- Header -->
-    <div style="padding:1rem 1.25rem .75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <div>
-        <div style="font-size:15px;font-weight:700;color:var(--text)">📋 Meeting To-Do</div>
-        <div style="font-size:11px;color:var(--text-3);margin-top:2px">Click a client to edit their To-Do</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <select id="mp-filter" onchange="renderMeetPrep()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 8px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
-          <option value="meeting">With meeting set</option>
-          <option value="active" selected>All active</option>
-          <option value="all">All clients</option>
-        </select>
-        <select id="mp-impl-filter" onchange="renderMeetPrep()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 8px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
-          <option value="">All implementors</option>
-        </select>
-        <button onclick="printMeetPrep()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--surface);color:var(--text-2);cursor:pointer;display:flex;align-items:center;gap:4px">🖨 Print</button>
-        <button class="btn-cancel" onclick="closeModal('meetprep-modal')" style="margin:0">✕</button>
-      </div>
-    </div>
-    <!-- List -->
-    <div id="mp-list" style="overflow-y:auto;flex:1;padding:.5rem 0"></div>
-    <!-- Full card (hidden until client selected) -->
-    <div id="mp-card" style="display:none;flex-shrink:0;border-top:2px solid var(--accent);background:var(--bg);padding:1rem 1.25rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem">
-        <div>
-          <div id="mp-card-name" style="font-size:15px;font-weight:700;color:var(--text)"></div>
-          <div id="mp-card-meta" style="font-size:11px;color:var(--text-3);margin-top:2px"></div>
-        </div>
-        <button onclick="document.getElementById('mp-card').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-3);padding:4px">✕</button>
-      </div>
-      <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);margin-bottom:.4rem">📝 To-Do / Notes for next meeting</div>
-      <textarea id="mp-todo-input" rows="5" placeholder="Add notes, action items, questions for next meeting…" oninput="mpSaveTodo()" style="width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;resize:vertical;line-height:1.6;min-height:90px"></textarea>
-      <div style="font-size:10px;color:var(--text-3);margin-top:4px">Changes save automatically</div>
-    </div>
   </div>
 </div>
 
@@ -1134,17 +1088,17 @@ const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 function dbToClient(r){return {id:r.id,name:r.name,contact:r.contact||'',city:r.city||'',mgr:r.mgr||'',
   implementor:r.implementor||'',status:r.status||'Not started',modules:r.modules||[],
   grade:r.grade||0,comment:r.comment||'',todo:r.todo||'',
-  mtgSet:r.mtg_set||false,mtgDate:r.mtg_date||'',vatDate:r.vat_date||'',
+  vatDate:r.vat_date||'',
   vatDone:r.vat_done||false,stkDate:r.stk_date||'',stkDone:r.stk_done||false,
   liveDate:r.live_date||'',progress:r.progress||0};}
 function clientToDb(c){const d=v=>v||null;
   return {id:c.id,name:c.name,contact:c.contact||'',city:c.city||'',mgr:c.mgr||'',
   implementor:c.implementor||'',status:c.status||'Not started',modules:c.modules||[],
   grade:c.grade||0,comment:c.comment||'',todo:c.todo||'',
-  mtg_set:c.mtgSet||false,mtg_date:d(c.mtgDate),vat_date:d(c.vatDate),
+  vat_date:d(c.vatDate),
   vat_done:c.vatDone||false,stk_date:d(c.stkDate),stk_done:c.stkDone||false,
   live_date:d(c.liveDate),progress:c.progress||0};}
-const FIELD_MAP={mtgSet:'mtg_set',mtgDate:'mtg_date',vatDate:'vat_date',vatDone:'vat_done',
+const FIELD_MAP={vatDate:'vat_date',vatDone:'vat_done',
   stkDate:'stk_date',stkDone:'stk_done',liveDate:'live_date'};
 
 const IMPL_KEY='avps_implementors';
@@ -1790,9 +1744,6 @@ function clientProgress(c){
 function buildRow(c){
   const sc='s-'+c.status.replace(/ /g,'-');
   const mods=ALL_MODS.filter(m=>c.modules.includes(m)).map(m=>`<span class="mod on">${m}</span>`).join('');
-  const mtgTag=c.mtgSet
-    ?`<span class="mtg-tag">📅 ${fmt(c.mtgDate)}</span>`
-    :`<span class="mtg-tag-none">No meeting set</span>`;
   const contactLine=c.contact?`<span class="rh-contact">👤 ${c.contact}</span>`:'';
   const gradeOnRow=`<div class="rh-grade">${starsHtml(c.grade||0,12)}</div>`;
 
@@ -1837,7 +1788,7 @@ function buildRow(c){
   const notesForPdf=(c.comment||c.todo)?`
     <div class="pdf-notes">
       ${c.comment?`<div class="pdf-notes-lbl">Notes</div><div>${c.comment}</div>`:''}
-      ${c.todo?`<div class="pdf-notes-lbl" style="margin-top:3px">To-do before meeting</div><div>${c.todo}</div>`:''}
+      ${c.todo?`<div class="pdf-notes-lbl" style="margin-top:3px">Notes</div><div>${c.todo}</div>`:''}
     </div>`:'';
 
   // modules: view = active pills only; edit = all toggles
@@ -1849,7 +1800,7 @@ function buildRow(c){
   return `<div class="client-row" data-id="${c.id}" data-status="${c.status}">
     <div class="row-header" onclick="toggle(${c.id})">
       <div class="rh-left">
-        <div class="rh-name" title="${c.comment||''}">${c.name}${contactLine?`<span class="rh-contact" style="font-size:11px;font-weight:400;color:var(--text-3);margin-left:8px">👤 ${c.contact}</span>`:''}${c.mtgSet?`<span class="mtg-tag" style="margin-left:6px;vertical-align:middle">📅 ${fmt(c.mtgDate)}</span>`:''}${c.comment?`<span class="rh-note">· ${c.comment}</span>`:''}</div>
+        <div class="rh-name" title="${c.comment||''}">${c.name}${contactLine?`<span class="rh-contact" style="font-size:11px;font-weight:400;color:var(--text-3);margin-left:8px">👤 ${c.contact}</span>`:''}${c.comment?`<span class="rh-note">· ${c.comment}</span>`:''}</div>
       </div>
       ${gradeOnRow}
       ${progressBar}
@@ -1915,14 +1866,6 @@ function buildRow(c){
           </label>
           <input type="date" class="xdate" id="ld-${c.id}" value="${c.liveDate||''}" ${!c.liveDate?'disabled':''} onchange="fld(${c.id},'liveDate',this.value)">
         </div>
-        <div>
-          <div class="xlbl">Next Meeting</div>
-          <label class="inline-check" style="margin-bottom:3px">
-            <input type="checkbox" id="mc-${c.id}" ${c.mtgSet?'checked':''} onchange="tMtg(${c.id},this.checked)">
-            Scheduled
-          </label>
-          <input type="date" class="xdate" id="md-${c.id}" value="${c.mtgDate||''}" ${!c.mtgSet?'disabled':''} onchange="fld(${c.id},'mtgDate',this.value)">
-        </div>
         <div class="vat-cell">
           <div class="xlbl">VAT Reminder</div>
           <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
@@ -1969,7 +1912,7 @@ function buildRow(c){
           <textarea class="xtarea" style="min-height:80px" onchange="fld(${c.id},'comment',this.value)">${c.comment||''}</textarea>
         </div>
         <div>
-          <div class="xlbl">📋 To-do before meeting</div>
+          <div class="xlbl">📋 Notes</div>
           <textarea class="xtarea" style="min-height:80px" placeholder="List what needs to be done…" onchange="fld(${c.id},'todo',this.value)">${c.todo||''}</textarea>
         </div>
       </div>
@@ -2005,7 +1948,7 @@ function fld(id,k,v){
   // audit readable field names
   const fieldNames={name:'Name',contact:'Contact',city:'City',mgr:'Manager',implementor:'Implementor',
     status:'Status',grade:'Grade',comment:'Comments',todo:'To-do',liveDate:'Live Date',
-    mtgDate:'Meeting date',mtgSet:'Meeting scheduled',vatDate:'VAT date',vatDone:'VAT done',
+    vatDate:'VAT date',vatDone:'VAT done',
     stkDate:'Stock Take date',stkDone:'Stock Take done',progress:'Progress'};
   const label=fieldNames[k]||k;
   const fmt=val=>val===true?'Yes':val===false?'No':val||'(empty)';
@@ -2082,7 +2025,6 @@ function tModFld(id,m,on){
 }
 function tMtg(id,on){
   const c=clients.find(x=>x.id===id);if(!c)return;
-  audit('Edit',c.name,'Meeting scheduled: "'+(!on?'Yes':'No')+'" → "'+(on?'Yes':'No')+'"');
   c.mtgSet=on;save();
   const di=document.getElementById('md-'+id);if(di)di.disabled=!on;
   const was=expanded.has(id);render();if(was)expanded.add(id);
@@ -2359,7 +2301,7 @@ async function saveNew(){
     status:document.getElementById('m-status').value,
     modules:mods,grade:mGrade,
     comment:document.getElementById('m-comment').value.trim(),
-    mtgSet:false,mtgDate:'',vatDate:'',vatDone:false,stkDate:'',stkDone:false,
+    vatDate:'',vatDone:false,stkDate:'',stkDone:false,
     liveDate:document.getElementById('m-livedate')?document.getElementById('m-livedate').value:'',
     progress:0,todo:''};
   clients.push(newC);
@@ -3028,11 +2970,10 @@ function renderDashboard(){
 /* ── EXCEL EXPORT ── */
 function exportExcel(){
   // Build CSV with BOM for Excel UTF-8 compatibility
-  const cols=['Name','Contact','City','Manager','Implementor','Status','Modules','Grade','Live Date','Next Meeting','VAT Date','VAT Done','Stock Take Date','Stock Take Done','Comments','To-do'];
+  const cols=['Name','Contact','City','Manager','Implementor','Status','Modules','Grade','Live Date','VAT Date','VAT Done','Stock Take Date','Stock Take Done','Comments','Notes'];
   const rows=clients.map(c=>[
     c.name,c.contact||'',c.city,c.mgr,c.implementor||'',c.status,
     c.modules.join('; '),c.grade||'',c.liveDate||'',
-    c.mtgSet&&c.mtgDate?c.mtgDate:'',
     c.vatDate||'',c.vatDone?'Yes':'No',
     c.stkDate||'',c.stkDone?'Yes':'No',
     c.comment||'',c.todo||''
@@ -3406,131 +3347,13 @@ async function removeMod(i){
   ]);
 }
 
-/* ── MEETING PREP ── */
-let mpCurrentId=null;
-function openMeetPrep(){
-  document.getElementById('mp-filter').value='active';
-  document.getElementById('mp-card').style.display='none';
-  mpCurrentId=null;
-  // populate implementor filter
-  const implSel=document.getElementById('mp-impl-filter');
-  const cur=implSel.value;
-  const sorted=[...implementors].sort((a,b)=>a.localeCompare(b));
-  implSel.innerHTML='<option value="">All implementors</option>'+sorted.map(i=>`<option${i===cur?' selected':''}>${i}</option>`).join('');
-  renderMeetPrep();
-  document.getElementById('meetprep-modal').classList.add('open');
-}
-function renderMeetPrep(){
-  const filter=document.getElementById('mp-filter').value;
-  const implF=document.getElementById('mp-impl-filter').value;
-  let list=clients.filter(c=>{
-    if(filter==='meeting') return c.mtgSet&&c.mtgDate;
-    if(filter==='active')  return c.status==='Active';
-    return true;
-  });
-  if(implF) list=list.filter(c=>(c.implementor||'')===implF);
-  list=list.slice().sort((a,b)=>{
-    if(a.mtgSet&&a.mtgDate&&b.mtgSet&&b.mtgDate) return a.mtgDate.localeCompare(b.mtgDate);
-    if(a.mtgSet&&a.mtgDate) return -1;
-    if(b.mtgSet&&b.mtgDate) return 1;
-    return a.name.localeCompare(b.name);
-  });
-  const el=document.getElementById('mp-list');
-  if(!list.length){el.innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--text-3);font-size:13px">No clients match this filter.</div>';return;}
-  el.innerHTML=list.map(c=>{
-    const hasTodo=c.todo&&c.todo.trim();
-    const mtg=c.mtgSet&&c.mtgDate?`📅 ${fmt(c.mtgDate)}`:'<span style="color:var(--text-3)">No meeting set</span>';
-    const sc='s-'+c.status.replace(/ /g,'-');
-    const active=mpCurrentId===c.id?'background:var(--surface2);':'';
-    return `<div onclick="mpOpenCard(${c.id})" style="display:flex;align-items:center;gap:10px;padding:.65rem 1.25rem;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;${active}" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background='${mpCurrentId===c.id?'var(--surface2)':'transparent'}'">
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">
-          <span style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name}</span>
-          <span class="rh-status ${sc}" style="font-size:10px;flex-shrink:0">${c.status}</span>
-        </div>
-        <div style="font-size:11px;color:var(--text-3)">${mtg}${c.implementor?' · '+c.implementor:''}</div>
-        ${hasTodo?`<div style="font-size:11px;color:var(--text-2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px">📝 ${c.todo.trim().split('\n')[0]}</div>`:''}
-      </div>
-      <div style="font-size:18px;color:var(--text-3);flex-shrink:0">${hasTodo?'✏️':'➕'}</div>
-    </div>`;
-  }).join('');
-}
-function mpOpenCard(id){
-  mpCurrentId=id;
-  const c=clients.find(x=>x.id===id);
-  if(!c)return;
-  document.getElementById('mp-card-name').textContent=c.name;
-  const mtg=c.mtgSet&&c.mtgDate?`Next meeting: ${fmt(c.mtgDate)}`:'No meeting set';
-  document.getElementById('mp-card-meta').textContent=`${c.status} · ${mtg}${c.implementor?' · '+c.implementor:''}`;
-  document.getElementById('mp-todo-input').value=c.todo||'';
-  document.getElementById('mp-card').style.display='block';
-  document.getElementById('mp-todo-input').focus();
-  renderMeetPrep();
-}
-let mpTimer=null;
-function mpSaveTodo(){
-  if(!mpCurrentId)return;
-  const c=clients.find(x=>x.id===mpCurrentId);
-  if(!c)return;
-  c.todo=document.getElementById('mp-todo-input').value;
-  clearTimeout(mpTimer);
-  mpTimer=setTimeout(()=>{save();renderMeetPrep();},600);
-}
-function printMeetPrep(){
-  const filter=document.getElementById('mp-filter').value;
-  const implF=document.getElementById('mp-impl-filter').value;
-  const filterLabel={meeting:'With meeting set',active:'All active',all:'All clients'}[filter];
-  let list=clients.filter(c=>{
-    if(filter==='meeting') return c.mtgSet&&c.mtgDate;
-    if(filter==='active')  return c.status==='Active';
-    return true;
-  });
-  if(implF) list=list.filter(c=>(c.implementor||'')===implF);
-  list=list.slice().sort((a,b)=>{
-    if(a.mtgSet&&a.mtgDate&&b.mtgSet&&b.mtgDate) return a.mtgDate.localeCompare(b.mtgDate);
-    if(a.mtgSet&&a.mtgDate) return -1;
-    if(b.mtgSet&&b.mtgDate) return 1;
-    return a.name.localeCompare(b.name);
-  });
-  const rows=list.map(c=>`
-    <div class="mp-row">
-      <div class="mp-name">${c.name} <span class="mp-meta">${c.status}${c.implementor?' · '+c.implementor:''}</span></div>
-      <div class="mp-mtg">${c.mtgSet&&c.mtgDate?'Next meeting: '+fmt(c.mtgDate):'No meeting set'}</div>
-      <div class="mp-todo-label">To-Do / Notes:</div>
-      <div class="mp-todo">${(c.todo||'').replace(/\n/g,'<br>') || '<span style="color:#aaa">—</span>'}</div>
-    </div>`).join('');
-  const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>Meeting To-Do</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'DM Sans',sans-serif;padding:1.5cm 2cm;font-size:12px;color:#1a1917}
-    h1{font-size:18px;font-weight:600;color:#1e3a6e;margin-bottom:4px}
-    .sub{font-size:11px;color:#888;margin-bottom:1.5rem}
-    .mp-row{border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:12px;page-break-inside:avoid}
-    .mp-name{font-size:14px;font-weight:600;color:#1a1917;margin-bottom:4px}
-    .mp-meta{font-size:11px;font-weight:400;color:#888;margin-left:6px}
-    .mp-mtg{font-size:11px;color:#1e3a6e;margin-bottom:8px}
-    .mp-todo-label{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#aaa;margin-bottom:4px}
-    .mp-todo{font-size:12px;color:#1a1917;min-height:40px;line-height:1.6;white-space:pre-wrap}
-    @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
-  </style></head><body>
-  <h1>📋 Meeting To-Do</h1>
-  <div class="sub">Filter: ${filterLabel}${implF?' · Implementor: '+implF:''} &nbsp;·&nbsp; Generated: ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})}</div>
-  ${rows}
-  <script>setTimeout(()=>window.print(),300)<\/script>
-  </body></html>`);
-  w.document.close();
-}
-
-
 /* ── INIT ── */
 ['search'].forEach(id=>{
   const el=document.getElementById(id);
   if(el)el.addEventListener('input',()=>{render();buildVatBanner();buildStkBanner();});
 });
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeModal('add-modal');closeModal('vat-modal');closeModal('stk-modal');closeModal('settings-modal');closeModal('impl-modal');closeModal('mods-modal');closeModal('users-modal');closeModal('chpwd-modal');closeModal('audit-modal');}
+  if(e.key==='Escape'){closeModal('add-modal');closeModal('vat-modal');closeModal('stk-modal');closeModal('settings-modal');closeModal('impl-modal');closeModal('mods-modal');closeModal('users-modal');closeModal('chpwd-modal');closeModal('audit-modal');closeModal('meetprep-modal');}
   if(e.key==='Enter'&&!document.getElementById('login-screen').classList.contains('hidden'))doLogin();
 });
 updateSFUI();updateFIUI();updateFMUI();
