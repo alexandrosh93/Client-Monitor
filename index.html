@@ -3525,12 +3525,9 @@ sb.auth.onAuthStateChange(async(event,session)=>{
     if(e)e.textContent='Enter your new password below.';
   }
 });
-// Restore existing Supabase Auth session, else show login screen
+// Always require fresh login — sign out any lingering session on load
 (async()=>{
-  try{
-    const {data}=await sb.auth.getSession();
-    if(data&&data.session&&data.session.user){await onAuthed(data.session.user);return;}
-  }catch(e){console.error('Session check failed:',e);}
+  try{await sb.auth.signOut();}catch(e){}
   document.getElementById('login-user').focus();
 })();
 </script>
