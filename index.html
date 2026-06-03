@@ -2282,8 +2282,10 @@ function printVatReport(){
     th{text-align:left;font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#a8a49c;padding:5px 8px;border-bottom:1px solid #ddd}
     td{padding:7px 8px;border-bottom:1px solid #f0efe9;vertical-align:middle}
     tr:last-child td{border-bottom:none}
+    input{-webkit-appearance:none;appearance:none;background:transparent!important;border:none!important;outline:none!important;font-family:inherit;font-size:inherit;font-weight:inherit;color:inherit!important;padding:0;width:100%;box-shadow:none!important}
     .vr-pending{color:#a32d2d;font-weight:500}.vr-done{color:#1e3a6e}
     .rh-mgr{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#ede9fe;color:#4c1d95;font-family:'DM Mono',monospace}
+    .rh-impl{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#fff0e6;color:#92400e;font-family:'DM Mono',monospace}
     .rh-status{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px}
     .s-Active{background:linear-gradient(135deg,#e0eaff,#eef1f8);color:#1e3a6e;border:1px solid rgba(30,58,110,.15)}.s-Dormant{background:linear-gradient(135deg,#fef3c7,#fdf0db);color:#92400e;border:1px solid rgba(146,64,14,.15)}.s-Pending{background:#dbeeff;color:#1d4ed8}.s-Pending-Follow-Up{background:linear-gradient(135deg,#ede9fe,#f5f3ff);color:#5b21b6;border:1px solid rgba(91,33,182,.15)}.s-Completed{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#065f46;border:1px solid rgba(6,95,70,.15)}.s-Not-started{background:#f1f5f9;color:#64748b;border:1px solid rgba(100,116,139,.15)}
     @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
@@ -2602,7 +2604,7 @@ function printStkReport(){
   w.document.write(`<!DOCTYPE html><html><head><title>${title}</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     body{font-family:'DM Sans',sans-serif;padding:1.5cm 2cm;font-size:12px;color:#1a1917}
     h1{font-size:18px;font-weight:600;color:#7a6500;margin-bottom:4px}
     .sub{font-size:11px;color:#888;margin-bottom:1.2rem}
@@ -2613,6 +2615,7 @@ function printStkReport(){
     th{text-align:left;font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#a8a49c;padding:5px 8px;border-bottom:1px solid #ddd}
     td{padding:7px 8px;border-bottom:1px solid #f0efe9;vertical-align:middle}
     tr:last-child td{border-bottom:none}
+    input{-webkit-appearance:none;appearance:none;background:transparent!important;border:none!important;outline:none!important;font-family:inherit;font-size:inherit;font-weight:inherit;color:inherit!important;padding:0;width:100%;box-shadow:none!important}
     .vr-done{color:#1e3a6e}
     .rh-mgr{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#ede9fe;color:#4c1d95;font-family:'DM Mono',monospace}
     .rh-impl{font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:#fff0e6;color:#92400e;font-family:'DM Mono',monospace}
