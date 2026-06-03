@@ -456,7 +456,8 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
   .no-print,header,#vat-banner,.toolbar,.stats,.hdr-actions,.xactions,
   .star-edit,.mod-toggle-row,.inline-check,.chevron,
   .expand-panel,.xgrid,.xtarea,.xsel,.xdate,.xinput,
-  .todo-box,.vat-inline,.btn-del-sm,.print-row{display:none!important}
+  .todo-box,.vat-inline,.btn-del-sm,.print-row,
+  #sidemenu,#sidemenu-overlay,.modal-bg,#wl-tip{display:none!important}
   body{font-family:'DM Sans',sans-serif;font-size:10px;color:#1a1917;margin:0}
   main{padding:.5cm 1cm;max-width:100%}
   .pdf-hdr{display:block!important;margin-bottom:.4cm}
@@ -2444,12 +2445,13 @@ function toggleExpandAll(){
 
 /* ── EXPORT FULL PDF — no expand, pure CSS shows the data ── */
 function exportPDF(){
+  closeSideMenu();
   const now=new Date();
   document.getElementById('pdf-date').textContent='Generated: '+now.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
   const cnt=s=>clients.filter(c=>c.status===s).length;
   document.getElementById('pdf-summary').textContent=
     `${clients.length} clients · Active: ${cnt('Active')} · Dormant: ${cnt('Dormant')} · Pending: ${cnt('Pending Follow-Up')} · Completed: ${cnt('Completed')}`;
-  window.print();
+  setTimeout(()=>window.print(),180);
 }
 
 /* ── STOCK TAKE BANNER ── */
