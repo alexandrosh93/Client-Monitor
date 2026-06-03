@@ -485,6 +485,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
   .mod{font-size:8px!important;padding:1px 4px!important;border-radius:3px!important}
   .mod.on{background:#e8eef8!important;color:#1e3a6e!important;border-color:#a8bfe8!important}
   .mod:not(.on){display:none!important}
+  .rh-note{display:none!important}
   .rh-mgr{font-size:8px!important;padding:1px 5px!important;background:#ede9fe!important;color:#4c1d95!important}
   .rh-status{font-size:8px!important;padding:1px 6px!important}
   .s-Active{background:#c8d9f7!important;color:#1e3a6e!important;border:1px solid #a8c0eb!important}
@@ -3080,21 +3081,62 @@ function renderDashboard(){
 
 /* ── EXCEL EXPORT ── */
 function exportExcel(){
-  // Build CSV with BOM for Excel UTF-8 compatibility
-  const cols=['Name','Contact','City','Manager','Implementor','Status','Modules','Grade','Live Date','VAT Date','VAT Done','Stock Take Date','Stock Take Done','Comments','Notes'];
-  const rows=clients.map(c=>[
-    c.name,c.contact||'',c.city,c.mgr,c.implementor||'',c.status,
-    c.modules.join('; '),c.grade||'',c.liveDate||'',
-    c.vatDate||'',c.vatDone?'Yes':'No',
-    c.stkDate||'',c.stkDone?'Yes':'No',
-    c.comment||'',c.todo||''
-  ]);
-  const esc=v=>`"${String(v).replace(/"/g,'""')}"`;
-  const csv='\uFEFF'+[cols,...rows].map(r=>r.map(esc).join(',')).join('\r\n');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const STATUS_STYLE={
+    'Active':         {bg:'#dbeafe',fg:'#1e3a6e',hdr:'#1e40af'},
+    'Pending Follow-Up':{bg:'#ede9fe',fg:'#4c1d95',hdr:'#5b21b6'},
+    'Dormant':        {bg:'#fef9c3',fg:'#713f12',hdr:'#92400e'},
+    'Not started':    {bg:'#f1f5f9',fg:'#475569',hdr:'#334155'},
+    'Completed':      {bg:'#d1fae5',fg:'#065f46',hdr:'#047857'},
+  };
+  const cell=(v,bg,fg,extra='')=>`<td style="font-family:Calibri,sans-serif;font-size:10pt;padding:5px 9px;border:1px solid #bfbfbf;vertical-align:top;background:${bg};color:${fg};${extra}">${esc(String(v??''))}</td>`;
+  const STATUS_ORDER=['Active','Pending Follow-Up','Dormant','Not started','Completed'];
+  const grouped=STATUS_ORDER.map(s=>({s,list:clients.filter(c=>c.status===s)})).filter(g=>g.list.length);
+
+  const hdr='<tr style="background:#1e3a6e;color:#fff">'+
+    ['#','Company Name','Contact','City','Manager','Implementor','Status','Modules','Grade','Live Date','VAT Date','VAT Done','Stock Take Date','Stk Done','Latest Comment','Notes']
+    .map(h=>`<th style="font-family:Calibri,sans-serif;font-size:11pt;font-weight:bold;padding:7px 10px;border:1px solid #163073;white-space:nowrap;color:#fff;background:#1e3a6e">${h}</th>`)
+    .join('')+'</tr>';
+
+  let rows='';let n=1;
+  for(const {s,list} of grouped){
+    const st=STATUS_STYLE[s]||{bg:'#fff',fg:'#000',hdr:'#444'};
+    // group header row
+    rows+=`<tr><td colspan="16" style="font-family:Calibri,sans-serif;font-size:10pt;font-weight:bold;padding:5px 10px;background:${st.hdr};color:#fff;border:1px solid #bfbfbf;letter-spacing:.04em">${s.toUpperCase()} (${list.length})</td></tr>`;
+    for(const c of list){
+      const bg=st.bg,fg=st.fg;
+      rows+=`<tr>
+        ${cell(n++,bg,fg,'font-weight:bold;text-align:center;width:28px')}
+        ${cell(c.name,bg,fg,'font-weight:bold')}
+        ${cell(c.contact||'\u2014',bg,fg)}
+        ${cell(c.city||'\u2014',bg,fg)}
+        ${cell(c.mgr,bg,fg)}
+        ${cell(c.implementor||'\u2014',bg,fg)}
+        ${cell(c.status,bg,fg,'font-weight:600')}
+        ${cell(c.modules.join('; ')||'\u2014',bg,fg,'font-size:9pt')}
+        ${cell(c.grade?'\u2605'.repeat(c.grade):'\u2014',bg,fg,'text-align:center')}
+        ${cell(c.liveDate||'\u2014',bg,fg,'text-align:center')}
+        ${cell(c.vatDate||'\u2014',bg,fg,'text-align:center')}
+        ${cell(c.vatDone?'\u2713 Yes':'No',bg,fg,'text-align:center;font-weight:'+(c.vatDone?'bold':'400'))}
+        ${cell(c.stkDate||'\u2014',bg,fg,'text-align:center')}
+        ${cell(c.stkDone?'\u2713 Yes':'No',bg,fg,'text-align:center;font-weight:'+(c.stkDone?'bold':'400'))}
+        ${cell(c.comment||'',bg,fg,'max-width:280px')}
+        ${cell(c.todo||'',bg,fg,'max-width:280px')}
+      </tr>`;
+    }
+  }
+  // summary footer
+  rows+=`<tr><td colspan="16" style="font-family:Calibri,sans-serif;font-size:9pt;padding:6px 10px;background:#f8fafc;color:#64748b;border:1px solid #bfbfbf;font-style:italic">
+    Exported ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})} \u00B7 ${clients.length} clients total
+  </td></tr>`;
+
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8">
+    <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Clients</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+  </head><body><table border="1">${hdr}${rows}</table></body></html>`;
+
+  const blob=new Blob(['\uFEFF'+html],{type:'application/vnd.ms-excel;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`clients_${new Date().toISOString().slice(0,10)}.csv`;
+  a.href=url;a.download=`clients_${new Date().toISOString().slice(0,10)}.xls`;
   a.click();URL.revokeObjectURL(url);
   toast('Excel file downloaded.');
 }
