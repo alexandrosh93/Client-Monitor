@@ -463,6 +463,11 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
   .group-label:first-child{margin-top:0}
   /* each client = one compact row */
   .client-row{border:none!important;box-shadow:none!important;border-bottom:1px solid #f0efe9!important;margin-bottom:0!important;border-radius:0!important;page-break-inside:avoid}
+  .client-row[data-status="Active"]{border-left:3px solid #1e3a6e!important}
+  .client-row[data-status="Dormant"]{border-left:3px solid #d97706!important}
+  .client-row[data-status="Completed"]{border-left:3px solid #059669!important}
+  .client-row[data-status="Not started"]{border-left:3px solid #94a3b8!important}
+  .client-row[data-status="Pending Follow-Up"]{border-left:3px solid #7c3aed!important}
   .client-row:last-child{border-bottom:none!important}
   .row-header{padding:.14cm .1cm!important;cursor:default;display:grid!important;grid-template-columns:2.2fr .8fr 1fr .5fr .7fr!important;gap:6px!important;align-items:center!important}
   .rh-left{min-width:0}
@@ -479,12 +484,12 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
   .mod:not(.on){display:none!important}
   .rh-mgr{font-size:8px!important;padding:1px 5px!important;background:#ede9fe!important;color:#4c1d95!important}
   .rh-status{font-size:8px!important;padding:1px 6px!important}
-  .s-Active{background:#e8eef8!important;color:#1e3a6e!important}
-  .s-Dormant{background:#fdf0db!important;color:#8a5a1a!important}
-  .s-Pending{background:#dbeeff!important;color:#1d4ed8!important}
-  .s-Pending-Follow-Up{background:#ede9fe!important;color:#5b21b6!important}
-  .s-Completed{background:#e8e8e8!important;color:#444!important}
-  .s-Not-started{background:#f0efe9!important;color:#6b6960!important}
+  .s-Active{background:#c8d9f7!important;color:#1e3a6e!important;border:1px solid #a8c0eb!important}
+  .s-Dormant{background:#fde68a!important;color:#78350f!important;border:1px solid #f6cc50!important}
+  .s-Pending{background:#bfdbfe!important;color:#1d4ed8!important;border:1px solid #93c5fd!important}
+  .s-Pending-Follow-Up{background:#ddd6fe!important;color:#5b21b6!important;border:1px solid #c4b5fd!important}
+  .s-Completed{background:#bbf7d0!important;color:#065f46!important;border:1px solid #6ee7b7!important}
+  .s-Not-started{background:#e2e8f0!important;color:#475569!important;border:1px solid #cbd5e1!important}
   /* notes row under each client */
   .pdf-notes{display:block!important;padding:.06cm .1cm .1cm!important;font-size:9px!important;color:#555!important;line-height:1.5!important;border-bottom:1px solid #f0efe9!important}
   .pdf-notes:empty{display:none!important}
