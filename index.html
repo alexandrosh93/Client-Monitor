@@ -497,6 +497,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
   .progress-track{height:4px!important;width:80px!important;min-width:80px!important;max-width:80px!important;flex:none!important}
   .progress-pct{font-size:8px!important;min-width:20px!important}
   .rh-status,.rh-note,.mtg-tag,.mtg-tag-none,.chevron{display:none!important}
+  .row-header>.rh-grade{display:none!important}
   /* notes row under each client */
   .pdf-notes{display:block!important;padding:.06cm .1cm .1cm!important;font-size:9px!important;color:#555!important;line-height:1.5!important;border-bottom:1px solid #f0efe9!important}
   .pdf-notes:empty{display:none!important}
@@ -1837,6 +1838,7 @@ function buildRow(c){
         <div class="rh-name" title="${c.comment||''}">${c.name}${contactLine?`<span class="rh-contact" style="font-size:11px;font-weight:400;color:var(--text-3);margin-left:8px">👤 ${c.contact}</span>`:''}${c.comment?`<span class="rh-note">· ${c.comment}</span>`:''}</div>
         <div class="rh-sub-bar">${gradeOnRow}${progressBar}</div>
       </div>
+      ${gradeOnRow}
       <div class="rh-modules">${mods}</div>
       <span class="rh-mgr">${c.mgr}</span>
       ${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:''}
