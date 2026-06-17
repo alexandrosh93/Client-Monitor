@@ -516,6 +516,15 @@ header{background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backd
 .smenu-item:hover{background:linear-gradient(90deg,rgba(30,58,110,.06),var(--surface2));color:var(--text);border-left:3px solid var(--accent);padding-left:calc(1rem - 3px)}
 .smenu-item svg{flex-shrink:0;transition:transform .15s}
 .smenu-item:hover svg{transform:scale(1.1)}
+#sidemenu.minimized{width:64px!important;left:0!important;overflow-x:hidden;box-shadow:2px 0 12px rgba(0,0,0,.08)!important}
+#sidemenu.minimized .smenu-item{justify-content:center;gap:0;padding:.72rem 0;font-size:0;border-left-width:0}
+#sidemenu.minimized .smenu-item:hover{padding-left:0;border-left-width:0;background:var(--surface2)}
+#sidemenu.minimized .smenu-item svg{width:20px;height:20px}
+#sidemenu.minimized .smenu-section,#sidemenu.minimized .sidemenu-footer,#sidemenu.minimized #sidemenu-user,#sidemenu.minimized .sidemenu-sync{display:none!important}
+#sidemenu.minimized .sidemenu-brand-text{display:none}
+#sidemenu.minimized .sidemenu-brand{justify-content:center!important;padding:.8rem .45rem!important}
+#sidemenu.minimized #sidemenu-toggle{background:rgba(255,255,255,.22)!important}
+
 .btn-hdr-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border-md)}
 .btn-hdr-ghost:hover{background:var(--surface2);color:var(--text)}
 .btn-hdr-red{background:#fef2f2;color:#a32d2d;border:1px solid #f7c1c1}
