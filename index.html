@@ -602,6 +602,67 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
   }
 }
 
+
+/* Mobile menu: do not keep a pinned rail because it steals too much screen space. */
+@media(max-width:800px){
+  body.sidemenu-pinned header,
+  body.sidemenu-pinned main,
+  body.sidemenu-expanded header,
+  body.sidemenu-expanded main{
+    margin-left:0!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+  .hdr-menu-btn{
+    display:flex!important;
+    flex-shrink:0!important;
+  }
+  body:not(.sidemenu-expanded) #sidemenu,
+  body.sidemenu-pinned #sidemenu,
+  body:not(.sidemenu-expanded) #sidemenu.minimized{
+    left:-100%!important;
+    width:min(86vw,300px)!important;
+    min-width:0!important;
+    max-width:300px!important;
+    transform:none!important;
+    box-shadow:none!important;
+  }
+  body.sidemenu-expanded #sidemenu{
+    left:0!important;
+    width:min(86vw,300px)!important;
+    min-width:0!important;
+    max-width:300px!important;
+    z-index:301!important;
+    box-shadow:4px 0 24px rgba(0,0,0,.22)!important;
+  }
+  body.sidemenu-expanded #sidemenu-overlay{
+    display:block!important;
+    z-index:300!important;
+  }
+  body.sidemenu-expanded{
+    overflow:hidden!important;
+  }
+  body.sidemenu-expanded #sidemenu .sidemenu-brand-text,
+  body.sidemenu-expanded #sidemenu .smenu-label,
+  body.sidemenu-expanded #sidemenu .smenu-section,
+  body.sidemenu-expanded #sidemenu .sidemenu-footer,
+  body.sidemenu-expanded #sidemenu #sidemenu-user,
+  body.sidemenu-expanded #sidemenu .sidemenu-sync{
+    display:flex;
+  }
+  body.sidemenu-expanded #sidemenu .smenu-section,
+  body.sidemenu-expanded #sidemenu .sidemenu-footer{display:block!important}
+  body.sidemenu-expanded #sidemenu .smenu-item{
+    justify-content:flex-start!important;
+    gap:11px!important;
+    padding:.6rem 1rem!important;
+    font-size:13px!important;
+    border-left-width:3px!important;
+  }
+  body.sidemenu-expanded #sidemenu #sidemenu-toggle{font-size:14px!important}
+  body.sidemenu-expanded #sidemenu #sidemenu-toggle::before{content:''!important;font-size:0!important}
+}
+
 .btn-hdr-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border-md)}
 .btn-hdr-ghost:hover{background:var(--surface2);color:var(--text)}
 .btn-hdr-red{background:#fef2f2;color:#a32d2d;border:1px solid #f7c1c1}
@@ -1254,54 +1315,78 @@ function audit(action,target,detail){
 }
 
 /* ── SIDE MENU ── */
+function isMobileMenu(){
+  return window.matchMedia('(max-width:800px)').matches;
+}
 function openSideMenu(){
   const menu=document.getElementById('sidemenu');
+  const overlay=document.getElementById('sidemenu-overlay');
   menu.classList.remove('minimized');
   menu.style.left='0';
-  menu.style.width=window.matchMedia('(max-width:800px)').matches?'240px':'270px';
+  menu.style.width=isMobileMenu()?'min(86vw,300px)':'270px';
   document.body.classList.remove('sidemenu-pinned');
   document.body.classList.add('sidemenu-expanded');
-  document.getElementById('sidemenu-overlay').style.display='none';
-  document.body.style.overflow='';
+  overlay.style.display=isMobileMenu()?'block':'none';
+  document.body.style.overflow=isMobileMenu()?'hidden':'';
 }
 function minimizeSideMenu(){
   const menu=document.getElementById('sidemenu');
+  const overlay=document.getElementById('sidemenu-overlay');
+  if(isMobileMenu()){
+    menu.classList.remove('minimized');
+    menu.style.left='-100%';
+    menu.style.width='min(86vw,300px)';
+    document.body.classList.remove('sidemenu-pinned','sidemenu-expanded');
+    overlay.style.display='none';
+    document.body.style.overflow='';
+    return;
+  }
   menu.classList.add('minimized');
   menu.style.left='0';
-  menu.style.width=window.matchMedia('(max-width:800px)').matches?'56px':'64px';
+  menu.style.width='64px';
   document.body.classList.add('sidemenu-pinned');
   document.body.classList.remove('sidemenu-expanded');
-  document.getElementById('sidemenu-overlay').style.display='none';
+  overlay.style.display='none';
   document.body.style.overflow='';
 }
 function expandSideMenu(){
   openSideMenu();
 }
 function toggleSideMenuMinimized(){
+  if(isMobileMenu()){
+    if(document.body.classList.contains('sidemenu-expanded')) closeSideMenu();
+    else openSideMenu();
+    return;
+  }
   const menu=document.getElementById('sidemenu');
   if(menu.classList.contains('minimized')) expandSideMenu();
   else minimizeSideMenu();
 }
 
 function closeSideMenuAfterAction(){
-  // Keep the icon rail pinned on the left after using a menu action.
+  // Desktop returns to the icon rail. Mobile closes fully so the screen is not restricted.
   minimizeSideMenu();
 }
 
 function closeSideMenu(){
-  // Do not hide the side menu off-screen; collapse it to icons-only mode.
+  // Desktop collapses to icons only. Mobile slides the menu completely off-screen.
   minimizeSideMenu();
 }
 
-// Start with the menu pinned on the left as icons only.
+// Desktop starts pinned as icons. Mobile starts closed and opens from the header burger.
 document.addEventListener('DOMContentLoaded',()=>{
   minimizeSideMenu();
 });
 window.addEventListener('resize',()=>{
   const menu=document.getElementById('sidemenu');
   if(!menu) return;
-  if(document.body.classList.contains('sidemenu-expanded')) openSideMenu();
-  else minimizeSideMenu();
+  if(isMobileMenu()){
+    if(document.body.classList.contains('sidemenu-expanded')) openSideMenu();
+    else closeSideMenu();
+  }else{
+    if(document.body.classList.contains('sidemenu-expanded')) openSideMenu();
+    else minimizeSideMenu();
+  }
 });
 
 /* ── SYNC STATUS UI ── */
