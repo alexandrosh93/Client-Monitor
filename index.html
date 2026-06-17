@@ -663,6 +663,74 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
   body.sidemenu-expanded #sidemenu #sidemenu-toggle::before{content:''!important;font-size:0!important}
 }
 
+
+/* Desktop menu animation polish: smooth rail expand/collapse without overlaying content. */
+@media(min-width:801px){
+  #sidemenu{
+    transition:
+      width .34s cubic-bezier(.22,1,.36,1),
+      min-width .34s cubic-bezier(.22,1,.36,1),
+      max-width .34s cubic-bezier(.22,1,.36,1),
+      box-shadow .28s ease!important;
+    will-change:width;
+  }
+  body.sidemenu-pinned header,
+  body.sidemenu-pinned main,
+  body.sidemenu-expanded header,
+  body.sidemenu-expanded main{
+    transition:
+      margin-left .34s cubic-bezier(.22,1,.36,1),
+      width .34s cubic-bezier(.22,1,.36,1),
+      max-width .34s cubic-bezier(.22,1,.36,1)!important;
+    will-change:margin-left,width;
+  }
+  #sidemenu .smenu-item{
+    transition:
+      background .18s ease,
+      color .18s ease,
+      padding .28s cubic-bezier(.22,1,.36,1),
+      gap .28s cubic-bezier(.22,1,.36,1),
+      border-color .18s ease!important;
+  }
+  #sidemenu .smenu-label,
+  #sidemenu .sidemenu-brand-text{
+    display:inline-block!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+    max-width:180px;
+    opacity:1;
+    transform:translateX(0);
+    transition:
+      opacity .18s ease .10s,
+      transform .24s cubic-bezier(.22,1,.36,1) .06s,
+      max-width .28s cubic-bezier(.22,1,.36,1);
+  }
+  #sidemenu.minimized .smenu-label,
+  #sidemenu.minimized .sidemenu-brand-text{
+    display:inline-block!important;
+    max-width:0!important;
+    opacity:0!important;
+    transform:translateX(-8px)!important;
+    pointer-events:none!important;
+    transition:
+      opacity .12s ease,
+      transform .18s ease,
+      max-width .24s cubic-bezier(.22,1,.36,1)!important;
+  }
+  #sidemenu .smenu-section,
+  #sidemenu .sidemenu-footer,
+  #sidemenu #sidemenu-user,
+  #sidemenu .sidemenu-sync{
+    transition:opacity .18s ease,transform .22s ease;
+  }
+  body.sidemenu-expanded #sidemenu{
+    box-shadow:8px 0 28px rgba(0,0,0,.12)!important;
+  }
+  #sidemenu.minimized{
+    box-shadow:2px 0 12px rgba(0,0,0,.08)!important;
+  }
+}
+
 .btn-hdr-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border-md)}
 .btn-hdr-ghost:hover{background:var(--surface2);color:var(--text)}
 .btn-hdr-red{background:#fef2f2;color:#a32d2d;border:1px solid #f7c1c1}
@@ -715,7 +783,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 <div id="sidemenu-overlay" onclick="closeSideMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;transition:opacity .2s"></div>
 
 <!-- SIDE MENU -->
-<nav id="sidemenu" class="no-print minimized" style="position:fixed;top:0;left:0;width:64px;height:100%;background:var(--surface);border-right:1px solid var(--border-md);z-index:201;display:flex;flex-direction:column;transition:left .25s cubic-bezier(.4,0,.2,1),width .2s ease;overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.10)">
+<nav id="sidemenu" class="no-print minimized" style="position:fixed;top:0;left:0;width:64px;height:100%;background:var(--surface);border-right:1px solid var(--border-md);z-index:201;display:flex;flex-direction:column;transition:left .32s cubic-bezier(.22,1,.36,1),width .34s cubic-bezier(.22,1,.36,1),max-width .34s cubic-bezier(.22,1,.36,1),min-width .34s cubic-bezier(.22,1,.36,1),box-shadow .28s ease;overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.10)">
 
   <!-- Brand header -->
   <div class="sidemenu-brand" style="padding:1.1rem 1rem .9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--accent)">
