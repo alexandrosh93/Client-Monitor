@@ -176,6 +176,12 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .stk-cell .inline-check{color:#7a6500}
 .stk-cell .xdate{border-color:#e8d87a;color:#7a6500}
 .stk-cell .xdate:focus{border-color:#b8a000}
+/* NEXT FOLLOW-UP cell — green */
+.followup-cell{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.4rem .6rem}
+.followup-cell .xlbl{color:#15803d}
+.followup-cell .xdate{border-color:#bbf7d0;color:#15803d;font-size:11px;padding:3px 6px}
+.followup-cell .xdate:focus{border-color:#15803d}
+.followup-cell .reminder-clear{color:#15803d}
 /* Reminder clear button */
 .reminder-clear{flex-shrink:0;border:none;background:transparent;cursor:pointer;padding:1px 5px;border-radius:4px;font-size:15px;line-height:1;opacity:.45;transition:opacity .15s}
 .reminder-clear:hover{opacity:1}
@@ -375,6 +381,9 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .clog-edit-acts .btn-cancel{background:var(--border-md);color:var(--text)}.clog-edit-acts .btn-cancel:hover{opacity:.85}
 .clog-load-more{width:100%;background:none;border:1px dashed var(--border-md);border-radius:var(--radius);color:var(--text-3);font-family:'DM Sans',sans-serif;font-size:11px;padding:4px;cursor:pointer;margin-top:3px;transition:color .15s,border-color .15s}
 .clog-load-more:hover{color:var(--accent);border-color:var(--accent)}
+.clog-entry.clog-system{background:transparent;border:1px dashed var(--border-sm)}
+.clog-entry.clog-system .clog-meta{font-style:italic}
+.clog-entry.clog-system .clog-text{color:var(--text-3);font-size:11px;font-style:italic}
 .hv-wl-done{font-size:9px;font-weight:700;color:#1e3a6e;background:#e8eef8;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
 .hv-wl-arrow{font-size:13px;color:var(--text-3);flex-shrink:0;transition:color .14s,transform .14s}
 .hv-wl-row:hover .hv-wl-arrow{color:var(--accent);transform:translateX(3px)}
@@ -1331,16 +1340,16 @@ function dbToClient(r){return {id:r.id,name:r.name,contact:r.contact||'',city:r.
   ...((()=>{const raw=r.comment||'';let log=[];try{const p=JSON.parse(raw);if(Array.isArray(p))log=p;}catch(e){if(raw)log=[{text:raw,ts:null,user:''}];}return{comment:log.length?log[0].text:'',commentLog:log};})()),
   vatDate:r.vat_date||'',
   vatDone:r.vat_done||false,stkDate:r.stk_date||'',stkDone:r.stk_done||false,
-  liveDate:r.live_date||'',progress:r.progress||0};}
+  liveDate:r.live_date||'',progress:r.progress||0,nextFollowupDate:r.next_followup_date||''};}
 function clientToDb(c){const d=v=>v||null;
   return {id:c.id,name:c.name,contact:c.contact||'',city:c.city||'',mgr:c.mgr||'',
   implementor:c.implementor||'',status:c.status||'Not started',modules:c.modules||[],
   grade:c.grade||0,comment:c.commentLog&&c.commentLog.length?JSON.stringify(c.commentLog):(c.comment||null),todo:c.todo||'',
   vat_date:d(c.vatDate),
   vat_done:c.vatDone||false,stk_date:d(c.stkDate),stk_done:c.stkDone||false,
-  live_date:d(c.liveDate),progress:c.progress||0};}
+  live_date:d(c.liveDate),progress:c.progress||0,next_followup_date:d(c.nextFollowupDate)};}
 const FIELD_MAP={vatDate:'vat_date',vatDone:'vat_done',
-  stkDate:'stk_date',stkDone:'stk_done',liveDate:'live_date'};
+  stkDate:'stk_date',stkDone:'stk_done',liveDate:'live_date',nextFollowupDate:'next_followup_date'};
 
 const IMPL_KEY='avps_implementors';
 let ALL_MODS=['Payroll','Accounting','Invoicing','Stock'];
@@ -2197,6 +2206,13 @@ function buildRow(c){
           </label>
           ${c.stkDone?`<div style="font-size:9px;color:#1e3a6e;margin-top:2px">✓ Done</div>`:''}
         </div>
+        <div class="followup-cell">
+          <div class="xlbl">Next Follow-up</div>
+          <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
+            <input type="date" class="xdate" value="${c.nextFollowupDate||''}" onchange="fld(${c.id},'nextFollowupDate',this.value)" style="border-color:#bbf7d0;color:#15803d;flex:1">
+            <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'followup')" title="Clear date">×</button>
+          </div>
+        </div>
 
         <!-- MODULES inline after dates -->
         <div>
@@ -2220,27 +2236,7 @@ function buildRow(c){
             <input type="text" id="cinput-${c.id}" placeholder="Add a comment…" onkeydown="if(event.key==='Enter')addComment(${c.id})">
             <button onclick="addComment(${c.id})">Add</button>
           </div>
-          <div class="clog">
-            ${(()=>{
-              const log=c.commentLog||[];
-              if(!log.length)return'<div style="font-size:12px;color:var(--text-3);padding:4px 2px">No comments yet.</div>';
-              const showAll=clogOpen.has(c.id);
-              const visible=showAll?log:log.slice(0,1);
-              const rows=visible.map((e,idx)=>{
-                const d=e.ts?new Date(e.ts):null;
-                const when=d?d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—';
-                const who=e.user||'';
-                const key=c.id+'-'+idx;
-                if(clogEdit[key]){
-                  return`<div class="clog-entry"><input class="clog-edit-input" id="cedit-${c.id}-${idx}" value="${esc(e.text)}" onkeydown="if(event.key==='Enter')saveCommentEdit(${c.id},${idx});if(event.key==='Escape')cancelCommentEdit(${c.id},${idx})"><div class="clog-edit-acts"><button class="btn-save" onclick="saveCommentEdit(${c.id},${idx})">Save</button><button class="btn-cancel" onclick="cancelCommentEdit(${c.id},${idx})">Cancel</button></div></div>`;
-                }
-                return`<div class="clog-entry"><div class="clog-meta"><span class="clog-actions"><button onclick="editComment(${c.id},${idx})" title="Edit">✎</button><button onclick="deleteComment(${c.id},${idx})" title="Delete">×</button></span>${esc(who)}${who&&when?' · ':''}${when}</div><div class="clog-text">${esc(e.text)}</div></div>`;
-              }).join('');
-              const more=log.length-1;
-              const btn=more>0?`<button class="clog-load-more" onclick="clogToggle(${c.id})">${showAll?'▲ Show less':'▼ Load '+more+' more…'}</button>`:'';
-              return rows+btn;
-            })()}
-          </div>
+          <div class="clog" id="clog-${c.id}">${renderClogHtml(c)}</div>
         </div>
         <div>
           <div class="xlbl">📋 Notes</div>
@@ -2280,12 +2276,15 @@ function fld(id,k,v){
   const fieldNames={name:'Name',contact:'Contact',city:'City',mgr:'Manager',implementor:'Implementor',
     status:'Status',grade:'Grade',comment:'Comments',todo:'To-do',liveDate:'Live Date',
     vatDate:'VAT date',vatDone:'VAT done',
-    stkDate:'Stock Take date',stkDone:'Stock Take done',progress:'Progress'};
+    stkDate:'Stock Take date',stkDone:'Stock Take done',progress:'Progress',nextFollowupDate:'Next Follow-up'};
   const label=fieldNames[k]||k;
   const fmt=val=>val===true?'Yes':val===false?'No':val||'(empty)';
   const oldFmt=fmt(old);
   const newFmt=fmt(v);
   audit('Edit',c.name,label+': "'+oldFmt+'" → "'+newFmt+'"');
+  if(old!==v&&(k==='status'||k==='mgr'||k==='implementor')){
+    _pushSystemLog(c,label+': "'+oldFmt+'" → "'+newFmt+'"');
+  }
   const col=FIELD_MAP[k]||k;
   const dbVal=(v==='')?null:v;
   sb.from('clients').update({[col]:dbVal}).eq('id',id)
@@ -2303,6 +2302,39 @@ function _saveCommentLog(c){
       if(error){console.error('Comment save error:',error);setSyncStatus('err','Save failed');}
       else setSyncStatus('ok','Supabase ✓');
     });
+}
+function _pushSystemLog(c,text){
+  c.commentLog=[{text,ts:new Date().toISOString(),user:currentUser,type:'system'},...(c.commentLog||[])];
+  _saveCommentLog(c);
+  refreshClog(c.id);
+}
+function refreshClog(id){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  const el=document.getElementById('clog-'+id);
+  if(el)el.innerHTML=renderClogHtml(c);
+}
+function renderClogHtml(c){
+  const log=c.commentLog||[];
+  if(!log.length)return'<div style="font-size:12px;color:var(--text-3);padding:4px 2px">No comments yet.</div>';
+  const showAll=clogOpen.has(c.id);
+  const visible=showAll?log:log.slice(0,1);
+  const rows=visible.map((e,idx)=>{
+    const d=e.ts?new Date(e.ts):null;
+    const when=d?d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—';
+    const who=e.user||'';
+    const key=c.id+'-'+idx;
+    const isSystem=e.type==='system';
+    if(clogEdit[key]){
+      return`<div class="clog-entry"><input class="clog-edit-input" id="cedit-${c.id}-${idx}" value="${esc(e.text)}" onkeydown="if(event.key==='Enter')saveCommentEdit(${c.id},${idx});if(event.key==='Escape')cancelCommentEdit(${c.id},${idx})"><div class="clog-edit-acts"><button class="btn-save" onclick="saveCommentEdit(${c.id},${idx})">Save</button><button class="btn-cancel" onclick="cancelCommentEdit(${c.id},${idx})">Cancel</button></div></div>`;
+    }
+    if(isSystem){
+      return`<div class="clog-entry clog-system"><div class="clog-meta">⚙ ${esc(who)}${who&&when?' · ':''}${when}</div><div class="clog-text">${esc(e.text)}</div></div>`;
+    }
+    return`<div class="clog-entry"><div class="clog-meta"><span class="clog-actions"><button onclick="editComment(${c.id},${idx})" title="Edit">✎</button><button onclick="deleteComment(${c.id},${idx})" title="Delete">×</button></span>${esc(who)}${who&&when?' · ':''}${when}</div><div class="clog-text">${esc(e.text)}</div></div>`;
+  }).join('');
+  const more=log.length-1;
+  const btn=more>0?`<button class="clog-load-more" onclick="clogToggle(${c.id})">${showAll?'▲ Show less':'▼ Load '+more+' more…'}</button>`:'';
+  return rows+btn;
 }
 function _rerender(id){const was=expanded.has(id);render();if(was)expanded.add(id);}
 
@@ -2354,10 +2386,16 @@ function clearReminder(id,type){
     if(c.vatDate)audit('Edit',c.name,'VAT date: "'+c.vatDate+'" → "(empty)"');
     if(c.vatDone)audit('Edit',c.name,'VAT done: "Yes" → "No"');
     c.vatDate='';c.vatDone=false;
-  }else{
+  }else if(type==='stk'){
     if(c.stkDate)audit('Edit',c.name,'Stock Take date: "'+c.stkDate+'" → "(empty)"');
     if(c.stkDone)audit('Edit',c.name,'Stock Take done: "Yes" → "No"');
     c.stkDate='';c.stkDone=false;
+  }else if(type==='followup'){
+    if(c.nextFollowupDate){
+      audit('Edit',c.name,'Next Follow-up: "'+c.nextFollowupDate+'" → "(empty)"');
+      _pushSystemLog(c,'Next Follow-up: "'+c.nextFollowupDate+'" → "(empty)"');
+    }
+    c.nextFollowupDate='';
   }
   save();
   const was=expanded.has(id);render();if(was)expanded.add(id);
@@ -2394,6 +2432,7 @@ function tModFld(id,m,on){
   if(on&&!c.modules.includes(m))c.modules.push(m);
   else c.modules=c.modules.filter(x=>x!==m);
   audit('Edit',c.name,'Modules: '+(on?'added':'removed')+' "'+m+'"');
+  _pushSystemLog(c,'Modules: '+(on?'added':'removed')+' "'+m+'"');
   save();
   // update the mod-toggle visual without full re-render
   const lbl=document.querySelector(`#mod-edit-${id} .mod-toggle[data-mod="${m}"]`);
@@ -3041,6 +3080,22 @@ function goClients(opts={}){
   // scroll top
   window.scrollTo({top:0,behavior:'smooth'});
 }
+function goToClient(id){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  document.getElementById('home-view').classList.remove('active');
+  document.querySelector('.control-bar').style.display='';
+  selStatuses.clear(); selImpls.clear(); selMgr=''; selCity='';
+  updateSFUI(); updateFIUI();
+  setView('list');
+  render();
+  setTimeout(()=>{
+    const r=document.querySelector(`.client-row[data-id="${id}"]`);
+    if(r){
+      r.scrollIntoView({behavior:'smooth',block:'center'});
+      if(!expanded.has(id)){expanded.add(id);r.classList.add('expanded');}
+    }
+  },100);
+}
 function renderHomeDashboard(){
   const el=document.getElementById('home-view');
   if(!el)return;
@@ -3056,6 +3111,8 @@ function renderHomeDashboard(){
   const total=clients.length;
   const vatOverdue=clients.filter(c=>!c.vatDone&&c.vatDate&&c.vatDate<todayISO).length;
   const stkOverdue=clients.filter(c=>!c.stkDone&&c.stkDate&&c.stkDate<todayISO).length;
+  const followupsDue=clients.filter(c=>c.nextFollowupDate&&c.nextFollowupDate<=todayISO)
+    .sort((a,b)=>a.nextFollowupDate.localeCompare(b.nextFollowupDate));
 
   // status data for chart
   const statusDef=[
@@ -3143,6 +3200,28 @@ function renderHomeDashboard(){
       <button class="hv-qbtn" onclick="goClients({})">All Clients →</button>
     </div>
   </div>
+
+  ${followupsDue.length?`
+  <div class="hv-card" style="margin-bottom:1.25rem;border-left:3px solid #a32d2d">
+    <div class="hv-card-hdr">
+      <div>
+        <div class="hv-card-title">📞 Follow-ups Due</div>
+        <div style="font-size:10px;color:var(--text-3);margin-top:2px">Click a client to open it</div>
+      </div>
+      <span style="font-size:11px;font-weight:700;color:#a32d2d">${followupsDue.length} client${followupsDue.length!==1?'s':''}</span>
+    </div>
+    <div class="hv-upcoming-list">
+      ${followupsDue.slice(0,10).map(c=>{
+        const isOverdue=c.nextFollowupDate<todayISO;
+        return `<div class="hv-event" onclick="goToClient(${c.id})">
+          <div class="hv-event-date" style="color:${isOverdue?'#a32d2d':'#856404'};font-weight:800">${isOverdue?'Overdue':'Today'}</div>
+          <div class="hv-event-badge" style="background:${isOverdue?'#fde2e2':'#fff3cd'};color:${isOverdue?'#a32d2d':'#856404'}">📞 Follow-up</div>
+          <div class="hv-event-client">${esc(c.name)}</div>
+          <div class="hv-event-impl">${esc(c.implementor||'—')}</div>
+        </div>`;
+      }).join('')+(followupsDue.length>10?`<div style="font-size:12px;color:var(--text-3);padding:.4rem .5rem">+${followupsDue.length-10} more…</div>`:'')}
+    </div>
+  </div>`:''}
 
   <div class="hv-card" style="margin-bottom:1.25rem">
     <div class="hv-card-hdr">
