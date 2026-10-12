@@ -3781,6 +3781,7 @@ async function onAuthed(user){
   goHome();
 }
 async function doLogout(){
+  if(window.cmEmailDisconnect)await window.cmEmailDisconnect();
   try{await sb.auth.signOut();}catch(e){}
   location.reload();
 }
@@ -3883,5 +3884,7 @@ sb.auth.onAuthStateChange(async(event,session)=>{
 })();
 </script>
 <script src="ai-suggestions.js" defer></script>
+<script src="outlook-config.js" defer></script>
+<script src="email-suggestions.js" defer></script>
 </body>
 </html>
