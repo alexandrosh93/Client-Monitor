@@ -1,0 +1,28 @@
+Bundled license information:
+
+@azure/msal-common/dist-browser/constants/AADServerParamKeys.mjs:
+@azure/msal-common/dist-browser/utils/Constants.mjs:
+@azure/msal-common/dist-browser/error/AuthError.mjs:
+@azure/msal-common/dist-browser/error/ClientAuthError.mjs:
+@azure/msal-common/dist-browser/error/ClientAuthErrorCodes.mjs:
+@azure/msal-common/dist-browser/error/ClientConfigurationError.mjs:
+@azure/msal-common/dist-browser/error/ClientConfigurationErrorCodes.mjs:
+@azure/msal-common/dist-browser/utils/StringUtils.mjs:
+@azure/msal-common/dist-browser/url/UrlString.mjs:
+@azure/msal-common/dist-browser/cache/utils/CacheHelpers.mjs:
+@azure/msal-common/dist-browser/request/ScopeSet.mjs:
+@azure/msal-common/dist-browser/request/RequestParameterBuilder.mjs:
+@azure/msal-common/dist-browser/utils/ProtocolUtils.mjs:
+@azure/msal-common/dist-browser/index-browser.mjs:
+  /*! @azure/msal-common v16.14.2 2026-10-02 */
+
+@azure/msal-browser/dist/error/BrowserAuthError.mjs:
+@azure/msal-browser/dist/error/BrowserAuthErrorCodes.mjs:
+@azure/msal-browser/dist/encode/Base64Decode.mjs:
+@azure/msal-browser/dist/utils/BrowserConstants.mjs:
+@azure/msal-browser/dist/utils/BrowserUtils.mjs:
+@azure/msal-browser/dist/navigation/NavigationClient.mjs:
+@azure/msal-browser/dist/config/Configuration.mjs:
+@azure/msal-browser/dist/cache/CacheKeys.mjs:
+@azure/msal-browser/dist/redirect_bridge/index.mjs:
+  /*! @azure/msal-browser v5.25.0 2026-10-06 */

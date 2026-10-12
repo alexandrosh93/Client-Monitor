@@ -1,7 +1,7 @@
 /*
  * Client Monitor - AI Suggestions review workspace (phase 1)
  * Sources: conservative rules on existing client records + manually imported proposals.
- * No Outlook access, third-party AI call or automatic project updates.
+ * Outlook candidate review is provided separately by email-suggestions.js.
  * Changes are written ONLY when a signed-in user clicks Approve.
  */
 (function () {
@@ -139,8 +139,9 @@
     page.innerHTML='<div class="ai-head"><div><div class="ai-h1">AI Suggestions <span class="ai-pill">Review workspace</span></div>'+
       '<p class="ai-muted">Suggested changes from Client Monitor data or manually imported analysis. Nothing changes without your approval.</p></div>'+
       '<button class="ai-btn" id="ai-back">← Back to Home</button></div>'+
-      '<div class="ai-card"><b style="font-size:13px">Integration status</b>'+
-      '<p class="ai-muted" style="margin:5px 0 0">Outlook is not connected to this panel yet. The built-in suggestions are rule-based, not AI-generated. Import proposals manually for review; do not paste entire emails or confidential content.</p></div>'+
+      '<div id="ai-email-workspace"></div>'+
+      '<div class="ai-card"><b style="font-size:13px">Client record suggestions</b>'+
+      '<p class="ai-muted" style="margin:5px 0 0">The checks below use rules on existing client records. Imported analysis is labelled separately. Review each change against its source.</p></div>'+
       '<div id="ai-items"></div>'+
       '<details class="ai-card"><summary style="font-size:13px;font-weight:700;cursor:pointer">Import suggestions (JSON)</summary>'+
       '<p class="ai-muted">Use a JSON array with exact client_name or client_id, field, value, and a short reason. Accepted fields: status, todo, nextFollowupDate, progress. Imported items are kept only in this browser session.</p>'+
@@ -206,6 +207,7 @@
     document.getElementById('vbtn-ai').classList.add('active');
     document.getElementById(PANEL_ID).classList.add('active');
     showItems();
+    window.dispatchEvent(new Event('cm-ai-open'));
     window.scrollTo({top:0,behavior:'smooth'});
   }
   function showItems() {
