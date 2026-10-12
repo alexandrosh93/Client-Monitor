@@ -1,5 +1,6 @@
 import { PublicClientApplication, InteractionRequiredAuthError } from './vendor/msal-browser.js';
-import { senderList } from './email-leads.mjs';
+import { senderList } from './email-leads.mjs?v=orders-1';
+import { isPdfAttachment } from './software-orders.mjs';
 
 const scopes = ['Mail.Read'];
 let instance;
@@ -52,7 +53,7 @@ export async function searchMail({ senders, since, signal, onProgress }) {
   let truncated = false;
   for (const sender of list) {
     const params = new URLSearchParams({
-      '$select': 'id,subject,from,receivedDateTime,webLink,bodyPreview',
+      '$select': 'id,subject,from,receivedDateTime,webLink,bodyPreview,hasAttachments',
       '$filter': "receivedDateTime ge " + since + "T00:00:00Z and from/emailAddress/address eq '" + sender + "'",
       '$orderby': 'receivedDateTime desc', '$top': '100',
     });
@@ -76,4 +77,70 @@ export async function searchMail({ senders, since, signal, onProgress }) {
     if (url) truncated = true;
   }
   return { messages, truncated, senders: list };
+}
+
+export async function scanOrderAttachments(messages, { signal, onProgress, readPdf } = {}) {
+  const accessToken = await token();
+  const matches = [], errors = [];
+  let checkedMessages = 0, checkedPdfs = 0, limited = false;
+  async function request(url) {
+    const parsed = new URL(url);
+    if (parsed.origin !== 'https://graph.microsoft.com' || !parsed.pathname.startsWith('/v1.0/me/messages/')) throw new Error('Unexpected attachment address.');
+    const response = await fetch(url, { signal, headers: { Authorization: 'Bearer ' + accessToken } });
+    if (!response.ok) throw new Error(response.status === 429 ? 'Microsoft is limiting requests. Retry the scan later.' : 'Attachment access failed (' + response.status + ').');
+    return response;
+  }
+  for (const message of messages) {
+    signal?.throwIfAborted();
+    if (!message.hasAttachments) continue;
+    if (checkedMessages >= 100 || checkedPdfs >= 50) { limited = true; break; }
+    checkedMessages++;
+    const base = 'https://graph.microsoft.com/v1.0/me/messages/' + encodeURIComponent(message.id) + '/attachments';
+    const attachments = [];
+    try {
+      let url = base + '?$select=id,name,contentType,size,isInline';
+      for (let page = 0; url && page < 5; page++) {
+        const parsed = new URL(url);
+        if (parsed.origin !== 'https://graph.microsoft.com' || parsed.pathname !== new URL(base).pathname) throw new Error('Unexpected attachment paging address.');
+        const data = await (await request(url)).json();
+        if (!Array.isArray(data.value)) throw new Error('Unexpected attachment list.');
+        attachments.push(...data.value.filter(a => a['@odata.type'] === '#microsoft.graph.fileAttachment' && isPdfAttachment(a)));
+        url = data['@odata.nextLink'] || '';
+      }
+      if (url || attachments.length > 10) limited = true;
+      const orders = [];
+      for (const attachment of attachments.slice(0, 10)) {
+        signal?.throwIfAborted();
+        if (checkedPdfs >= 50) { limited = true; break; }
+        checkedPdfs++;
+        try {
+          if (attachment.size > 20 * 1024 * 1024) throw new Error('PDF exceeds the 20 MB limit.');
+          onProgress?.('Downloading ' + attachment.name);
+          const response = await request(base + '/' + encodeURIComponent(attachment.id) + '/$value');
+          const declared = Number(response.headers.get('Content-Length'));
+          if (declared > 20 * 1024 * 1024) throw new Error('PDF exceeds the 20 MB limit.');
+          const reader = response.body.getReader(), chunks = [];
+          let size = 0;
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              size += value.length;
+              if (size > 20 * 1024 * 1024) throw new Error('PDF exceeds the 20 MB limit.');
+              chunks.push(value); signal?.throwIfAborted();
+            }
+          } finally { await reader.cancel(); }
+          const bytes = new Uint8Array(size); let offset = 0;
+          for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+          orders.push(await readPdf(bytes, { name: attachment.name, signal, onProgress }));
+        } catch (e) {
+          signal?.throwIfAborted();
+          errors.push(attachment.name + ': ' + e.message);
+          orders.push({ kind: 'needs_review', attachment_name: attachment.name, issues: [e.message], extraction: 'text' });
+        }
+      }
+      if (orders.length) matches.push({ message, orders });
+    } catch (e) { signal?.throwIfAborted(); errors.push(message.subject + ': ' + e.message); }
+  }
+  return { matches, checkedMessages, checkedPdfs, errors, limited };
 }
