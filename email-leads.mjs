@@ -1,5 +1,6 @@
 // Pure validation and candidate detection. Detection is deliberately labelled as rules, not AI.
-import { validateOrder, mergeOrders, isAdditionalLicenseRequest } from './software-orders.mjs?v=ignore-license-increases-20261013';
+import { validateOrder, mergeOrders, isAdditionalLicenseRequest, isOwnCompanyName } from './software-orders.mjs?v=pdf-client-name-20261013';
+export { isOwnCompanyName };
 export function cleanText(value, limit = 2000) {
   return typeof value === 'string' ? value.trim().slice(0, limit) : '';
 }
@@ -36,7 +37,7 @@ export function leadKey(row) {
 }
 export function validateLead(row) {
   if (!row || typeof row !== 'object' || Array.isArray(row)) return null;
-  if (isIgnoredProposal(row.source_subject) || isIgnoredLicenseChange([row.source_subject, row.classification, row.reason].join(' '))) return null;
+  if (isIgnoredProposal(row.source_subject) || isIgnoredLicenseChange([row.source_subject, row.classification, row.reason].join(' ')) || isOwnCompanyName(row.client_name)) return null;
   const sourceUrl = outlookLink(row.source_url);
   const date = cleanText(row.source_date, 40);
   let sender;
@@ -74,14 +75,13 @@ export function mergeLeads(current, incoming) {
 export function candidateFromOrders(message, orders, allowedSenders) {
   const sender = String(message.from?.emailAddress?.address || '').toLowerCase();
   if (!allowedSenders.includes(sender) || isIgnoredProposal(message.subject) || isIgnoredLicenseChange(cleanText(message.subject) + ' ' + cleanText(message.bodyPreview))) return null;
-  const found = orders.filter(o => o.kind === 'software_order' && !o.additional_licenses);
-  const review = orders.filter(o => o.kind === 'needs_review');
-  if (!found.length && !review.length) return null;
+  const found = orders.filter(o => o.kind === 'software_order' && !o.additional_licenses && o.company_name && !isOwnCompanyName(o.company_name));
+  if (!found.length) return null;
   const names = [...new Set(found.map(o => o.company_name).filter(Boolean))];
   return validateLead({
-    client_name: names.length === 1 ? names[0] : cleanText(message.subject) || 'Software Order PDF — confirm company',
-    classification: found.length ? 'Software Order — review onboarding' : 'PDF needs manual review',
-    reason: found.length ? 'The attached Software Order identifies ' + (names.join(', ') || 'a company to confirm') + '. Review the order and client record before saving.' : 'A PDF attachment could not be read. Open the source and check the order.',
+    client_name: names.join(' / '),
+    classification: 'Software Order — review onboarding',
+    reason: 'The attached Software Order identifies ' + names.join(', ') + '. Review the order and client record before saving.',
     next_action: 'Confirm the company, products, client signature and implementation arrangements.',
     source_subject: cleanText(message.subject) || '(No subject)', source_date: message.receivedDateTime,
     source_sender: sender, source_url: message.webLink,

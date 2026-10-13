@@ -1,4 +1,4 @@
-import { parseSoftwareOrder, itemsToLines } from './software-orders.mjs?v=ignore-license-increases-20261013';
+import { parseSoftwareOrder, itemsToLines } from './software-orders.mjs?v=pdf-client-name-20261013';
 
 export async function readOrderPdf(data, { name, signal, onProgress } = {}) {
   if (!(data instanceof Uint8Array) || data.length > 20 * 1024 * 1024) throw new Error('Choose a PDF no larger than 20 MB.');

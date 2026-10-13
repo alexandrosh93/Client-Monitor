@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var helpers = import('./email-leads.mjs?v=ignore-license-increases-20261013');
+  var helpers = import('./email-leads.mjs?v=pdf-client-name-20261013');
   var outlook;
   var rows = [], ignored = new Set(), owner = '', mailbox = '', busy = false, abort;
   var root = document.getElementById('ai-email-workspace');
@@ -48,7 +48,7 @@
       '<details><summary>PDF evidence · ' + esc(order.extraction) + '</summary>' + (order.evidence || []).map(e => '<p class="email-evidence">Page ' + e.page + ':<br>' + esc(e.text) + '</p>').join('') + '</details></div>';
   }
   root.innerHTML = '<div class="ai-card"><div class="ai-row-top"><b>Email · New client suggestions</b><span class="ai-pill" id="email-connection"></span></div>' +
-    '<p class="ai-muted" style="margin-top:8px">Search messages from Andreas Kyriacou and Vakis Theodosiou. Matching emails are candidates, not confirmed new clients. Live search uses keyword rules; you can also import AI-reviewed findings from Codex.</p>' +
+    '<p class="ai-muted" style="margin-top:8px">Search messages from Andreas Kyriacou and Vakis Theodosiou. Only readable Software Order PDFs become new-client candidates, and the client name is taken from the Licensee field.</p>' +
     '<div class="ai-actions"><button class="ai-btn ai-btn-primary" id="email-connect">Connect Outlook</button><button class="ai-btn" id="email-disconnect">Disconnect</button></div>' +
     '<details style="margin-top:12px" id="email-settings"><summary>Connection settings</summary>' +
     '<p class="ai-muted">A Microsoft app registration is required once. Use its public IDs below. No password or client secret is needed.</p>' +
@@ -57,7 +57,7 @@
     '<p class="ai-muted">Register this exact Single-page application redirect URI: <code id="email-redirect"></code>. The connection requests delegated Mail.Read; it cannot send, edit, or delete mail.</p></details>' +
     '<label class="email-label">Sender email addresses<input id="email-senders" class="email-input" placeholder="Separate sender addresses with commas" autocomplete="off"></label>' +
     '<label class="email-label">Search from<input type="date" id="email-since" class="email-input"></label>' +
-    '<label class="email-label"><input type="checkbox" id="email-read-orders" checked> Read Software Order PDF attachments, including scanned pages</label>' +
+    '<p class="ai-muted" style="margin-top:12px">Software Order PDF attachments are always read, including scanned pages. The client name is taken from the PDF Licensee field.</p>' +
     '<div class="ai-actions"><button class="ai-btn ai-btn-primary" id="email-search">Search Outlook</button><button class="ai-btn" id="email-cancel" disabled>Cancel search</button></div>' +
     '<p class="ai-muted" id="ai-email-message" role="status" aria-live="polite" style="margin-top:10px"></p>' +
     '<p class="ai-muted">Reviews stay in this browser tab for this signed-in user. Export to keep a copy. Disconnect clears mailbox tokens and email reviews from this tab.</p>' +
@@ -77,7 +77,7 @@
 
   async function render() {
     var h = await helpers;
-    var visible = rows.filter(row => !ignored.has(h.leadKey(row)) && !onlyAdditionalOrders(row));
+    var visible = rows.filter(row => !ignored.has(h.leadKey(row)) && !onlyAdditionalOrders(row) && softwareOrders(row).some(order => order.company_name && !h.isOwnCompanyName(order.company_name)));
     document.getElementById('email-candidates').innerHTML = '<p class="ai-muted" style="margin:12px 0">' + visible.length + ' email candidate(s) to review</p><div class="email-candidate-grid">' + visible.map(row => {
       var i = rows.indexOf(row);
       var existing = clients.find(c => h.normalName(c.name) === h.normalName(row.client_name));
@@ -120,7 +120,7 @@
     setBusy(true); message('Opening Microsoft sign-in…');
     mailbox = ''; connectionText();
     try {
-      outlook = await import('./outlook-client.mjs?v=ignore-license-increases-20261013');
+      outlook = await import('./outlook-client.mjs?v=pdf-client-name-20261013');
       await outlook.initialize(config());
       mailbox = await outlook.connect();
       saveSettings(); connectionText(); message('Connected. Choose the senders and date, then search Outlook.');
@@ -147,18 +147,10 @@
         onProgress: count => message('Read ' + count + ' matching sender emails…') });
       if (abort.signal.aborted) return;
       var h = await helpers;
-      var candidates = result.messages.map(m => h.candidateFromMessage(m, result.senders)).filter(Boolean);
-      var scan;
-      if (document.getElementById('email-read-orders').checked) {
-        var pdf = await import('./pdf-orders.mjs?v=ignore-license-increases-20261013');
-        scan = await outlook.scanOrderAttachments(result.messages, { signal: abort.signal, readPdf: pdf.readOrderPdf, onProgress: text => message(text) });
-        candidates.push(...scan.matches.map(match => {
-          if (onlyAdditionalOrders(match)) return null;
-          var proposal = h.candidateFromOrders(match.message, match.orders, result.senders);
-          var preview = !proposal && h.candidateFromMessage(match.message, result.senders);
-          return proposal || (preview ? { ...preview, orders: match.orders } : null);
-        }).filter(Boolean));
-      }
+      var candidates = [];
+      var pdf = await import('./pdf-orders.mjs?v=pdf-client-name-20261013');
+      var scan = await outlook.scanOrderAttachments(result.messages, { signal: abort.signal, readPdf: pdf.readOrderPdf, onProgress: text => message(text) });
+      candidates.push(...scan.matches.map(match => onlyAdditionalOrders(match) ? null : h.candidateFromOrders(match.message, match.orders, result.senders)).filter(Boolean));
       abort.signal.throwIfAborted();
       rows = h.mergeLeads(rows, candidates); saveSettings(); save(); await render();
       message('Searched ' + result.messages.length + ' emails. ' + (scan ? 'Checked ' + scan.checkedPdfs + ' PDF attachments; ' + scan.errors.length + ' could not be read. ' : '') +
@@ -197,10 +189,10 @@
     if (file.size > 20 * 1024 * 1024) { message('Choose a PDF no larger than 20 MB.', true); return; }
     setBusy(true); abort = new AbortController();
     try {
-      var pdf = await import('./pdf-orders.mjs?v=ignore-license-increases-20261013'), h = await helpers;
+      var pdf = await import('./pdf-orders.mjs?v=pdf-client-name-20261013'), h = await helpers;
       var order = await pdf.readOrderPdf(new Uint8Array(await file.arrayBuffer()), { name: file.name, signal: abort.signal, onProgress: text => message(text) });
       abort.signal.throwIfAborted();
-      var combined = (await import('./software-orders.mjs?v=ignore-license-increases-20261013')).mergeOrders(row.orders || [], [order]);
+      var combined = (await import('./software-orders.mjs?v=pdf-client-name-20261013')).mergeOrders(row.orders || [], [order]);
       if (onlyAdditionalOrders({ orders: combined })) {
         rows.splice(index, 1); save(); await render(); message('Additional Payroll Licenses order ignored.'); return;
       }
