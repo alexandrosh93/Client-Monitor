@@ -831,6 +831,10 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     <span class="smenu-label">All Clients</span>
   </button>
+  <button class="smenu-item" onclick="goMyClients();closeSideMenuAfterAction()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+    <span class="smenu-label">My Clients</span>
+  </button>
 
   <!-- SECTION: Work -->
   <div class="smenu-section" style="padding:.7rem 1rem .25rem;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)">Work</div>
@@ -1386,6 +1390,17 @@ let syncTimer=null;
 let lastGistUpdate=null;
 let autoRefreshInterval=null;
 let pollBusy=false;
+
+function identityKey(value){
+  return String(value||'').trim().toLocaleLowerCase().replace(/\s+/g,' ');
+}
+function getLoggedInImplementor(){
+  const mappedName=implDisplayNames[identityKey(currentUser)]||'';
+  const fullName=currentFullName||mappedName;
+  const aliases=[currentUser,fullName,mappedName,String(fullName||'').trim().split(/\s+/)[0]]
+    .map(identityKey).filter(Boolean);
+  return implementors.find(name=>aliases.includes(identityKey(name)))||'';
+}
 
 /* ── USERS handled by Supabase Auth ── */
 
@@ -2734,7 +2749,7 @@ function openAdd(){
   document.getElementById('m-status').value='Active';
   const ld=document.getElementById('m-livedate');if(ld)ld.value='';
   const mImpl=document.getElementById('m-impl');
-  const defImpl=[...implementors].find(i=>i.toLowerCase()===currentUser.toLowerCase())||'';
+  const defImpl=getLoggedInImplementor();
   if(mImpl)mImpl.innerHTML=implOptions(defImpl);
   // populate module checkboxes dynamically
   const mc=document.getElementById('mods-check');
@@ -3120,6 +3135,14 @@ function goClients(opts={}){
   // scroll top
   window.scrollTo({top:0,behavior:'smooth'});
 }
+function goMyClients(){
+  const implementor=getLoggedInImplementor();
+  if(!implementor){
+    toast(`No implementor is linked to ${currentFullName||currentUser}.`);
+    return;
+  }
+  goClients({impl:implementor});
+}
 function goToClient(id){
   if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();
   const c=clients.find(x=>x.id===id);if(!c)return;
@@ -3166,10 +3189,11 @@ function renderHomeDashboard(){
   const statusData=statusDef.map(s=>({...s,n:clients.filter(c=>c.status===s.key).length})).filter(s=>s.n>0);
 
   // implementors
+  const loggedInImplementor=getLoggedInImplementor();
   const implData=implementors.map(name=>{
     const mine=clients.filter(c=>c.implementor===name);
     const overdue=mine.filter(c=>(!c.vatDone&&c.vatDate&&c.vatDate<todayISO)||(!c.stkDone&&c.stkDate&&c.stkDate<todayISO)).length;
-    const isMe=name.toLowerCase()===currentUser.toLowerCase();
+    const isMe=identityKey(name)===identityKey(loggedInImplementor);
     return {name,count:mine.length,overdue,isMe};
   }).sort((a,b)=>b.count-a.count);
   const unassigned=clients.filter(c=>!c.implementor).length;
