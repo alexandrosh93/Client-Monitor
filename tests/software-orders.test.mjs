@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseSoftwareOrder, validateOrder, isPdfAttachment } from '../software-orders.mjs';
+import { parseSoftwareOrder, validateOrder, isPdfAttachment, isOwnCompanyName } from '../software-orders.mjs';
 import { candidateFromOrders, mergeLeads } from '../email-leads.mjs';
 const form = `A.V. PremierSoft Ltd
 Email: supplier@example.com
@@ -31,6 +31,16 @@ test('extracts licensee rather than supplier; preserves license and fee distinct
   assert.equal(o.license_cost,4000);assert.equal(o.total_amount,4760);assert.equal(o.fees.length,2);
   assert.ok(!o.address.includes('Date'));assert.equal(parseSoftwareOrder([form.replace('Telephone: 25000000','Telephone:')],{name:'blank.pdf'}).phone,'');
   assert.ok(!JSON.stringify(o).includes('confidential'));assert.ok(!o.signature_status.includes('Signed'));
+});
+test('never treats PremierSoft as the client and finds the actual Licensee name',()=>{
+  assert.equal(isOwnCompanyName('A.V. PREMIERSOFT LTD'),true);
+  assert.equal(isOwnCompanyName('PremierSoft Limited'),true);
+  const repeated=form.replace('Licensee\nExample Client Ltd', 'Licensee\nA.V. PREMIERSOFT LTD\nExample Client Ltd');
+  assert.equal(parseSoftwareOrder([repeated],{name:'order.pdf'}).company_name,'Example Client Ltd');
+  const ownOnly=parseSoftwareOrder([form.replace('Example Client Ltd','A.V. PREMIERSOFT LTD')],{name:'order.pdf'});
+  assert.equal(ownOnly.company_name,'');
+  const message={from:{emailAddress:{address:'sender@example.com'}},subject:'A.V. PREMIERSOFT LTD Software Order',receivedDateTime:'2026-10-12T00:00:00Z',webLink:'https://outlook.office.com/mail/id/example'};
+  assert.equal(candidateFromOrders(message,[ownOnly],['sender@example.com']),null);
 });
 test('proposal filenames and invoices do not establish a Software Order',()=>{
   for(const body of ['Software Proposal\nExample Ltd\nTotal 1,000.00','Invoice\nORD2600123']) assert.equal(parseSoftwareOrder([body],{name:'Software Order.pdf'}).kind,'not_order');

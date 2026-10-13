@@ -14,6 +14,25 @@ export function isPdfAttachment(a) {
 export function isAdditionalLicenseRequest(value) {
   return /\b(?:additional(?:\s+[a-z-]+){0,3}\s+licen[cs]es?|increase\s+(?:user\s+)?licen[cs]es?(?:\s+to)?|upgrade(?:\s+.*)?\s+licen[cs]es?|\d+(?:st|nd|rd|th)\s+licen[cs]e)\b|επιπλ[εέ]ον|αναβ[αά]θμι/i.test(text(value, 30000));
 }
+export function isOwnCompanyName(value) {
+  const normalized = text(value, 500).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  return /^(?:a\s*v\s+)?premiersoft(?:\s+(?:ltd|limited))?$/.test(normalized);
+}
+function licenseeCompany(lines) {
+  const at = lines.findIndex(line => /\blicensee\b/i.test(line));
+  if (at < 0) return { at, company: '' };
+  const candidates = [];
+  const inline = lines[at].replace(/^.*?\blicensee\b\s*:*/i, '').trim();
+  if (inline) candidates.push(inline);
+  candidates.push(...lines.slice(at + 1, at + 6));
+  for (const candidate of candidates) {
+    if (/\|\s*(?:date|client\s+no\.?|vat\s+no\.?)\b/i.test(candidate)) continue;
+    const company = candidate.split(/\s*\|\s*|\bOrder\s+No\.?|\bORD\d+\b/i)[0].replace(/^[-:]+|[-:,]+$/g, '').trim();
+    if (!company || isOwnCompanyName(company) || /^(?:date|client\s+no|vat\s+no|telephone|email|contact|products?\s+description)\b/i.test(company)) continue;
+    return { at, company };
+  }
+  return { at, company: '' };
+}
 export function itemsToLines(items) {
   const rows = [];
   for (const item of items) {
@@ -43,9 +62,7 @@ export function parseSoftwareOrder(pages, meta = {}) {
   // Use the commercial form, excluding supplier bank details and contract boilerplate.
   const body = source.text.split(/software\s+order\s*(?:form)?/i).slice(1).join(' ').split(/I,?\s+the\s+undersigned|Bank\s+Details|For\s+A\.?V/i)[0];
   const lines = body.split(/\n/).map(x => x.trim()).filter(Boolean);
-  const at = lines.findIndex(line => /^Licensee\b/i.test(line));
-  const licensee = at >= 0 ? lines[at].replace(/^Licensee\s*:*/i, '').trim() || lines[at + 1] || '' : '';
-  const company = licensee.split(/\s*\|\s*|\bORD\d+\b|Order\s+No\.?/i)[0].trim();
+  const { at, company } = licenseeCompany(lines);
   const header = body.split(/Products\s+Description/i)[0];
   function field(label) {
     const match = header.match(new RegExp('(?:^|\\n)' + label + '[ \\t:|]*([^\\n]*)', 'i'));
@@ -77,7 +94,7 @@ export function parseSoftwareOrder(pages, meta = {}) {
     license_cost: labelledAmount('License Cost'), total_amount: labelledAmount('TOTAL AMOUNT'),
     currency: 'EUR', fees, payment_terms: paymentTerms, additional_licenses: additional,
     evidence: [{ page: source.page, text: text(body.replace(/\s*\|\s*/g, ' ').replace(/ {2,}/g, ' '), 2200) }] };
-  if (!company) result.issues.push('Company name could not be extracted.');
+  if (!company) result.issues.push('A client company name could not be extracted from the Licensee field.');
   if (!orderNumber) result.issues.push('Order number could not be extracted.');
   if (!products.length) result.issues.push('Review the products and licenses in the PDF.');
   if (result.total_amount === null) result.issues.push('Total amount could not be extracted.');
@@ -91,6 +108,7 @@ export function validateOrder(value) {
     signature_status: 'Review the client signature in the original PDF', total_pages: Math.max(0, Math.min(1000, Number(value.total_pages) || 0)),
     pages_read: Math.max(0, Math.min(20, Number(value.pages_read) || 0)), issues: (Array.isArray(value.issues) ? value.issues : []).slice(0,10).map(x => text(x,400)) };
   for (const key of ['company_name','order_number','order_date','client_number','contact','phone','email','address','payment_terms']) result[key] = text(value[key], key === 'address' ? 600 : 400);
+  if (isOwnCompanyName(result.company_name)) result.company_name = '';
   for (const key of ['license_cost','total_amount']) result[key] = typeof value[key] === 'number' && Number.isFinite(value[key]) && value[key] >= 0 ? value[key] : null;
   result.currency = 'EUR'; result.additional_licenses = value.additional_licenses === true;
   result.products = (Array.isArray(value.products) ? value.products : []).slice(0,30).map(p => ({ description:text(p?.description,250),license:text(p?.license,80),amount:typeof p?.amount === 'number' && Number.isFinite(p.amount) && p.amount >= 0 ? p.amount : null }));
