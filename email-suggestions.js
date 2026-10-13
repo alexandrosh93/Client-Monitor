@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var helpers = import('./email-leads.mjs?v=manager-two-column-20261013');
+  var helpers = import('./email-leads.mjs?v=ignore-license-increases-20261013');
   var outlook;
   var rows = [], ignored = new Set(), owner = '', mailbox = '', busy = false, abort;
   var root = document.getElementById('ai-email-workspace');
@@ -120,7 +120,7 @@
     setBusy(true); message('Opening Microsoft sign-in…');
     mailbox = ''; connectionText();
     try {
-      outlook = await import('./outlook-client.mjs?v=orders-1');
+      outlook = await import('./outlook-client.mjs?v=ignore-license-increases-20261013');
       await outlook.initialize(config());
       mailbox = await outlook.connect();
       saveSettings(); connectionText(); message('Connected. Choose the senders and date, then search Outlook.');
@@ -150,7 +150,7 @@
       var candidates = result.messages.map(m => h.candidateFromMessage(m, result.senders)).filter(Boolean);
       var scan;
       if (document.getElementById('email-read-orders').checked) {
-        var pdf = await import('./pdf-orders.mjs');
+        var pdf = await import('./pdf-orders.mjs?v=ignore-license-increases-20261013');
         scan = await outlook.scanOrderAttachments(result.messages, { signal: abort.signal, readPdf: pdf.readOrderPdf, onProgress: text => message(text) });
         candidates.push(...scan.matches.map(match => {
           if (onlyAdditionalOrders(match)) return null;
@@ -197,10 +197,10 @@
     if (file.size > 20 * 1024 * 1024) { message('Choose a PDF no larger than 20 MB.', true); return; }
     setBusy(true); abort = new AbortController();
     try {
-      var pdf = await import('./pdf-orders.mjs'), h = await helpers;
+      var pdf = await import('./pdf-orders.mjs?v=ignore-license-increases-20261013'), h = await helpers;
       var order = await pdf.readOrderPdf(new Uint8Array(await file.arrayBuffer()), { name: file.name, signal: abort.signal, onProgress: text => message(text) });
       abort.signal.throwIfAborted();
-      var combined = (await import('./software-orders.mjs')).mergeOrders(row.orders || [], [order]);
+      var combined = (await import('./software-orders.mjs?v=ignore-license-increases-20261013')).mergeOrders(row.orders || [], [order]);
       if (onlyAdditionalOrders({ orders: combined })) {
         rows.splice(index, 1); save(); await render(); message('Additional Payroll Licenses order ignored.'); return;
       }
