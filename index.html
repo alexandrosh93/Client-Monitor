@@ -3539,6 +3539,16 @@ function exportExcel(){
 /* ── USERS PANEL ── */
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 let _umUsers=[];
+async function umAdmin(action,payload={}){
+  const {data,error}=await sb.functions.invoke('admin-users',{body:{action,...payload}});
+  if(error){
+    let message=error.message||'User management failed.';
+    try{const body=await error.context.json();if(body&&body.error)message=body.error;}catch(e){}
+    throw new Error(message);
+  }
+  if(data&&data.error)throw new Error(data.error);
+  return data||{};
+}
 async function openUsersPanel(){
   document.getElementById('users-modal').classList.add('open');
   umShowList();
@@ -3547,9 +3557,10 @@ async function openUsersPanel(){
 async function umLoadUsers(){
   const tbl=document.getElementById('um-user-table');
   tbl.innerHTML='<div style="font-size:12px;color:var(--text-3);padding:.5rem 0">Loading…</div>';
-  const {data,error}=await sb.rpc('admin_list_users');
-  if(error){tbl.innerHTML=`<div style="font-size:12px;color:#a32d2d">Error: ${esc(error.message)}<br><small>Make sure you ran the admin SQL functions in Supabase.</small></div>`;return;}
-  _umUsers=data||[];
+  try{
+    const data=await umAdmin('list');
+    _umUsers=data.users||[];
+  }catch(error){tbl.innerHTML=`<div style="font-size:12px;color:#a32d2d">Error: ${esc(error.message)}</div>`;return;}
   umRenderTable();
 }
 function umRenderTable(){
@@ -3635,8 +3646,8 @@ async function umCreateUser(){
   if(!/^[a-zA-Z0-9._@-]+$/.test(username)){err.textContent='Username can only contain letters, numbers, . _ @ -';return;}
   if(pass.length<6){err.textContent='Password must be at least 6 characters.';return;}
   err.textContent='Creating…';
-  const {error}=await sb.rpc('admin_create_user',{p_login:username,p_password:pass,p_username:username,p_full_name:fullname,p_role:role});
-  if(error){err.textContent='Error: '+error.message;return;}
+  try{await umAdmin('create',{username,full_name:fullname,password:pass,role});}
+  catch(error){err.textContent='Error: '+error.message;return;}
   audit('Users',currentUser,'Created user: '+username);
   toast('User created.');
   umShowList();
@@ -3655,13 +3666,9 @@ async function umSaveEdit(){
   // Email: use explicit value if given, otherwise auto-generate from username
   const newEmail=emailRaw?emailRaw.toLowerCase():username.toLowerCase()+'@avps.local';
   err.textContent='Saving…';
-  const {error}=await sb.rpc('admin_update_user',{p_user_id:id,p_username:username,p_full_name:fullname,p_role:role,p_new_email:newEmail});
-  if(error){err.textContent='Error: '+error.message;return;}
-  if(pass){
-    if(pass.length<6){err.textContent='Saved but password must be 6+ characters.';return;}
-    const {error:pe}=await sb.rpc('admin_set_password',{p_user_id:id,p_password:pass});
-    if(pe){err.textContent='Saved, password error: '+pe.message;return;}
-  }
+  if(pass&&pass.length<6){err.textContent='Password must be at least 6 characters.';return;}
+  try{await umAdmin('update',{user_id:id,username,full_name:fullname,email:newEmail,role,password:pass});}
+  catch(error){err.textContent='Error: '+error.message;return;}
   audit('Users',currentUser,'Updated user: '+username);
   toast('User updated.');
   umShowList();
@@ -3669,8 +3676,8 @@ async function umSaveEdit(){
 }
 async function umDelete(userId,username){
   if(!confirm(`Delete user "${username}"? This cannot be undone.`))return;
-  const {error}=await sb.rpc('admin_delete_user',{p_user_id:userId});
-  if(error){toast('Error: '+error.message);return;}
+  try{await umAdmin('delete',{user_id:userId});}
+  catch(error){toast('Error: '+error.message);return;}
   audit('Users',currentUser,'Deleted user: '+username);
   toast('User deleted.');
   await umLoadUsers();
