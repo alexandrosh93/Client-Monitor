@@ -21,6 +21,7 @@
 <title>Client Monitor — A.V.PremierSoft</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erp-discovery.css?v=erp-workspace-20261013">
 <style>
 :root{
   --bg:#f4f6fb;
@@ -1106,6 +1107,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 </div>
 
 <main>
+  <div id="client-workspace"></div>
   <div id="home-view"></div>
   <div class="control-bar no-print">
     <!-- STAT PILLS -->
@@ -2263,7 +2265,10 @@ function buildRow(c){
           >
           <span id="prog-lbl-${c.id}" style="font-size:13px;font-weight:700;color:${prog.color};min-width:36px">${prog.pct}%</span>
         </div>
-        <button class="btn-del-sm" onclick="delClient(${c.id})">Delete client</button>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+          <button class="btn-primary" onclick="event.stopPropagation();openClientWorkspace(${c.id})">Open Client Workspace</button>
+          <button class="btn-del-sm" onclick="delClient(${c.id})">Delete client</button>
+        </div>
       </div>
     </div>
   </div>`;
@@ -3050,6 +3055,7 @@ function wlTipShow(text,e){const t=document.getElementById('wl-tip');if(!t)retur
 function wlTipMove(e){const t=document.getElementById('wl-tip');if(!t)return;t.style.left=(e.clientX+14)+'px';t.style.top=(e.clientY-36)+'px';}
 function wlTipHide(){const t=document.getElementById('wl-tip');if(t)t.classList.remove('show');}
 function setView(v){
+  if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();
   currentView=v;
   // leaving the home (login) dashboard
   const home=document.getElementById('home-view');
@@ -3068,6 +3074,7 @@ function setView(v){
 
 /* ── HOME VIEW ── */
 function goHome(){
+  if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();
   document.getElementById('home-view').classList.add('active');
   document.querySelector('.control-bar').style.display='none';
   document.getElementById('list').style.display='none';
@@ -3078,6 +3085,7 @@ function goHome(){
   renderHomeDashboard();
 }
 function goClients(opts={}){
+  if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();
   document.getElementById('home-view').classList.remove('active');
   document.querySelector('.control-bar').style.display='';
   selStatuses.clear(); selImpls.clear(); selMgr=''; selCity='';
@@ -3091,6 +3099,7 @@ function goClients(opts={}){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function goToClient(id){
+  if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();
   const c=clients.find(x=>x.id===id);if(!c)return;
   document.getElementById('home-view').classList.remove('active');
   document.querySelector('.control-bar').style.display='';
@@ -3878,6 +3887,15 @@ document.addEventListener('keydown',e=>{
 updateSFUI();updateFIUI();updateFMUI();
 
 buildVatBanner();buildStkBanner();
+window.clientMonitorApi={
+  getSupabase:()=>sb,
+  getClients:()=>clients,
+  getCurrentUser:()=>currentUser,
+  goClients,
+  goToClient,
+  toast,
+  audit
+};
 // Handle password reset redirect (Supabase adds token to URL hash)
 sb.auth.onAuthStateChange(async(event,session)=>{
   if(event==='PASSWORD_RECOVERY'&&session){
@@ -3896,5 +3914,6 @@ sb.auth.onAuthStateChange(async(event,session)=>{
 <script src="ai-suggestions.js?v=orders-20261012" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
 <script src="email-suggestions.js?v=orders-20261012" defer></script>
+<script type="module" src="erp-discovery.js?v=erp-workspace-20261013"></script>
 </body>
 </html>
