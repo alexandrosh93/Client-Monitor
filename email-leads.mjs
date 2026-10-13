@@ -37,7 +37,7 @@ export function validateLead(row) {
     source_sender: sender[0], source_url: sourceUrl,
     evidence_scope: cleanText(row.evidence_scope, 400) || 'Email subject and preview only. Confirm against the source.',
     confirmed_new_client: false,
-    orders: (Array.isArray(row.orders) ? row.orders : []).slice(0,10).map(validateOrder).filter(Boolean),
+    orders: (Array.isArray(row.orders) ? row.orders : []).slice(0,10).map(validateOrder).filter(order => order && !(order.kind === 'software_order' && order.additional_licenses)),
   };
   return result.client_name && result.source_subject && result.reason ? result : null;
 }
@@ -61,20 +61,19 @@ export function mergeLeads(current, incoming) {
 export function candidateFromOrders(message, orders, allowedSenders) {
   const sender = String(message.from?.emailAddress?.address || '').toLowerCase();
   if (!allowedSenders.includes(sender)) return null;
-  const found = orders.filter(o => o.kind === 'software_order');
+  const found = orders.filter(o => o.kind === 'software_order' && !o.additional_licenses);
   const review = orders.filter(o => o.kind === 'needs_review');
   if (!found.length && !review.length) return null;
   const names = [...new Set(found.map(o => o.company_name).filter(Boolean))];
-  const additional = found.length && found.every(o => o.additional_licenses);
   return validateLead({
     client_name: names.length === 1 ? names[0] : cleanText(message.subject) || 'Software Order PDF — confirm company',
-    classification: additional ? 'Additional licenses — existing client work' : found.length ? 'Software Order — review onboarding' : 'PDF needs manual review',
+    classification: found.length ? 'Software Order — review onboarding' : 'PDF needs manual review',
     reason: found.length ? 'The attached Software Order identifies ' + (names.join(', ') || 'a company to confirm') + '. Review the order and client record before saving.' : 'A PDF attachment could not be read. Open the source and check the order.',
-    next_action: additional ? 'Review the existing client and arrange the license upgrade.' : 'Confirm the company, products, client signature and implementation arrangements.',
+    next_action: 'Confirm the company, products, client signature and implementation arrangements.',
     source_subject: cleanText(message.subject) || '(No subject)', source_date: message.receivedDateTime,
     source_sender: sender, source_url: message.webLink,
     evidence_scope: 'PDF extraction' + (found.some(o => o.extraction === 'ocr') ? ' including OCR' : '') + '. Verify the original; the client signature is not confirmed.',
-    orders,
+    orders: orders.filter(o => o.kind !== 'software_order' || !o.additional_licenses),
   });
 }
 export function candidateFromMessage(message, allowedSenders) {
