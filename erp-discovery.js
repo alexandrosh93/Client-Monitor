@@ -17,6 +17,7 @@ let saveTimer = null;
 let saveInFlight = false;
 let saveQueued = false;
 let changeVersion = 0;
+let expandedNavGroup = 'workspace';
 
 const api = () => window.clientMonitorApi;
 const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
@@ -51,18 +52,29 @@ function hideStandardViews() {
 function sectionGroups() {
   const normal = catalog.sections.filter(section => !['training'].includes(section.id));
   return [
-    { title: 'Workspace', items: [{ id: 'overview', title: 'Overview' }, { id: 'users', title: 'Client Users' }, { id: 'training-roles', title: 'Training Roles' }, { id: 'requirements', title: 'Requirements' }] },
-    { title: 'Discovery & Readiness', items: normal.map(section => ({ id: section.id, title: section.title })) },
-    { title: 'Training', items: [{ id: 'training', title: 'Training Stages' }] },
-    { title: 'Stock Modules', items: catalog.moduleSections.filter(section => section.group === 'stock').map(section => ({ id: `module:${section.id}`, title: section.title })) },
-    { title: 'Accounting Modules', items: catalog.moduleSections.filter(section => section.group === 'accounting').map(section => ({ id: `module:${section.id}`, title: section.title })) },
+    { id: 'workspace', title: 'Workspace', items: [{ id: 'overview', title: 'Overview' }, { id: 'users', title: 'Client Users' }, { id: 'training-roles', title: 'Training Roles' }, { id: 'requirements', title: 'Requirements' }] },
+    { id: 'discovery', title: 'Discovery & Readiness', items: normal.map(section => ({ id: section.id, title: section.title })) },
+    { id: 'training', title: 'Training', items: [{ id: 'training', title: 'Training Stages' }] },
+    { id: 'stock', title: 'Stock Modules', items: catalog.moduleSections.filter(section => section.group === 'stock').map(section => ({ id: `module:${section.id}`, title: section.title })) },
+    { id: 'accounting', title: 'Accounting Modules', items: catalog.moduleSections.filter(section => section.group === 'accounting').map(section => ({ id: `module:${section.id}`, title: section.title })) },
   ];
 }
 
 function renderShell() {
   if (!client) return;
   const moduleBadges = (client.modules || []).map(item => `<span class="erp-badge">${esc(item)}</span>`).join('');
-  const nav = sectionGroups().map(group => `<div class="erp-nav-group">${esc(group.title)}</div>${group.items.map(item => `<button class="erp-nav${activeSection === item.id ? ' active' : ''}" data-erp-nav="${attr(item.id)}">${esc(item.title)}</button>`).join('')}`).join('');
+  const nav = sectionGroups().map(group => {
+    const open = expandedNavGroup === group.id;
+    const hasActive = group.items.some(item => item.id === activeSection);
+    return `<section class="erp-nav-section${hasActive ? ' has-active' : ''}">
+      <button class="erp-nav-group" data-erp-group="${attr(group.id)}" aria-expanded="${open}">
+        <span>${esc(group.title)}</span><span class="erp-nav-count">${group.items.length}</span><span class="erp-nav-chevron">›</span>
+      </button>
+      <div class="erp-nav-items" data-erp-group-items="${attr(group.id)}"${open ? '' : ' hidden'}>
+        ${group.items.map(item => `<button class="erp-nav${activeSection === item.id ? ' active' : ''}" data-erp-nav="${attr(item.id)}" data-erp-nav-group="${attr(group.id)}">${esc(item.title)}</button>`).join('')}
+      </div>
+    </section>`;
+  }).join('');
   root.innerHTML = `<div class="erp-shell">
     <section class="erp-top">
       <div class="erp-topline">
@@ -226,7 +238,12 @@ function bindContent() {
 
 function bindShell() {
   root.querySelector('[data-erp-back]')?.addEventListener('click', backToClients);
-  root.querySelectorAll('[data-erp-nav]').forEach(button => button.addEventListener('click', () => { activeSection = button.dataset.erpNav; renderShell(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+  root.querySelectorAll('[data-erp-group]').forEach(button => button.addEventListener('click', () => {
+    expandedNavGroup = expandedNavGroup === button.dataset.erpGroup ? '' : button.dataset.erpGroup;
+    root.querySelectorAll('[data-erp-group]').forEach(groupButton => groupButton.setAttribute('aria-expanded', String(groupButton.dataset.erpGroup === expandedNavGroup)));
+    root.querySelectorAll('[data-erp-group-items]').forEach(items => { items.hidden = items.dataset.erpGroupItems !== expandedNavGroup; });
+  }));
+  root.querySelectorAll('[data-erp-nav]').forEach(button => button.addEventListener('click', () => { activeSection = button.dataset.erpNav; expandedNavGroup = button.dataset.erpNavGroup; renderShell(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
   root.querySelector('[data-project-print]')?.addEventListener('click', () => window.print());
 }
 
@@ -321,7 +338,7 @@ window.closeClientWorkspaceView = function closeClientWorkspaceView() {
 window.openClientWorkspace = async function openClientWorkspace(clientId) {
   const found = api()?.getClients().find(item => Number(item.id) === Number(clientId));
   if (!found) { api()?.toast('Client not found.'); return; }
-  client = found; project = null; documentState = blankProjectDocument(); activeSection = 'overview'; dirty = false; changeVersion = 0;
+  client = found; project = null; documentState = blankProjectDocument(); activeSection = 'overview'; expandedNavGroup = 'workspace'; dirty = false; changeVersion = 0;
   hideStandardViews(); root.style.display = 'block'; root.classList.add('active'); root.innerHTML = '<div class="erp-empty">Loading client workspace…</div>'; window.scrollTo({ top: 0 });
   await loadProject();
 };
