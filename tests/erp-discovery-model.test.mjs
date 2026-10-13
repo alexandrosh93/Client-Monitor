@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeProjectProgress, computeTrainingProgress, normalizeProjectDocument, validateErpDiscoveryImport } from '../erp-discovery-model.mjs';
+import { computeProjectProgress, computeTrainingProgress, normalizeClientEmail, normalizeProjectDocument, validateErpDiscoveryImport } from '../erp-discovery-model.mjs';
 
 const catalog = {
   sections: [
@@ -50,4 +50,13 @@ test('imports known .erpdisc schema without trusting arbitrary fields', () => {
 
 test('rejects unrelated JSON files', () => {
   assert.throws(() => validateErpDiscoveryImport({ hello: 'world' }), /not a valid ERP Discovery/i);
+});
+
+test('normalizes a valid client email for autosave and compose', () => {
+  assert.equal(normalizeClientEmail('  Client.Contact@Example.COM  '), 'client.contact@example.com');
+  assert.equal(normalizeProjectDocument({ clientEmail: 'client@example.com' }).clientEmail, 'client@example.com');
+});
+
+test('rejects an invalid client email before opening the mail app', () => {
+  assert.equal(normalizeClientEmail('not-an-email'), '');
 });

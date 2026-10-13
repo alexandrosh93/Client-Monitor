@@ -34,6 +34,7 @@ function cleanFieldChanges(value) {
 
 export function blankProjectDocument() {
   return {
+    clientEmail: '',
     answers: {},
     checks: {},
     notes: {},
@@ -83,6 +84,7 @@ export function normalizeProjectDocument(raw) {
 
   return {
     ...base,
+    clientEmail: text(input.clientEmail, 320).trim(),
     answers: cleanTextMap(input.answers),
     checks: Object.fromEntries(Object.entries(record(input.checks)).slice(0, MAX_COLLECTION).filter(([key]) => /^[a-z0-9_.-]{1,80}$/i.test(key)).map(([key, value]) => [key, Boolean(value)])),
     notes: cleanTextMap(input.notes),
@@ -123,6 +125,11 @@ export function normalizeProjectDocument(raw) {
     }),
     fieldChanges: cleanFieldChanges(input.fieldChanges),
   };
+}
+
+export function normalizeClientEmail(value) {
+  const email = text(value, 320).trim().toLowerCase();
+  return /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/.test(email) ? email : '';
 }
 
 export function validateErpDiscoveryImport(raw) {

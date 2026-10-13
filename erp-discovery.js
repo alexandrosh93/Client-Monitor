@@ -1,5 +1,5 @@
 import { ERP_DISCOVERY_CATALOG as catalog } from './erp-discovery-catalog.mjs';
-import { blankProjectDocument, computeProjectProgress, normalizeProjectDocument } from './erp-discovery-model.mjs';
+import { blankProjectDocument, computeProjectProgress, normalizeClientEmail, normalizeProjectDocument } from './erp-discovery-model.mjs';
 
 const MODULE_STATUSES = ['Not started', 'Needs setup', 'Needs training', 'In progress', 'Completed', 'Not applicable'];
 const PHASES = ['During Implementation', 'During Support'];
@@ -22,6 +22,54 @@ const api = () => window.clientMonitorApi;
 const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
 const attr = esc;
 const options = (items, selected) => items.map(item => `<option${item === selected ? ' selected' : ''}>${esc(item)}</option>`).join('');
+
+function currentReportTitle() {
+  if (activeSection === 'overview') return 'ERP Project Overview';
+  if (activeSection === 'users') return 'Client Users';
+  if (activeSection === 'training-roles') return '9. Training Topics ανά Ρόλο';
+  if (activeSection === 'requirements') return '11. Requirements / Decisions Log';
+  if (activeSection.startsWith('module:')) return catalog.moduleSections.find(item => item.id === activeSection.slice(7))?.title || 'ERP Module Report';
+  return catalog.sections.find(item => item.id === activeSection)?.title || 'ERP Report';
+}
+
+function currentReportText() {
+  const title = currentReportTitle();
+  const lines = [client.name, title, `Consultant: ${project.consultant || client.implementor || 'Unassigned'}`, `Phase: ${project.phase || PHASES[0]}`, ''];
+  if (activeSection === 'overview') {
+    const progress = computeProjectProgress(documentState, catalog);
+    lines.push(`Implementation progress: ${Number(client.progress || 0)}%`, `Discovery completion: ${progress.percent}% (${progress.complete}/${progress.total})`, `Open requirements: ${documentState.requirements.filter(item => !['Done', 'Accepted'].includes(item.status)).length}`, `Live date: ${client.liveDate || 'Not set'}`);
+  } else if (activeSection === 'users') {
+    documentState.users.forEach((item, index) => lines.push(`${index + 1}. ${item.name || 'Unnamed'} — ${item.position || 'No position'}`));
+  } else if (activeSection === 'training-roles') {
+    documentState.trainingRoles.forEach((item, index) => lines.push(`${index + 1}. ${item.role || 'Unnamed role'} | Tasks: ${item.tasks || '-'} | Level: ${item.level || '-'} | Training: ${item.training || '-'} | Super user: ${item.superUser || 'No'}`));
+  } else if (activeSection === 'requirements') {
+    documentState.requirements.forEach(item => lines.push(`${item.id || '-'} | ${item.topic || 'No topic'} | ${item.type || '-'} | ${item.priority || '-'} | Owner: ${item.owner || '-'} | ${item.status || '-'}`));
+  } else if (activeSection.startsWith('module:')) {
+    const section = catalog.moduleSections.find(item => item.id === activeSection.slice(7));
+    section?.items.forEach((item, index) => {
+      const value = documentState.moduleData[item.id] || {};
+      lines.push(`${index + 1}. ${item.text} | ${value.status || (value.checked ? 'Completed' : 'Not started')}${value.date ? ` | ${value.date}` : ''}${value.note ? ` | Notes: ${value.note}` : ''}${value.action ? ` | Next: ${value.action}` : ''}`);
+    });
+  } else {
+    const section = catalog.sections.find(item => item.id === activeSection);
+    section?.questions.forEach((item, index) => {
+      if (section.checklist) lines.push(`${index + 1}. ${item.text} | ${documentState.checks[item.id] ? 'Completed' : 'Not completed'}${documentState.notes[item.id] ? ` | Notes: ${documentState.notes[item.id]}` : ''}`);
+      else lines.push(`${index + 1}. ${item.text}\n${documentState.answers[item.id] || 'Not answered'}`);
+    });
+  }
+  lines.push('', `Generated from Client Monitor · ${new Date().toLocaleString('en-GB')}`);
+  const report = lines.join('\n');
+  return report.length > 7000 ? `${report.slice(0, 6800)}\n\n[Report shortened for email. Use Print / PDF for the complete report.]` : report;
+}
+
+function emailCurrentReport() {
+  const email = normalizeClientEmail(documentState.clientEmail);
+  if (!email) { api().toast('Enter a valid client email first.'); return; }
+  const recipient = encodeURIComponent(email).replace(/%40/gi, '@');
+  const subject = encodeURIComponent(`${client.name} — ${currentReportTitle()}`);
+  const body = encodeURIComponent(currentReportText());
+  window.location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
+}
 
 function setDirty(value = true) {
   dirty = value;
@@ -90,6 +138,8 @@ function renderShell() {
         </div>
       </div>
       <div class="erp-projectbar">
+        <input class="erp-email-input" type="email" data-client-email value="${attr(documentState.clientEmail || '')}" placeholder="Client email" aria-label="Client email">
+        <button class="erp-btn on-dark" data-email-report ${normalizeClientEmail(documentState.clientEmail) ? '' : 'disabled'} title="Open this report in your default email app">Email this report</button>
         <button class="erp-btn on-dark" data-project-print ${project ? '' : 'disabled'}>Print / PDF</button>
         <span class="erp-save-state">${dirty ? '<span class="erp-dirty-dot"></span>Autosave pending…' : `Saved automatically${project?.updated_at ? ` · ${esc(new Date(project.updated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))}` : ''}`}</span>
       </div>
@@ -216,6 +266,18 @@ function bindShell() {
     root.querySelectorAll('[data-erp-group-items]').forEach(items => { items.hidden = items.dataset.erpGroupItems !== expandedNavGroup; });
   }));
   root.querySelectorAll('[data-erp-nav]').forEach(button => button.addEventListener('click', () => { activeSection = button.dataset.erpNav; expandedNavGroup = button.dataset.erpNavGroup; renderShell(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+  const emailInput = root.querySelector('[data-client-email]');
+  emailInput?.addEventListener('input', () => {
+    documentState.clientEmail = emailInput.value.trim();
+    const emailButton = root.querySelector('[data-email-report]');
+    if (emailButton) emailButton.disabled = !normalizeClientEmail(documentState.clientEmail);
+    setDirty();
+  });
+  emailInput?.addEventListener('blur', () => {
+    const normalized = normalizeClientEmail(emailInput.value);
+    if (normalized) { emailInput.value = normalized; documentState.clientEmail = normalized; }
+  });
+  root.querySelector('[data-email-report]')?.addEventListener('click', emailCurrentReport);
   root.querySelector('[data-project-print]')?.addEventListener('click', () => window.print());
 }
 
