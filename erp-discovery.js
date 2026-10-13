@@ -1,5 +1,5 @@
 import { ERP_DISCOVERY_CATALOG as catalog } from './erp-discovery-catalog.mjs';
-import { MODULE_STATUSES, blankProjectDocument, computeProjectProgress, normalizeProjectDocument } from './erp-discovery-model.mjs';
+import { MODULE_STATUSES, blankProjectDocument, computeProjectProgress, filterModuleItems, normalizeProjectDocument } from './erp-discovery-model.mjs';
 
 const PHASES = ['During Implementation', 'During Support'];
 const root = document.getElementById('client-workspace');
@@ -16,6 +16,7 @@ let saveInFlight = false;
 let saveQueued = false;
 let changeVersion = 0;
 let expandedNavGroup = 'workspace';
+let moduleViewFilter = '';
 const expandedModuleItems = new Set();
 
 const api = () => window.clientMonitorApi;
@@ -251,7 +252,8 @@ function renderRequirements() {
 function renderModule(section) {
   const selectedItems = section.items.filter(item => documentState.moduleData[item.id]?.checked);
   const statusCounts = Object.fromEntries(MODULE_STATUSES.map(status => [status, selectedItems.filter(item => (documentState.moduleData[item.id]?.status || 'Needs Training') === status).length]));
-  const rows = section.items.map(item => {
+  const visibleItems = filterModuleItems(section.items, documentState.moduleData, moduleViewFilter);
+  const rows = visibleItems.map(item => {
     const value = documentState.moduleData[item.id] || {};
     const open = expandedModuleItems.has(item.id);
     const included = Boolean(value.checked);
@@ -289,7 +291,10 @@ function renderModule(section) {
       </div>
     </section>`;
   }).join('');
-  return `<div class="erp-card erp-module-card"><div class="erp-actions erp-module-toolbar"><div><h2>${esc(section.title)}</h2><div class="erp-muted">Choose the screens required for this project, then track training separately.</div></div><div class="erp-module-toolbar-buttons"><button class="erp-btn" data-module-expand-all>Expand all</button><button class="erp-btn" data-module-collapse-all>Collapse all</button></div></div><div class="erp-module-overview"><div class="erp-module-total"><strong>${selectedItems.length}</strong><span>of ${section.items.length} screens in project</span></div>${MODULE_STATUSES.map(status => `<div class="erp-module-metric status-${status.toLowerCase().replace(/\s+/g, '-')}"><strong>${statusCounts[status]}</strong><span>${esc(status)}</span></div>`).join('')}</div><div class="erp-module-list">${rows}</div></div>`;
+  const activeLabel = moduleViewFilter === 'selected' ? 'Screens in project' : moduleViewFilter;
+  const filterNotice = moduleViewFilter ? `<div class="erp-module-filter-notice"><span>Showing: <strong>${esc(activeLabel)}</strong> · ${visibleItems.length} screen${visibleItems.length === 1 ? '' : 's'}</span><button type="button" data-module-clear-filter>Show all screens</button></div>` : '';
+  const empty = moduleViewFilter && !visibleItems.length ? `<div class="erp-empty erp-module-empty">No screens match ${esc(activeLabel)}.</div>` : '';
+  return `<div class="erp-card erp-module-card"><div class="erp-actions erp-module-toolbar"><div><h2>${esc(section.title)}</h2><div class="erp-muted">Choose the screens required for this project, then track training separately. Click a summary card to filter.</div></div><div class="erp-module-toolbar-buttons"><button class="erp-btn" data-module-expand-all>Expand all</button><button class="erp-btn" data-module-collapse-all>Collapse all</button></div></div><div class="erp-module-overview"><button type="button" class="erp-module-total${moduleViewFilter === 'selected' ? ' active' : ''}" data-module-filter="selected" aria-pressed="${moduleViewFilter === 'selected'}"><strong>${selectedItems.length}</strong><span>of ${section.items.length} screens in project</span></button>${MODULE_STATUSES.map(status => `<button type="button" class="erp-module-metric status-${status.toLowerCase().replace(/\s+/g, '-')}${moduleViewFilter === status ? ' active' : ''}" data-module-filter="${attr(status)}" aria-pressed="${moduleViewFilter === status}"><strong>${statusCounts[status]}</strong><span>${esc(status)}</span></button>`).join('')}</div>${filterNotice}<div class="erp-module-list">${rows}</div>${empty}</div>`;
 }
 
 function renderMain() {
@@ -346,6 +351,11 @@ function bindContent() {
     section?.items.forEach(item => expandedModuleItems.delete(item.id));
     renderMain();
   });
+  container.querySelectorAll('[data-module-filter]').forEach(button => button.addEventListener('click', () => {
+    moduleViewFilter = moduleViewFilter === button.dataset.moduleFilter ? '' : button.dataset.moduleFilter;
+    renderMain();
+  }));
+  container.querySelector('[data-module-clear-filter]')?.addEventListener('click', () => { moduleViewFilter = ''; renderMain(); });
   bindInputs('[data-project-field]', element => { project[element.dataset.projectField] = element.value; recordChange(`project.${element.dataset.projectField}`, `Project ${element.dataset.projectField}`, element.value); });
   bindInputs('[data-answer]', element => { documentState.answers[element.dataset.answer] = element.value; recordChange(`answer.${element.dataset.answer}`, `${questionLabels.get(element.dataset.answer) || element.dataset.answer} — Answer`, element.value); });
   bindInputs('[data-note]', element => { documentState.notes[element.dataset.note] = element.value; recordChange(`note.${element.dataset.note}`, `${questionLabels.get(element.dataset.note) || element.dataset.note} — Notes`, element.value); });
@@ -387,7 +397,7 @@ function bindShell() {
     root.querySelectorAll('[data-erp-group]').forEach(groupButton => groupButton.setAttribute('aria-expanded', String(groupButton.dataset.erpGroup === expandedNavGroup)));
     root.querySelectorAll('[data-erp-group-items]').forEach(items => { items.hidden = items.dataset.erpGroupItems !== expandedNavGroup; });
   }));
-  root.querySelectorAll('[data-erp-nav]').forEach(button => button.addEventListener('click', () => { activeSection = button.dataset.erpNav; expandedNavGroup = button.dataset.erpNavGroup; renderShell(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+  root.querySelectorAll('[data-erp-nav]').forEach(button => button.addEventListener('click', () => { activeSection = button.dataset.erpNav; expandedNavGroup = button.dataset.erpNavGroup; moduleViewFilter = ''; renderShell(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
   root.querySelector('[data-email-report]')?.addEventListener('click', prepareEmailReport);
   root.querySelector('[data-project-print]')?.addEventListener('click', printSelectedReport);
   ['email', 'print'].forEach(kind => root.querySelector(`[data-${kind}-scope]`)?.addEventListener('change', event => {
@@ -486,7 +496,7 @@ window.closeClientWorkspaceView = function closeClientWorkspaceView() {
 window.openClientWorkspace = async function openClientWorkspace(clientId) {
   const found = api()?.getClients().find(item => Number(item.id) === Number(clientId));
   if (!found) { api()?.toast('Client not found.'); return; }
-  client = found; project = null; documentState = blankProjectDocument(); activeSection = 'overview'; expandedNavGroup = 'workspace'; dirty = false; changeVersion = 0;
+  client = found; project = null; documentState = blankProjectDocument(); activeSection = 'overview'; expandedNavGroup = 'workspace'; moduleViewFilter = ''; dirty = false; changeVersion = 0;
   hideStandardViews(); root.style.display = 'block'; root.classList.add('active'); root.innerHTML = '<div class="erp-empty">Loading client workspace…</div>'; window.scrollTo({ top: 0 });
   await loadProject();
 };
