@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var helpers = import('./email-leads.mjs?v=client-review-accordion-20261013');
+  var helpers = import('./email-leads.mjs?v=compact-review-20261013');
   var outlook;
   var rows = [], ignored = new Set(), owner = '', mailbox = '', busy = false, abort;
   var root = document.getElementById('ai-email-workspace');
@@ -68,7 +68,7 @@
     '<div class="ai-actions"><button class="ai-btn" id="email-import">Import reviewed findings</button><button class="ai-btn" id="email-export">Export findings</button></div></details></div>' +
     '<div id="email-candidates"></div>';
   var style = document.createElement('style');
-  style.textContent = '.email-label{display:block;font-size:12px;font-weight:600;margin-top:12px}.email-input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid var(--border-md);border-radius:7px;background:var(--surface);color:var(--text)}#ai-email-workspace code{overflow-wrap:anywhere}#ai-email-workspace button:disabled{opacity:.5;cursor:default}.email-source{font-size:12px;overflow-wrap:anywhere;margin:8px 0}.email-review-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(140px,.7fr) minmax(190px,1fr);gap:10px;align-items:end}.email-order{border-top:1px solid var(--border-md);padding-top:12px;margin-top:12px;font-size:13px;overflow-wrap:anywhere}.email-order-table{width:100%;font-size:12px;border-collapse:collapse}.email-order-table th,.email-order-table td{padding:6px;text-align:left;border-bottom:1px solid var(--border-md)}.email-evidence{white-space:pre-wrap;font-size:12px}.email-pdf-input{display:block;margin:8px 0;max-width:100%}@media(max-width:720px){.email-review-fields{grid-template-columns:1fr}}';
+  style.textContent = '.email-label{display:block;font-size:12px;font-weight:600;margin-top:12px}.email-input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid var(--border-md);border-radius:7px;background:var(--surface);color:var(--text)}#ai-email-workspace code{overflow-wrap:anywhere}#ai-email-workspace button:disabled{opacity:.5;cursor:default}.email-source{font-size:12px;overflow-wrap:anywhere;margin:8px 0}.email-review-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(140px,.7fr) minmax(190px,1fr);gap:10px;align-items:end}.email-candidate{padding:0!important;overflow:hidden}.email-candidate-summary{list-style:none;display:grid;grid-template-columns:minmax(180px,1fr) auto auto 20px;gap:12px;align-items:center;padding:13px 15px;cursor:pointer}.email-candidate-summary::-webkit-details-marker{display:none}.email-candidate-summary:hover{background:var(--surface2)}.email-candidate-title{min-width:0}.email-candidate-title b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-title small{display:block;margin-top:3px;color:var(--text-3);font-size:10px;font-weight:500}.email-candidate-contact{font-size:11px;color:var(--text-2);white-space:nowrap}.email-candidate-chevron{font-size:21px;color:var(--text-3);transform:rotate(90deg);transition:transform .15s ease}.email-candidate[open] .email-candidate-chevron{transform:rotate(-90deg)}.email-candidate-details{border-top:1px solid var(--border-md);padding:13px 15px 15px;background:linear-gradient(180deg,var(--surface2),var(--surface))}.email-order{border-top:1px solid var(--border-md);padding-top:12px;margin-top:12px;font-size:13px;overflow-wrap:anywhere}.email-order-table{width:100%;font-size:12px;border-collapse:collapse}.email-order-table th,.email-order-table td{padding:6px;text-align:left;border-bottom:1px solid var(--border-md)}.email-evidence{white-space:pre-wrap;font-size:12px}.email-pdf-input{display:block;margin:8px 0;max-width:100%}@media(max-width:720px){.email-review-fields{grid-template-columns:1fr}.email-candidate-summary{grid-template-columns:minmax(0,1fr) 20px}.email-candidate-summary>.ai-pill,.email-candidate-contact{grid-column:1;justify-self:start}.email-candidate-chevron{grid-column:2;grid-row:1/4}}';
   document.head.appendChild(style);
   var date = new Date(); date.setDate(date.getDate() - 90);
   document.getElementById('email-since').value = date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
@@ -82,8 +82,9 @@
       var i = rows.indexOf(row);
       var existing = clients.find(c => h.normalName(c.name) === h.normalName(row.client_name));
       var order = softwareOrders(row)[0] || {};
-      return '<article class="ai-card"><div class="ai-row-top"><b>' + esc(row.client_name) + '</b><span class="ai-pill">' + esc(row.classification) + '</span></div>' +
-        '<p class="email-source">' + esc(row.source_sender) + ' · ' + esc(new Date(row.source_date).toLocaleDateString('en-GB')) + '<br>' + esc(row.source_subject) + '</p>' +
+      var contact = [order.client_number ? 'ID ' + order.client_number : '', order.email || ''].filter(Boolean).join(' · ');
+      return '<details class="ai-card email-candidate"><summary class="email-candidate-summary"><span class="email-candidate-title"><b>' + esc(row.client_name) + '</b><small>' + esc(row.source_sender) + ' · ' + esc(new Date(row.source_date).toLocaleDateString('en-GB')) + '</small></span><span class="ai-pill">' + esc(row.classification) + '</span><span class="email-candidate-contact">' + esc(contact || 'Open for details') + '</span><span class="email-candidate-chevron">›</span></summary><div class="email-candidate-details">' +
+        '<p class="email-source">' + esc(row.source_subject) + '</p>' +
         '<p class="ai-muted">' + esc(row.reason) + '</p><p style="font-size:13px;margin:10px 0">' + esc(row.next_action) + '</p>' +
         '<p class="ai-muted">' + esc(row.evidence_scope) + '</p>' +
         (row.orders || []).map(orderHtml).join('') +
@@ -91,7 +92,7 @@
         '<div class="ai-actions"><a class="ai-btn" href="' + esc(row.source_url) + '" target="_blank" rel="noopener noreferrer">Open source email ↗</a>' +
         '<button class="ai-btn ai-btn-primary" data-email-open="' + i + '">' + (existing ? 'View existing client' : 'Review new client form') + '</button>' +
         '<button class="ai-btn" data-email-dismiss="' + i + '">Dismiss</button></div>' +
-        '<label class="email-label">Read a Software Order PDF saved from this email<input class="email-pdf-input" type="file" data-email-pdf="' + i + '" accept=".pdf,application/pdf"></label></article>';
+        '<label class="email-label">Read a Software Order PDF saved from this email<input class="email-pdf-input" type="file" data-email-pdf="' + i + '" accept=".pdf,application/pdf"></label></div></details>';
     }).join('');
     setBusy(busy);
   }
