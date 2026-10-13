@@ -17,6 +17,7 @@ let saveInFlight = false;
 let saveQueued = false;
 let changeVersion = 0;
 let expandedNavGroup = 'workspace';
+const expandedModuleItems = new Set();
 
 const api = () => window.clientMonitorApi;
 const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
@@ -251,14 +252,35 @@ function renderRequirements() {
 function renderModule(section) {
   const rows = section.items.map(item => {
     const value = documentState.moduleData[item.id] || {};
+    const open = expandedModuleItems.has(item.id);
+    const status = value.status || (value.checked ? 'Completed' : 'Not started');
     const selectedUsers = new Set(value.users || []);
+    const attendeeCount = documentState.users.filter(user => selectedUsers.has(user.id) || selectedUsers.has(user.name)).length;
     const attendees = documentState.users.length ? documentState.users.map(user => {
       const selected = selectedUsers.has(user.id) || selectedUsers.has(user.name);
       return `<label class="erp-attendee"><input type="checkbox" data-module-user-key="${attr(item.id)}" data-module-user-id="${attr(user.id)}" ${selected ? 'checked' : ''}><span>${esc(user.name || 'Unnamed user')}${user.position ? `<small>${esc(user.position)}</small>` : ''}</span></label>`;
     }).join('') : '<div class="erp-muted">Add users in Client Users to select training attendees.</div>';
-    return `<div class="erp-module-item"><input type="checkbox" data-module-key="${attr(item.id)}" data-module-field="checked" ${value.checked ? 'checked' : ''}><div class="erp-module-title">${esc(item.text)}</div><div class="erp-field"><label>Status</label><select class="erp-select" data-module-key="${attr(item.id)}" data-module-field="status">${options(MODULE_STATUSES, value.status || (value.checked ? 'Completed' : 'Not started'))}</select><label style="margin-top:7px">Date</label><input type="date" class="erp-input" data-module-key="${attr(item.id)}" data-module-field="date" value="${attr(value.date || '')}"></div><div class="erp-module-wide"><div class="erp-field"><label>Training attendees</label><div class="erp-attendees">${attendees}</div></div><div class="erp-field" style="margin-top:9px"><label>Special notes</label><textarea class="erp-textarea" data-module-key="${attr(item.id)}" data-module-field="note">${esc(value.note || '')}</textarea></div><div class="erp-field" style="margin-top:7px"><label>Requirement / next action</label><textarea class="erp-textarea" data-module-key="${attr(item.id)}" data-module-field="action">${esc(value.action || '')}</textarea></div></div></div>`;
+    return `<section class="erp-module-accordion${open ? ' open' : ''}">
+      <button type="button" class="erp-module-summary" data-module-toggle="${attr(item.id)}" aria-expanded="${open}">
+        <span class="erp-module-index">${section.items.indexOf(item) + 1}</span>
+        <span class="erp-module-heading"><strong>${esc(item.text)}</strong><small>${value.date ? esc(value.date) : 'No date'}${attendeeCount ? ` · ${attendeeCount} attendee${attendeeCount === 1 ? '' : 's'}` : ' · No attendees'}</small></span>
+        <span class="erp-module-status${value.checked ? ' complete' : ''}">${esc(status)}</span>
+        <span class="erp-module-signals">${value.note ? '<span title="Special notes recorded">Notes</span>' : ''}${value.action ? '<span title="Next action recorded">Action</span>' : ''}</span>
+        <span class="erp-module-chevron">›</span>
+      </button>
+      <div class="erp-module-details"${open ? '' : ' hidden'}>
+        <label class="erp-module-complete"><input type="checkbox" data-module-key="${attr(item.id)}" data-module-field="checked" ${value.checked ? 'checked' : ''}><span>Mark this function completed</span></label>
+        <div class="erp-module-form">
+          <div class="erp-module-meta">
+            <div class="erp-field"><label>Status</label><select class="erp-select" data-module-key="${attr(item.id)}" data-module-field="status">${options(MODULE_STATUSES, status)}</select></div>
+            <div class="erp-field"><label>Date</label><input type="date" class="erp-input" data-module-key="${attr(item.id)}" data-module-field="date" value="${attr(value.date || '')}"></div>
+          </div>
+          <div class="erp-module-wide"><div class="erp-field"><label>Training attendees</label><div class="erp-attendees">${attendees}</div></div><div class="erp-field" style="margin-top:9px"><label>Special notes</label><textarea class="erp-textarea" data-module-key="${attr(item.id)}" data-module-field="note">${esc(value.note || '')}</textarea></div><div class="erp-field" style="margin-top:7px"><label>Requirement / next action</label><textarea class="erp-textarea" data-module-key="${attr(item.id)}" data-module-field="action">${esc(value.action || '')}</textarea></div></div>
+        </div>
+      </div>
+    </section>`;
   }).join('');
-  return `<div class="erp-card"><h2>${esc(section.title)}</h2><div class="erp-muted">${section.items.length} ERP functions · ${esc(section.group)}</div>${rows}</div>`;
+  return `<div class="erp-card erp-module-card"><div class="erp-actions erp-module-toolbar"><div><h2>${esc(section.title)}</h2><div class="erp-muted">${section.items.length} ERP functions · open only the screens you need</div></div><div class="erp-module-toolbar-buttons"><button class="erp-btn" data-module-expand-all>Expand all</button><button class="erp-btn" data-module-collapse-all>Collapse all</button></div></div><div class="erp-module-list">${rows}</div></div>`;
 }
 
 function renderMain() {
@@ -300,6 +322,21 @@ function bindInputs(selector, callback) {
 
 function bindContent() {
   const container = root.querySelector('.erp-main') || root;
+  container.querySelectorAll('[data-module-toggle]').forEach(button => button.addEventListener('click', () => {
+    const key = button.dataset.moduleToggle;
+    if (expandedModuleItems.has(key)) expandedModuleItems.delete(key); else expandedModuleItems.add(key);
+    renderMain();
+  }));
+  container.querySelector('[data-module-expand-all]')?.addEventListener('click', () => {
+    const section = catalog.moduleSections.find(item => item.id === activeSection.slice(7));
+    section?.items.forEach(item => expandedModuleItems.add(item.id));
+    renderMain();
+  });
+  container.querySelector('[data-module-collapse-all]')?.addEventListener('click', () => {
+    const section = catalog.moduleSections.find(item => item.id === activeSection.slice(7));
+    section?.items.forEach(item => expandedModuleItems.delete(item.id));
+    renderMain();
+  });
   bindInputs('[data-project-field]', element => { project[element.dataset.projectField] = element.value; recordChange(`project.${element.dataset.projectField}`, `Project ${element.dataset.projectField}`, element.value); });
   bindInputs('[data-answer]', element => { documentState.answers[element.dataset.answer] = element.value; recordChange(`answer.${element.dataset.answer}`, `${questionLabels.get(element.dataset.answer) || element.dataset.answer} — Answer`, element.value); });
   bindInputs('[data-note]', element => { documentState.notes[element.dataset.note] = element.value; recordChange(`note.${element.dataset.note}`, `${questionLabels.get(element.dataset.note) || element.dataset.note} — Notes`, element.value); });

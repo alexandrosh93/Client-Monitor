@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var helpers = import('./email-leads.mjs?v=orders-1');
+  var helpers = import('./email-leads.mjs?v=client-review-accordion-20261013');
   var outlook;
   var rows = [], ignored = new Set(), owner = '', mailbox = '', busy = false, abort;
   var root = document.getElementById('ai-email-workspace');
@@ -32,6 +32,11 @@
     document.getElementById('email-connection').textContent = mailbox ? 'Connected: ' + mailbox : 'Outlook is not connected in this session.';
   }
   function amount(value) { return typeof value === 'number' ? new Intl.NumberFormat('en-CY', { style: 'currency', currency: 'EUR' }).format(value) : 'Check PDF'; }
+  function softwareOrders(row) { return (row.orders || []).filter(order => order.kind === 'software_order' && !order.additional_licenses); }
+  function onlyAdditionalOrders(row) {
+    var orders = (row.orders || []).filter(order => order.kind === 'software_order');
+    return orders.length > 0 && orders.every(order => order.additional_licenses);
+  }
   function orderHtml(order) {
     if (order.kind !== 'software_order') return '<div class="email-order"><b>' + esc(order.attachment_name) + '</b><p class="ai-muted">' + (order.kind === 'not_order' ? 'No Software Order Form found.' : 'PDF needs manual review.') + ' ' + esc((order.issues || []).join(' ')) + '</p></div>';
     return '<div class="email-order"><b>' + esc(order.attachment_name) + '</b><p class="ai-muted">' + esc(order.order_number) + ' · ' + esc(order.order_date) + ' · ' + esc(order.company_name) + (order.additional_licenses ? ' · Additional licenses' : '') + '</p>' +
@@ -63,7 +68,7 @@
     '<div class="ai-actions"><button class="ai-btn" id="email-import">Import reviewed findings</button><button class="ai-btn" id="email-export">Export findings</button></div></details></div>' +
     '<div id="email-candidates"></div>';
   var style = document.createElement('style');
-  style.textContent = '.email-label{display:block;font-size:12px;font-weight:600;margin-top:12px}.email-input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid var(--border-md);border-radius:7px;background:var(--surface);color:var(--text)}#ai-email-workspace code{overflow-wrap:anywhere}#ai-email-workspace button:disabled{opacity:.5;cursor:default}.email-source{font-size:12px;overflow-wrap:anywhere;margin:8px 0}.email-review-name{max-width:600px}.email-order{border-top:1px solid var(--border-md);padding-top:12px;margin-top:12px;font-size:13px;overflow-wrap:anywhere}.email-order-table{width:100%;font-size:12px;border-collapse:collapse}.email-order-table th,.email-order-table td{padding:6px;text-align:left;border-bottom:1px solid var(--border-md)}.email-evidence{white-space:pre-wrap;font-size:12px}.email-pdf-input{display:block;margin:8px 0;max-width:100%}';
+  style.textContent = '.email-label{display:block;font-size:12px;font-weight:600;margin-top:12px}.email-input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid var(--border-md);border-radius:7px;background:var(--surface);color:var(--text)}#ai-email-workspace code{overflow-wrap:anywhere}#ai-email-workspace button:disabled{opacity:.5;cursor:default}.email-source{font-size:12px;overflow-wrap:anywhere;margin:8px 0}.email-review-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(140px,.7fr) minmax(190px,1fr);gap:10px;align-items:end}.email-order{border-top:1px solid var(--border-md);padding-top:12px;margin-top:12px;font-size:13px;overflow-wrap:anywhere}.email-order-table{width:100%;font-size:12px;border-collapse:collapse}.email-order-table th,.email-order-table td{padding:6px;text-align:left;border-bottom:1px solid var(--border-md)}.email-evidence{white-space:pre-wrap;font-size:12px}.email-pdf-input{display:block;margin:8px 0;max-width:100%}@media(max-width:720px){.email-review-fields{grid-template-columns:1fr}}';
   document.head.appendChild(style);
   var date = new Date(); date.setDate(date.getDate() - 90);
   document.getElementById('email-since').value = date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
@@ -72,16 +77,17 @@
 
   async function render() {
     var h = await helpers;
-    var visible = rows.filter(row => !ignored.has(h.leadKey(row)));
+    var visible = rows.filter(row => !ignored.has(h.leadKey(row)) && !onlyAdditionalOrders(row));
     document.getElementById('email-candidates').innerHTML = '<p class="ai-muted" style="margin:12px 0">' + visible.length + ' email candidate(s) to review</p>' + visible.map(row => {
       var i = rows.indexOf(row);
       var existing = clients.find(c => h.normalName(c.name) === h.normalName(row.client_name));
+      var order = softwareOrders(row)[0] || {};
       return '<article class="ai-card"><div class="ai-row-top"><b>' + esc(row.client_name) + '</b><span class="ai-pill">' + esc(row.classification) + '</span></div>' +
         '<p class="email-source">' + esc(row.source_sender) + ' · ' + esc(new Date(row.source_date).toLocaleDateString('en-GB')) + '<br>' + esc(row.source_subject) + '</p>' +
         '<p class="ai-muted">' + esc(row.reason) + '</p><p style="font-size:13px;margin:10px 0">' + esc(row.next_action) + '</p>' +
         '<p class="ai-muted">' + esc(row.evidence_scope) + '</p>' +
         (row.orders || []).map(orderHtml).join('') +
-        (existing ? '<p class="ai-muted">An exact matching client already exists. Review that record.</p>' : '<label class="email-label">Confirm company name<input class="email-input email-review-name" id="email-name-' + i + '" maxlength="200" value="' + esc(row.client_name) + '"></label>') +
+        (existing ? '<p class="ai-muted">An exact matching client already exists. Review that record.</p>' : '<div class="email-review-fields"><label class="email-label">Confirm company name<input class="email-input" id="email-name-' + i + '" maxlength="200" value="' + esc(row.client_name) + '"></label><label class="email-label">Client ID<input class="email-input" id="email-client-code-' + i + '" maxlength="100" value="' + esc(order.client_number || '') + '"></label><label class="email-label">Client email<input class="email-input" type="email" id="email-client-email-' + i + '" value="' + esc(order.email || '') + '" placeholder="client@company.com"></label></div>') +
         '<div class="ai-actions"><a class="ai-btn" href="' + esc(row.source_url) + '" target="_blank" rel="noopener noreferrer">Open source email ↗</a>' +
         '<button class="ai-btn ai-btn-primary" data-email-open="' + i + '">' + (existing ? 'View existing client' : 'Review new client form') + '</button>' +
         '<button class="ai-btn" data-email-dismiss="' + i + '">Dismiss</button></div>' +
@@ -146,6 +152,7 @@
         var pdf = await import('./pdf-orders.mjs');
         scan = await outlook.scanOrderAttachments(result.messages, { signal: abort.signal, readPdf: pdf.readOrderPdf, onProgress: text => message(text) });
         candidates.push(...scan.matches.map(match => {
+          if (onlyAdditionalOrders(match)) return null;
           var proposal = h.candidateFromOrders(match.message, match.orders, result.senders);
           var preview = !proposal && h.candidateFromMessage(match.message, result.senders);
           return proposal || (preview ? { ...preview, orders: match.orders } : null);
@@ -193,6 +200,9 @@
       var order = await pdf.readOrderPdf(new Uint8Array(await file.arrayBuffer()), { name: file.name, signal: abort.signal, onProgress: text => message(text) });
       abort.signal.throwIfAborted();
       var combined = (await import('./software-orders.mjs')).mergeOrders(row.orders || [], [order]);
+      if (onlyAdditionalOrders({ orders: combined })) {
+        rows.splice(index, 1); save(); await render(); message('Additional Payroll Licenses order ignored.'); return;
+      }
       var proposal = h.candidateFromOrders({ from: {emailAddress:{address:row.source_sender}}, subject:row.source_subject, receivedDateTime:row.source_date, webLink:row.source_url }, combined, [row.source_sender]);
       rows[index] = proposal && combined.some(o=>o.kind === 'software_order') ? { ...row, ...proposal } : { ...row, orders: combined };
       save(); await render(); message(order.kind === 'software_order' ? 'Software Order read. Review the company, products and amounts below.' : 'No readable Software Order Form found. Review the original PDF.');
@@ -214,10 +224,14 @@
     if (existing) { goToClient(existing.id); return; }
     openAdd();
     document.getElementById('m-name').value = name;
+    document.getElementById('m-client-code').value = (document.getElementById('email-client-code-' + index)?.value || '').trim();
+    document.getElementById('m-email').value = (document.getElementById('email-client-email-' + index)?.value || '').trim().toLowerCase();
     document.getElementById('m-status').value = 'Not started';
-    var orders = (row.orders || []).filter(o => o.kind === 'software_order' && h.normalName(o.company_name) === h.normalName(name));
+    var orders = softwareOrders(row).filter(o => h.normalName(o.company_name) === h.normalName(name));
     if (orders.length) {
       document.getElementById('m-contact').value = orders[0].contact || '';
+      if (!document.getElementById('m-client-code').value) document.getElementById('m-client-code').value = orders[0].client_number || '';
+      if (!document.getElementById('m-email').value) document.getElementById('m-email').value = String(orders[0].email || '').toLowerCase();
       var city = document.getElementById('m-city');
       if (city && /paphos|pafos/i.test(orders[0].address)) city.value = 'Paphos';
       var descriptions = orders.flatMap(o=>o.products || []).map(p=>p.description).join(' ').toLowerCase();

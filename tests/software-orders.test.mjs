@@ -36,12 +36,20 @@ test('proposal filenames and invoices do not establish a Software Order',()=>{
   for(const body of ['Software Proposal\nExample Ltd\nTotal 1,000.00','Invoice\nORD2600123']) assert.equal(parseSoftwareOrder([body],{name:'Software Order.pdf'}).kind,'not_order');
   assert.equal(parseSoftwareOrder([''],{name:'scan.pdf'}).kind,'needs_review');
 });
-test('additional licenses remain existing-client work even with an order form',()=>{
+test('additional payroll licenses are ignored even with an order form',()=>{
   const o=parseSoftwareOrder([form.replace('Less Discount','Additional Payroll Licenses\n(Upgrade from 100 to 350 Employees)\nLess Discount')],{name:'order.pdf'});
   assert.equal(o.additional_licenses,true);
   const m={from:{emailAddress:{address:'sender@example.com'}},subject:'Software Order',receivedDateTime:'2026-10-12T00:00:00Z',webLink:'https://outlook.office.com/mail/id/example'};
-  assert.equal(candidateFromOrders(m,[o],['sender@example.com']).classification,'Additional licenses — existing client work');
+  assert.equal(candidateFromOrders(m,[o],['sender@example.com']),null);
   assert.equal(candidateFromOrders(m,[o],['other@example.com']),null);
+});
+test('additional licenses are removed when an email also contains a new order',()=>{
+  const newOrder=parseSoftwareOrder([form],{name:'new-order.pdf'});
+  const additional={...newOrder,order_number:'ORD2600124',attachment_name:'additional.pdf',additional_licenses:true};
+  const m={from:{emailAddress:{address:'sender@example.com'}},subject:'Software Order',receivedDateTime:'2026-10-12T00:00:00Z',webLink:'https://outlook.office.com/mail/id/example'};
+  const candidate=candidateFromOrders(m,[additional,newOrder],['sender@example.com']);
+  assert.equal(candidate.orders.length,1);
+  assert.equal(candidate.orders[0].attachment_name,'new-order.pdf');
 });
 test('PDF enrichment updates a preview candidate and retains multiple source orders',()=>{
   const first={source_sender:'sender@example.com',source_date:'2026-10-12T00:00:00Z',source_subject:'Software Order',client_name:'Unknown'};
