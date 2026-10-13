@@ -1345,6 +1345,7 @@ async function sha256(str){
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 const SUPA_URL='https://gdyibhbznfywnilqpjvo.supabase.co';
+const PASSWORD_RECOVERY_URL='https://alexandrosh93.github.io/Client-Monitor/';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkeWliaGJ6bmZ5d25pbHFwanZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzOTM0OTQsImV4cCI6MjA5NDk2OTQ5NH0.wiyx0PBb3dtaH-kTpGVj68NWzeZpyVKWrD8XhWxftGQ';
 const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 
@@ -3856,7 +3857,7 @@ async function doForgotPassword(){
   }
   msg.style.color='#6b7280';msg.textContent='Sending…';
   try{
-    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.href});
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:PASSWORD_RECOVERY_URL});
     if(error){msg.style.color='#a32d2d';msg.textContent='Error: '+error.message;return;}
     msg.style.color='#2d7a4f';
     msg.textContent='Reset link sent! Check your inbox.';
