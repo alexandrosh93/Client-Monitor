@@ -1,7 +1,6 @@
 import { ERP_DISCOVERY_CATALOG as catalog } from './erp-discovery-catalog.mjs';
-import { blankProjectDocument, computeProjectProgress, normalizeProjectDocument } from './erp-discovery-model.mjs';
+import { MODULE_STATUSES, blankProjectDocument, computeProjectProgress, normalizeProjectDocument } from './erp-discovery-model.mjs';
 
-const MODULE_STATUSES = ['Not started', 'Needs setup', 'Needs training', 'In progress', 'Completed', 'Not applicable'];
 const PHASES = ['During Implementation', 'During Support'];
 const root = document.getElementById('client-workspace');
 
@@ -34,7 +33,7 @@ function reportHeader(title) {
 function moduleReportLine(item, index) {
   const value = documentState.moduleData[item.id] || {};
   const attendees = (value.users || []).map(userId => documentState.users.find(user => user.id === userId)?.name || userId).filter(Boolean);
-  return `${index + 1}. ${item.text} | ${value.status || (value.checked ? 'Completed' : 'Not started')}${value.date ? ` | ${value.date}` : ''}${attendees.length ? ` | Training attendees: ${attendees.join(', ')}` : ''}${value.note ? ` | Notes: ${value.note}` : ''}${value.action ? ` | Next: ${value.action}` : ''}`;
+  return `${index + 1}. ${item.text} | Included in project: ${value.checked ? 'Yes' : 'No'}${value.checked ? ` | Status: ${value.status || 'Needs Training'}` : ''}${value.date ? ` | ${value.date}` : ''}${attendees.length ? ` | Training attendees: ${attendees.join(', ')}` : ''}${value.note ? ` | Notes: ${value.note}` : ''}${value.action ? ` | Next: ${value.action}` : ''}`;
 }
 
 function wholeProjectReportText() {
@@ -250,37 +249,47 @@ function renderRequirements() {
 }
 
 function renderModule(section) {
+  const selectedItems = section.items.filter(item => documentState.moduleData[item.id]?.checked);
+  const statusCounts = Object.fromEntries(MODULE_STATUSES.map(status => [status, selectedItems.filter(item => (documentState.moduleData[item.id]?.status || 'Needs Training') === status).length]));
   const rows = section.items.map(item => {
     const value = documentState.moduleData[item.id] || {};
     const open = expandedModuleItems.has(item.id);
-    const status = value.status || (value.checked ? 'Completed' : 'Not started');
+    const included = Boolean(value.checked);
+    const status = value.status || 'Needs Training';
+    const statusClass = status.toLowerCase().replace(/\s+/g, '-');
     const selectedUsers = new Set(value.users || []);
     const attendeeCount = documentState.users.filter(user => selectedUsers.has(user.id) || selectedUsers.has(user.name)).length;
     const attendees = documentState.users.length ? documentState.users.map(user => {
       const selected = selectedUsers.has(user.id) || selectedUsers.has(user.name);
-      return `<label class="erp-attendee"><input type="checkbox" data-module-user-key="${attr(item.id)}" data-module-user-id="${attr(user.id)}" ${selected ? 'checked' : ''}><span>${esc(user.name || 'Unnamed user')}${user.position ? `<small>${esc(user.position)}</small>` : ''}</span></label>`;
+      return `<label class="erp-attendee"><input type="checkbox" data-module-user-key="${attr(item.id)}" data-module-user-id="${attr(user.id)}" ${selected ? 'checked' : ''}${included ? '' : ' disabled'}><span>${esc(user.name || 'Unnamed user')}${user.position ? `<small>${esc(user.position)}</small>` : ''}</span></label>`;
     }).join('') : '<div class="erp-muted">Add users in Client Users to select training attendees.</div>';
-    return `<section class="erp-module-accordion${open ? ' open' : ''}">
-      <button type="button" class="erp-module-summary" data-module-toggle="${attr(item.id)}" aria-expanded="${open}">
-        <span class="erp-module-index">${section.items.indexOf(item) + 1}</span>
-        <span class="erp-module-heading"><strong>${esc(item.text)}</strong><small>${value.date ? esc(value.date) : 'No date'}${attendeeCount ? ` · ${attendeeCount} attendee${attendeeCount === 1 ? '' : 's'}` : ' · No attendees'}</small></span>
-        <span class="erp-module-status${value.checked ? ' complete' : ''}">${esc(status)}</span>
-        <span class="erp-module-signals">${value.note ? '<span title="Special notes recorded">Notes</span>' : ''}${value.action ? '<span title="Next action recorded">Action</span>' : ''}</span>
-        <span class="erp-module-chevron">›</span>
-      </button>
+    return `<section class="erp-module-accordion${open ? ' open' : ''}${included ? ' selected' : ' not-selected'}" data-module-status="${attr(statusClass)}">
+      <div class="erp-module-summary">
+        <label class="erp-module-scope" title="Include this screen in the project">
+          <input type="checkbox" data-module-key="${attr(item.id)}" data-module-field="checked" ${included ? 'checked' : ''}>
+          <span class="erp-module-scope-box">✓</span><span>In project</span>
+        </label>
+        <button type="button" class="erp-module-open" data-module-toggle="${attr(item.id)}" aria-expanded="${open}">
+          <span class="erp-module-index">${section.items.indexOf(item) + 1}</span>
+          <span class="erp-module-heading"><strong>${esc(item.text)}</strong><small>${included ? `${value.date ? esc(value.date) : 'No date'}${attendeeCount ? ` · ${attendeeCount} trained user${attendeeCount === 1 ? '' : 's'}` : ' · No trained users'}` : 'Not included in this project'}</small></span>
+          <span class="erp-module-status ${included ? `status-${statusClass}` : 'not-in-project'}">${included ? esc(status) : 'Not in project'}</span>
+          <span class="erp-module-signals">${value.note ? '<span title="Special notes recorded">Notes</span>' : ''}${value.action ? '<span title="Next action recorded">Action</span>' : ''}</span>
+          <span class="erp-module-chevron">›</span>
+        </button>
+      </div>
       <div class="erp-module-details"${open ? '' : ' hidden'}>
-        <label class="erp-module-complete"><input type="checkbox" data-module-key="${attr(item.id)}" data-module-field="checked" ${value.checked ? 'checked' : ''}><span>Mark this function completed</span></label>
+        <div class="erp-module-context ${included ? 'included' : ''}">${included ? '<strong>Included in this project.</strong> Use the status to track its training progress.' : '<strong>Not included.</strong> Tick “In project” above if this screen is required.'}</div>
         <div class="erp-module-form">
           <div class="erp-module-meta">
-            <div class="erp-field"><label>Status</label><select class="erp-select" data-module-key="${attr(item.id)}" data-module-field="status">${options(MODULE_STATUSES, status)}</select></div>
-            <div class="erp-field"><label>Date</label><input type="date" class="erp-input" data-module-key="${attr(item.id)}" data-module-field="date" value="${attr(value.date || '')}"></div>
+            <div class="erp-field"><label>Training status</label><select class="erp-select" data-module-key="${attr(item.id)}" data-module-field="status"${included ? '' : ' disabled'}>${options(MODULE_STATUSES, status)}</select></div>
+            <div class="erp-field"><label>Training / review date</label><input type="date" class="erp-input" data-module-key="${attr(item.id)}" data-module-field="date" value="${attr(value.date || '')}"${included ? '' : ' disabled'}></div>
           </div>
-          <div class="erp-module-wide"><div class="erp-field"><label>Training attendees</label><div class="erp-attendees">${attendees}</div></div><div class="erp-field" style="margin-top:9px"><label>Special notes</label><textarea class="erp-textarea" data-module-key="${attr(item.id)}" data-module-field="note">${esc(value.note || '')}</textarea></div><div class="erp-field" style="margin-top:7px"><label>Requirement / next action</label><textarea class="erp-textarea" data-module-key="${attr(item.id)}" data-module-field="action">${esc(value.action || '')}</textarea></div></div>
+          <div class="erp-module-wide"><div class="erp-field"><label>Users who attended training</label><div class="erp-attendees">${attendees}</div></div><div class="erp-module-notes-grid"><div class="erp-field"><label>Special notes</label><textarea class="erp-textarea" data-module-key="${attr(item.id)}" data-module-field="note" placeholder="Setup details, client-specific notes…">${esc(value.note || '')}</textarea></div><div class="erp-field"><label>Requirement / next action</label><textarea class="erp-textarea" data-module-key="${attr(item.id)}" data-module-field="action" placeholder="Next training or configuration action…">${esc(value.action || '')}</textarea></div></div></div>
         </div>
       </div>
     </section>`;
   }).join('');
-  return `<div class="erp-card erp-module-card"><div class="erp-actions erp-module-toolbar"><div><h2>${esc(section.title)}</h2><div class="erp-muted">${section.items.length} ERP functions · open only the screens you need</div></div><div class="erp-module-toolbar-buttons"><button class="erp-btn" data-module-expand-all>Expand all</button><button class="erp-btn" data-module-collapse-all>Collapse all</button></div></div><div class="erp-module-list">${rows}</div></div>`;
+  return `<div class="erp-card erp-module-card"><div class="erp-actions erp-module-toolbar"><div><h2>${esc(section.title)}</h2><div class="erp-muted">Choose the screens required for this project, then track training separately.</div></div><div class="erp-module-toolbar-buttons"><button class="erp-btn" data-module-expand-all>Expand all</button><button class="erp-btn" data-module-collapse-all>Collapse all</button></div></div><div class="erp-module-overview"><div class="erp-module-total"><strong>${selectedItems.length}</strong><span>of ${section.items.length} screens in project</span></div>${MODULE_STATUSES.map(status => `<div class="erp-module-metric status-${status.toLowerCase().replace(/\s+/g, '-')}"><strong>${statusCounts[status]}</strong><span>${esc(status)}</span></div>`).join('')}</div><div class="erp-module-list">${rows}</div></div>`;
 }
 
 function renderMain() {
@@ -301,7 +310,7 @@ function renderMain() {
 }
 
 function ensureModule(key) {
-  if (!documentState.moduleData[key]) documentState.moduleData[key] = { checked: false, status: 'Not started', note: '', action: '', date: '', phase: project.phase || PHASES[0], users: [] };
+  if (!documentState.moduleData[key]) documentState.moduleData[key] = { checked: false, status: 'Needs Training', note: '', action: '', date: '', phase: project.phase || PHASES[0], users: [] };
   return documentState.moduleData[key];
 }
 
@@ -342,8 +351,14 @@ function bindContent() {
   bindInputs('[data-note]', element => { documentState.notes[element.dataset.note] = element.value; recordChange(`note.${element.dataset.note}`, `${questionLabels.get(element.dataset.note) || element.dataset.note} — Notes`, element.value); });
   container.querySelectorAll('[data-check]').forEach(element => element.addEventListener('change', () => { documentState.checks[element.dataset.check] = element.checked; recordChange(`check.${element.dataset.check}`, questionLabels.get(element.dataset.check) || element.dataset.check, element.checked ? 'Completed' : 'Not completed'); setDirty(); }));
   bindInputs('[data-migration]', element => { documentState.migrationExtra[element.dataset.migration] = element.value; recordChange(`migration.${element.dataset.migration}`, `Migration ${element.dataset.migration}`, element.value); });
-  container.querySelectorAll('[data-module-key]').forEach(element => element.addEventListener(element.type === 'checkbox' ? 'change' : 'input', () => {
-    const item = ensureModule(element.dataset.moduleKey); const value = element.type === 'checkbox' ? element.checked : element.value; item[element.dataset.moduleField] = value; recordChange(`module.${element.dataset.moduleKey}.${element.dataset.moduleField}`, `${moduleLabels.get(element.dataset.moduleKey) || element.dataset.moduleKey} — ${element.dataset.moduleField}`, value); setDirty();
+  container.querySelectorAll('[data-module-key]').forEach(element => element.addEventListener(element.type === 'checkbox' || element.tagName === 'SELECT' ? 'change' : 'input', () => {
+    const item = ensureModule(element.dataset.moduleKey);
+    const field = element.dataset.moduleField;
+    const value = element.type === 'checkbox' ? element.checked : element.value;
+    item[field] = value;
+    recordChange(`module.${element.dataset.moduleKey}.${field}`, `${moduleLabels.get(element.dataset.moduleKey) || element.dataset.moduleKey} — ${field === 'checked' ? 'Included in project' : field}`, field === 'checked' ? (value ? 'Yes' : 'No') : value);
+    setDirty();
+    if (field === 'checked' || field === 'status') renderMain();
   }));
   container.querySelectorAll('[data-module-user-key]').forEach(element => element.addEventListener('change', () => {
     const item = ensureModule(element.dataset.moduleUserKey);
