@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var helpers = import('./email-leads.mjs?v=compact-review-20261013');
+  var helpers = import('./email-leads.mjs?v=manager-two-column-20261013');
   var outlook;
   var rows = [], ignored = new Set(), owner = '', mailbox = '', busy = false, abort;
   var root = document.getElementById('ai-email-workspace');
@@ -68,7 +68,7 @@
     '<div class="ai-actions"><button class="ai-btn" id="email-import">Import reviewed findings</button><button class="ai-btn" id="email-export">Export findings</button></div></details></div>' +
     '<div id="email-candidates"></div>';
   var style = document.createElement('style');
-  style.textContent = '.email-label{display:block;font-size:12px;font-weight:600;margin-top:12px}.email-input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid var(--border-md);border-radius:7px;background:var(--surface);color:var(--text)}#ai-email-workspace code{overflow-wrap:anywhere}#ai-email-workspace button:disabled{opacity:.5;cursor:default}.email-source{font-size:12px;overflow-wrap:anywhere;margin:8px 0}.email-review-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(140px,.7fr) minmax(190px,1fr);gap:10px;align-items:end}.email-candidate{padding:0!important;overflow:hidden}.email-candidate-summary{list-style:none;display:grid;grid-template-columns:minmax(180px,1fr) auto auto 20px;gap:12px;align-items:center;padding:13px 15px;cursor:pointer}.email-candidate-summary::-webkit-details-marker{display:none}.email-candidate-summary:hover{background:var(--surface2)}.email-candidate-title{min-width:0}.email-candidate-title b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-title small{display:block;margin-top:3px;color:var(--text-3);font-size:10px;font-weight:500}.email-candidate-contact{font-size:11px;color:var(--text-2);white-space:nowrap}.email-candidate-chevron{font-size:21px;color:var(--text-3);transform:rotate(90deg);transition:transform .15s ease}.email-candidate[open] .email-candidate-chevron{transform:rotate(-90deg)}.email-candidate-details{border-top:1px solid var(--border-md);padding:13px 15px 15px;background:linear-gradient(180deg,var(--surface2),var(--surface))}.email-order{border-top:1px solid var(--border-md);padding-top:12px;margin-top:12px;font-size:13px;overflow-wrap:anywhere}.email-order-table{width:100%;font-size:12px;border-collapse:collapse}.email-order-table th,.email-order-table td{padding:6px;text-align:left;border-bottom:1px solid var(--border-md)}.email-evidence{white-space:pre-wrap;font-size:12px}.email-pdf-input{display:block;margin:8px 0;max-width:100%}@media(max-width:720px){.email-review-fields{grid-template-columns:1fr}.email-candidate-summary{grid-template-columns:minmax(0,1fr) 20px}.email-candidate-summary>.ai-pill,.email-candidate-contact{grid-column:1;justify-self:start}.email-candidate-chevron{grid-column:2;grid-row:1/4}}';
+  style.textContent = '.email-label{display:block;font-size:12px;font-weight:600;margin-top:12px}.email-input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid var(--border-md);border-radius:7px;background:var(--surface);color:var(--text)}#ai-email-workspace code{overflow-wrap:anywhere}#ai-email-workspace button:disabled{opacity:.5;cursor:default}.email-source{font-size:12px;overflow-wrap:anywhere;margin:8px 0}.email-review-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(140px,.7fr) minmax(190px,1fr);gap:10px;align-items:end}.email-candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}.email-candidate{padding:0!important;overflow:hidden;margin:0!important}.email-candidate[open]{grid-column:1/-1}.email-candidate-summary{list-style:none;display:grid;grid-template-columns:minmax(150px,1fr) auto 20px;gap:9px;align-items:center;padding:12px 13px;cursor:pointer}.email-candidate-summary::-webkit-details-marker{display:none}.email-candidate-summary:hover{background:var(--surface2)}.email-candidate-title{min-width:0}.email-candidate-title b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-title small{display:block;margin-top:3px;color:var(--text-3);font-size:10px;font-weight:500}.email-candidate-contact{grid-column:1/3;font-size:10px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-chevron{grid-column:3;grid-row:1/3;font-size:21px;color:var(--text-3);transform:rotate(90deg);transition:transform .15s ease}.email-candidate[open] .email-candidate-chevron{transform:rotate(-90deg)}.email-candidate-details{border-top:1px solid var(--border-md);padding:13px 15px 15px;background:linear-gradient(180deg,var(--surface2),var(--surface))}.email-order{border-top:1px solid var(--border-md);padding-top:12px;margin-top:12px;font-size:13px;overflow-wrap:anywhere}.email-order-table{width:100%;font-size:12px;border-collapse:collapse}.email-order-table th,.email-order-table td{padding:6px;text-align:left;border-bottom:1px solid var(--border-md)}.email-evidence{white-space:pre-wrap;font-size:12px}.email-pdf-input{display:block;margin:8px 0;max-width:100%}@media(max-width:1050px){.email-candidate-grid{grid-template-columns:1fr}.email-candidate[open]{grid-column:auto}}@media(max-width:720px){.email-review-fields{grid-template-columns:1fr}.email-candidate-summary{grid-template-columns:minmax(0,1fr) 20px}.email-candidate-summary>.ai-pill,.email-candidate-contact{grid-column:1;justify-self:start}.email-candidate-chevron{grid-column:2;grid-row:1/4}}';
   document.head.appendChild(style);
   var date = new Date(); date.setDate(date.getDate() - 90);
   document.getElementById('email-since').value = date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
@@ -78,7 +78,7 @@
   async function render() {
     var h = await helpers;
     var visible = rows.filter(row => !ignored.has(h.leadKey(row)) && !onlyAdditionalOrders(row));
-    document.getElementById('email-candidates').innerHTML = '<p class="ai-muted" style="margin:12px 0">' + visible.length + ' email candidate(s) to review</p>' + visible.map(row => {
+    document.getElementById('email-candidates').innerHTML = '<p class="ai-muted" style="margin:12px 0">' + visible.length + ' email candidate(s) to review</p><div class="email-candidate-grid">' + visible.map(row => {
       var i = rows.indexOf(row);
       var existing = clients.find(c => h.normalName(c.name) === h.normalName(row.client_name));
       var order = softwareOrders(row)[0] || {};
@@ -93,7 +93,7 @@
         '<button class="ai-btn ai-btn-primary" data-email-open="' + i + '">' + (existing ? 'View existing client' : 'Review new client form') + '</button>' +
         '<button class="ai-btn" data-email-dismiss="' + i + '">Dismiss</button></div>' +
         '<label class="email-label">Read a Software Order PDF saved from this email<input class="email-pdf-input" type="file" data-email-pdf="' + i + '" accept=".pdf,application/pdf"></label></div></details>';
-    }).join('');
+    }).join('') + '</div>';
     setBusy(busy);
   }
   window.addEventListener('cm-ai-open', async function () {
@@ -225,6 +225,7 @@
     if (existing) { goToClient(existing.id); return; }
     openAdd();
     document.getElementById('m-name').value = name;
+    document.getElementById('m-mgr').value = h.managerFromSender(row.source_sender);
     document.getElementById('m-client-code').value = (document.getElementById('email-client-code-' + index)?.value || '').trim();
     document.getElementById('m-email').value = (document.getElementById('email-client-email-' + index)?.value || '').trim().toLowerCase();
     document.getElementById('m-status').value = 'Not started';

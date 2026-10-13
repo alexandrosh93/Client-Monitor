@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { senderList, outlookLink, readReview, mergeLeads, candidateFromMessage, normalName } from '../email-leads.mjs';
+import { senderList, outlookLink, readReview, mergeLeads, candidateFromMessage, normalName, managerFromSender } from '../email-leads.mjs';
 
 const sample = {
   client_name: 'Example Ltd', classification: 'Possible new client', reason: 'Proposal accepted.',
@@ -42,4 +42,11 @@ test('review imports silently ignore Software Proposal candidates', () => {
 test('client matching tolerates punctuation and case without fuzzy identity guesses', () => {
   assert.equal(normalName('Example, LTD.'), normalName('example ltd'));
   assert.notEqual(normalName('Example Ltd'), normalName('Example Holdings Ltd'));
+});
+test('known sales senders map to the correct client manager', () => {
+  assert.equal(managerFromSender('andreas.kyriacou@premiersoft.com.cy'),'AK');
+  assert.equal(managerFromSender('andreas@premiersoft.com.cy'),'AK');
+  assert.equal(managerFromSender('vakis.theodosiou@premiersoft.com.cy'),'VT');
+  assert.equal(managerFromSender('vakis@premiersoft.com.cy'),'VT');
+  assert.equal(managerFromSender('someone@example.com'),'');
 });

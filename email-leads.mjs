@@ -22,6 +22,12 @@ export function normalName(value) {
 export function isIgnoredProposal(value) {
   return /\bsoftware\s+proposal\b/i.test(cleanText(value, 500));
 }
+export function managerFromSender(value) {
+  const local = String(value || '').trim().toLowerCase().split('@')[0];
+  if (local === 'andreas' || local === 'andreas.kyriacou') return 'AK';
+  if (local === 'vakis' || local === 'vakis.theodosiou') return 'VT';
+  return '';
+}
 export function leadKey(row) {
   return [row.source_sender.toLowerCase(), row.source_date, row.source_subject.replace(/^(?:(?:re|fw|fwd):\s*)+/gi, '').trim().toLowerCase()].join('|');
 }
