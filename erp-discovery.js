@@ -1,5 +1,5 @@
 import { ERP_DISCOVERY_CATALOG as catalog } from './erp-discovery-catalog.mjs';
-import { blankProjectDocument, computeProjectProgress, computeTrainingProgress, normalizeProjectDocument, validateErpDiscoveryImport } from './erp-discovery-model.mjs';
+import { blankProjectDocument, computeProjectProgress, computeTrainingProgress, normalizeProjectDocument } from './erp-discovery-model.mjs';
 
 const TRAINING_STATUSES = ['Not started', 'Scheduled', 'In progress', 'Waiting for client', 'Completed'];
 const MODULE_STATUSES = ['Not started', 'Needs setup', 'Needs training', 'In progress', 'Completed', 'Not applicable'];
@@ -7,13 +7,16 @@ const PHASES = ['During Implementation', 'During Support'];
 const root = document.getElementById('client-workspace');
 
 let client = null;
-let projects = [];
 let project = null;
 let documentState = blankProjectDocument();
 let activeSection = 'overview';
 let dirty = false;
 let databaseReady = true;
 let databaseError = '';
+let saveTimer = null;
+let saveInFlight = false;
+let saveQueued = false;
+let changeVersion = 0;
 
 const api = () => window.clientMonitorApi;
 const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
@@ -22,8 +25,16 @@ const options = (items, selected) => items.map(item => `<option${item === select
 
 function setDirty(value = true) {
   dirty = value;
+  if (value) changeVersion += 1;
   const label = root.querySelector('.erp-save-state');
-  if (label) label.innerHTML = value ? '<span class="erp-dirty-dot"></span>Unsaved changes' : `Saved${project?.updated_at ? ` · ${esc(new Date(project.updated_at).toLocaleString('en-GB'))}` : ''}`;
+  if (label) label.innerHTML = value ? '<span class="erp-dirty-dot"></span>Autosave pending…' : `Saved automatically${project?.updated_at ? ` · ${esc(new Date(project.updated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))}` : ''}`;
+  if (value) scheduleAutosave();
+}
+
+function scheduleAutosave(delay = 800) {
+  clearTimeout(saveTimer);
+  if (!project || !dirty) return;
+  saveTimer = setTimeout(() => saveProject(), delay);
 }
 
 function hideStandardViews() {
@@ -48,11 +59,6 @@ function sectionGroups() {
   ];
 }
 
-function projectOption(item) {
-  const progress = computeProjectProgress(item.document || {}, catalog).percent;
-  return `<option value="${attr(item.id)}"${project?.id === item.id ? ' selected' : ''}>${esc(item.name)} · ${progress}%</option>`;
-}
-
 function renderShell() {
   if (!client) return;
   const moduleBadges = (client.modules || []).map(item => `<span class="erp-badge">${esc(item)}</span>`).join('');
@@ -69,14 +75,8 @@ function renderShell() {
         </div>
       </div>
       <div class="erp-projectbar">
-        <select data-project-select ${!projects.length ? 'disabled' : ''}>${projects.length ? projects.map(projectOption).join('') : '<option>No ERP projects yet</option>'}</select>
-        <button class="erp-btn on-dark" data-project-new>+ New project</button>
-        <button class="erp-btn on-dark" data-project-import>Import .erpdisc</button>
-        <button class="erp-btn on-dark" data-project-export ${project ? '' : 'disabled'}>Export</button>
         <button class="erp-btn on-dark" data-project-print ${project ? '' : 'disabled'}>Print / PDF</button>
-        <button class="erp-btn primary" data-project-save ${project ? '' : 'disabled'}>Save project</button>
-        <span class="erp-save-state">${dirty ? '<span class="erp-dirty-dot"></span>Unsaved changes' : 'Saved'}</span>
-        <input class="erp-file" type="file" accept="application/json,.erpdisc" data-project-file>
+        <span class="erp-save-state">${dirty ? '<span class="erp-dirty-dot"></span>Autosave pending…' : `Saved automatically${project?.updated_at ? ` · ${esc(new Date(project.updated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))}` : ''}`}</span>
       </div>
     </section>
     <aside class="erp-side">${nav}</aside>
@@ -87,8 +87,8 @@ function renderShell() {
 }
 
 function renderNoProject() {
-  const setup = databaseReady ? '' : `<div class="erp-error">The ERP project tables are not available yet. Apply 9_client_projects.sql in Supabase, then reopen this workspace.${databaseError ? `<div class="erp-muted" style="margin-top:6px">${esc(databaseError)}</div>` : ''}</div>`;
-  return `${setup}<div class="erp-empty"><h3>No ERP project for this client</h3><p>Create a new project or import an existing .erpdisc file.</p><div style="display:flex;gap:8px;justify-content:center"><button class="erp-btn primary" data-project-new>+ New project</button><button class="erp-btn" data-project-import>Import .erpdisc</button></div></div>`;
+  const setup = databaseReady ? '' : `<div class="erp-error">The ERP workspace could not be loaded.${databaseError ? `<div class="erp-muted" style="margin-top:6px">${esc(databaseError)}</div>` : ''}</div>`;
+  return `${setup}<div class="erp-empty"><h3>Preparing this client workspace…</h3><p>Each client automatically has one ERP project.</p></div>`;
 }
 
 function renderOverview() {
@@ -98,7 +98,6 @@ function renderOverview() {
   return `<div class="erp-card">
     <h2>${esc(project.name)}</h2><div class="erp-muted">Project details are stored against ${esc(client.name)}. The client record remains the single source for company information.</div>
     <div class="erp-fields" style="margin-top:14px">
-      <div class="erp-field"><label>Project name</label><input class="erp-input" data-project-field="name" value="${attr(project.name)}"></div>
       <div class="erp-field"><label>Consultant</label><input class="erp-input" data-project-field="consultant" value="${attr(project.consultant || client.implementor || '')}"></div>
       <div class="erp-field"><label>Work phase</label><select class="erp-select" data-project-field="phase">${options(PHASES, project.phase || PHASES[0])}</select></div>
       <div class="erp-field"><label>Version</label><input class="erp-input" data-project-field="version" value="${attr(project.version || '1.0')}"></div>
@@ -202,8 +201,6 @@ function bindInputs(selector, callback) {
 
 function bindContent() {
   const container = root.querySelector('.erp-main') || root;
-  container.querySelectorAll('[data-project-new]').forEach(button => button.addEventListener('click', createProject));
-  container.querySelectorAll('[data-project-import]').forEach(button => button.addEventListener('click', () => root.querySelector('[data-project-file]')?.click()));
   bindInputs('[data-project-field]', element => { project[element.dataset.projectField] = element.value; });
   bindInputs('[data-answer]', element => { documentState.answers[element.dataset.answer] = element.value; });
   bindInputs('[data-note]', element => { documentState.notes[element.dataset.note] = element.value; });
@@ -230,16 +227,10 @@ function bindContent() {
 function bindShell() {
   root.querySelector('[data-erp-back]')?.addEventListener('click', backToClients);
   root.querySelectorAll('[data-erp-nav]').forEach(button => button.addEventListener('click', () => { activeSection = button.dataset.erpNav; renderShell(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
-  root.querySelector('[data-project-select]')?.addEventListener('change', event => selectProject(event.target.value));
-  root.querySelector('[data-project-new]')?.addEventListener('click', createProject);
-  root.querySelector('[data-project-import]')?.addEventListener('click', () => root.querySelector('[data-project-file]')?.click());
-  root.querySelector('[data-project-file]')?.addEventListener('change', importProject);
-  root.querySelector('[data-project-save]')?.addEventListener('click', saveProject);
-  root.querySelector('[data-project-export]')?.addEventListener('click', exportProject);
   root.querySelector('[data-project-print]')?.addEventListener('click', () => window.print());
 }
 
-async function loadProjects(preferredId = '') {
+async function loadProject() {
   databaseReady = true;
   databaseError = '';
   const { data, error } = await api().getSupabase().from('client_projects').select('*').eq('client_id', client.id).order('updated_at', { ascending: false });
@@ -247,89 +238,92 @@ async function loadProjects(preferredId = '') {
     console.error('ERP projects load error:', error);
     databaseReady = false;
     databaseError = error.message || 'Could not load ERP projects.';
-    projects = []; project = null; documentState = blankProjectDocument(); renderShell(); return;
+    project = null; documentState = blankProjectDocument(); renderShell(); return;
   }
-  projects = data || [];
-  project = projects.find(item => item.id === preferredId) || projects[0] || null;
-  documentState = project ? normalizeProjectDocument(project.document) : blankProjectDocument();
-  activeSection = 'overview'; dirty = false; renderShell();
+  project = data?.[0] || null;
+  if (!project) {
+    await createProject();
+    return;
+  }
+  documentState = normalizeProjectDocument(project.document);
+  activeSection = 'overview'; dirty = false; changeVersion = 0; renderShell();
 }
 
 async function createProject() {
-  if (!databaseReady) { api().toast('Apply 9_client_projects.sql in Supabase first.'); return; }
-  const name = prompt('Project name:', 'ERP Implementation');
-  if (!name?.trim()) return;
-  const payload = { client_id: client.id, name: name.trim().slice(0, 150), consultant: client.implementor || '', phase: 'During Implementation', version: '1.0', document: blankProjectDocument(), created_by: api().getCurrentUser(), updated_by: api().getCurrentUser() };
+  if (!databaseReady) return;
+  const payload = { client_id: client.id, name: `${client.name} ERP Project`.slice(0, 150), consultant: client.implementor || '', phase: 'During Implementation', version: '1.0', document: blankProjectDocument(), created_by: api().getCurrentUser(), updated_by: api().getCurrentUser() };
   const { data, error } = await api().getSupabase().from('client_projects').insert(payload).select('*').single();
-  if (error) { api().toast(`Could not create project: ${error.message}`); return; }
+  if (error) {
+    if (error.code === '23505') { await loadProject(); return; }
+    databaseReady = false; databaseError = error.message || 'Could not prepare this client workspace.'; renderShell(); return;
+  }
+  project = data; documentState = blankProjectDocument(); dirty = false; changeVersion = 0;
   await api().getSupabase().from('client_project_history').insert({ project_id: data.id, action: 'Created', user_name: api().getCurrentUser(), detail: { source: 'Client Monitor' } });
   api().audit('ERP Project', client.name, `Created ${data.name}`);
-  await loadProjects(data.id);
-}
-
-function selectProject(id) {
-  if (dirty && !confirm('Discard unsaved project changes?')) { renderShell(); return; }
-  project = projects.find(item => item.id === id) || null;
-  documentState = project ? normalizeProjectDocument(project.document) : blankProjectDocument();
-  activeSection = 'overview'; dirty = false; renderShell();
+  renderShell();
 }
 
 async function saveProject() {
-  if (!project || !dirty) { if (project) api().toast('Project is already saved.'); return; }
-  const progress = computeProjectProgress(documentState, catalog);
-  const training = computeTrainingProgress(documentState, catalog);
+  clearTimeout(saveTimer);
+  if (!project || !dirty) return true;
+  if (saveInFlight) { saveQueued = true; return true; }
+  saveInFlight = true;
+  const saveLabel = root.querySelector('.erp-save-state');
+  if (saveLabel) saveLabel.innerHTML = '<span class="erp-dirty-dot"></span>Saving…';
+  const savingVersion = changeVersion;
+  const savingProject = { ...project };
+  const savingClient = { ...client };
+  const savingDocument = normalizeProjectDocument(documentState);
+  const progress = computeProjectProgress(savingDocument, catalog);
+  const training = computeTrainingProgress(savingDocument, catalog);
   const now = new Date();
-  documentState.changeHistory.push({ date: now.toISOString().slice(0, 10), savedAt: now.toISOString(), phase: project.phase, consultant: project.consultant, progress: progress.percent, trainingProgress: training.percent, user: api().getCurrentUser() });
-  const payload = { name: project.name.trim().slice(0, 150) || 'ERP Implementation', consultant: project.consultant || '', phase: project.phase || PHASES[0], version: project.version || '1.0', document: normalizeProjectDocument(documentState), updated_by: api().getCurrentUser(), updated_at: now.toISOString() };
-  let query = api().getSupabase().from('client_projects').update(payload).eq('id', project.id);
-  if (project.updated_at) query = query.eq('updated_at', project.updated_at);
+  const today = now.toISOString().slice(0, 10);
+  const historyItem = { date: today, savedAt: now.toISOString(), phase: savingProject.phase, consultant: savingProject.consultant, progress: progress.percent, trainingProgress: training.percent, user: api().getCurrentUser() };
+  const lastHistory = savingDocument.changeHistory.at(-1);
+  if (lastHistory?.date === today) savingDocument.changeHistory[savingDocument.changeHistory.length - 1] = historyItem;
+  else savingDocument.changeHistory.push(historyItem);
+  const payload = { name: `${savingClient.name} ERP Project`.slice(0, 150), consultant: savingProject.consultant || '', phase: savingProject.phase || PHASES[0], version: savingProject.version || '1.0', document: savingDocument, updated_by: api().getCurrentUser(), updated_at: now.toISOString() };
+  let query = api().getSupabase().from('client_projects').update(payload).eq('id', savingProject.id);
+  if (savingProject.updated_at) query = query.eq('updated_at', savingProject.updated_at);
   const { data, error } = await query.select('*');
-  if (error) { documentState.changeHistory.pop(); api().toast(`Could not save project: ${error.message}`); return; }
-  if (!data?.length) { documentState.changeHistory.pop(); alert('This project was updated by another user. Reopen it before saving so their changes are not overwritten.'); return; }
-  project = data[0];
-  const index = projects.findIndex(item => item.id === project.id); if (index >= 0) projects[index] = project;
-  await api().getSupabase().from('client_project_history').insert({ project_id: project.id, action: 'Saved', user_name: api().getCurrentUser(), detail: { discoveryProgress: progress.percent, trainingProgress: training.percent, section: activeSection } });
-  api().audit('ERP Project', client.name, `Saved ${project.name} · Discovery ${progress.percent}% · Training ${training.percent}%`);
-  setDirty(false); renderShell(); api().toast('ERP project saved.');
+  saveInFlight = false;
+  if (error) {
+    if (saveLabel) saveLabel.innerHTML = '<span class="erp-dirty-dot"></span>Autosave failed · retrying…';
+    api().toast(`Autosave failed: ${error.message}`);
+    scheduleAutosave(2500);
+    return false;
+  }
+  if (!data?.length) {
+    if (saveLabel) saveLabel.innerHTML = '<span class="erp-dirty-dot"></span>Autosave paused · reopen workspace';
+    api().toast('Autosave paused because this workspace changed in another window. Reopen it to continue.');
+    return false;
+  }
+  if (project?.id === savingProject.id) {
+    project = data[0];
+    documentState.changeHistory = savingDocument.changeHistory;
+    if (changeVersion === savingVersion) setDirty(false);
+    else scheduleAutosave(200);
+  }
+  if (saveQueued) { saveQueued = false; scheduleAutosave(100); }
+  return true;
 }
 
-async function importProject(event) {
-  const file = event.target.files?.[0]; event.target.value = ''; if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { api().toast('ERP Discovery files must be smaller than 5 MB.'); return; }
-  try {
-    const imported = validateErpDiscoveryImport(JSON.parse(await file.text()));
-    const counts = { answers: Object.keys(imported.document.answers).length, modules: Object.keys(imported.document.moduleData).length, requirements: imported.document.requirements.length, users: imported.document.users.length };
-    if (!confirm(`Import “${imported.projectName}” into ${client.name}?\n\nSource company: ${imported.companyName || 'Not specified'}\n${counts.answers} answers · ${counts.modules} module items · ${counts.requirements} requirements · ${counts.users} users`)) return;
-    if (imported.sourceProjectId && projects.some(item => item.source_project_id === imported.sourceProjectId)) { api().toast('This ERP Discovery project has already been imported for this client.'); return; }
-    const payload = { client_id: client.id, source_project_id: imported.sourceProjectId || null, imported_filename: file.name.slice(0, 255), name: imported.projectName, consultant: imported.consultant || client.implementor || '', phase: imported.phase, version: imported.version, document: imported.document, created_by: api().getCurrentUser(), updated_by: api().getCurrentUser() };
-    const { data, error } = await api().getSupabase().from('client_projects').insert(payload).select('*').single();
-    if (error) throw error;
-    await api().getSupabase().from('client_project_history').insert({ project_id: data.id, action: 'Imported', user_name: api().getCurrentUser(), detail: { filename: file.name, sourceProjectId: imported.sourceProjectId || null, counts } });
-    api().audit('ERP Project', client.name, `Imported ${file.name} as ${data.name}`);
-    await loadProjects(data.id); api().toast('ERP Discovery project imported.');
-  } catch (error) { api().toast(`Import failed: ${error.message || 'Invalid ERP Discovery file'}`); }
-}
-
-function exportProject() {
-  if (!project) return;
-  const output = { projectId: project.source_project_id || project.id, meta: { company: client.name, project: project.name, consultant: project.consultant, phase: project.phase, version: project.version, lastSaved: project.updated_at }, ...normalizeProjectDocument(documentState) };
-  const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
-  const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `${client.name.replace(/[^a-z0-9]+/gi, '_')}_${project.name.replace(/[^a-z0-9]+/gi, '_')}.erpdisc`; link.click(); URL.revokeObjectURL(link.href);
-}
-
-function backToClients() {
-  if (dirty && !confirm('Leave this project without saving your changes?')) return;
+async function backToClients() {
+  if (dirty) await saveProject();
   window.closeClientWorkspaceView(); api().goToClient(client.id);
 }
 
 window.closeClientWorkspaceView = function closeClientWorkspaceView() {
+  if (dirty) saveProject();
   root.classList.remove('active'); root.style.display = 'none';
 };
 
 window.openClientWorkspace = async function openClientWorkspace(clientId) {
   const found = api()?.getClients().find(item => Number(item.id) === Number(clientId));
   if (!found) { api()?.toast('Client not found.'); return; }
-  client = found; projects = []; project = null; documentState = blankProjectDocument(); activeSection = 'overview'; dirty = false;
+  client = found; project = null; documentState = blankProjectDocument(); activeSection = 'overview'; dirty = false; changeVersion = 0;
   hideStandardViews(); root.style.display = 'block'; root.classList.add('active'); root.innerHTML = '<div class="erp-empty">Loading client workspace…</div>'; window.scrollTo({ top: 0 });
-  await loadProjects();
+  await loadProject();
 };
+
+document.addEventListener('visibilitychange', () => { if (document.hidden && dirty) saveProject(); });
