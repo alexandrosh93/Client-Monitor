@@ -17,11 +17,11 @@
     answers:{'company.1':'Professional services and retail operations.'},
     checks:{'training.1':true},
     notes:{'migration.1':'Customer master file supplied.'},
-    users:[{id:'u1',name:'Demo User',position:'Accounts'}],
+    users:[{id:'u1',name:'Demo User',position:'Accounts'},{id:'u2',name:'Stock User',position:'Warehouse'}],
     trainingRoles:[{role:'Accounts Team',tasks:'Daily invoicing and receipts',level:'2 - Basic User',training:'Sales and accounting workflow',superUser:'Yes'}],
     requirements:[{id:'R01',topic:'Confirm invoice layout',type:'Setup',priority:'High',owner:'Consultant',status:'Open',date:'2026-10-15',phase:'During Implementation'}],
     migrationExtra:{history:'2-3 years',source:'Existing ERP export',freeze:'2026-11-01'},
-    moduleData:{'maintenance.1':{checked:true,status:'Completed',note:'Configured',action:'Client approval',date:'2026-10-12',phase:'During Implementation',users:[]}},
+    moduleData:{'maintenance.1':{checked:true,status:'Completed',note:'Configured',action:'Client approval',date:'2026-10-12',phase:'During Implementation',users:['u1']}},
     trainingStages:{'training.1':{status:'Completed',plannedDate:'2026-10-10',completedDate:'2026-10-10',trainer:'Consultant',participants:'Accounts Team',notes:'Completed successfully',nextAction:''},'training.2':{status:'In progress',plannedDate:'2026-10-16',completedDate:'',trainer:'Consultant',participants:'Accounts Team',notes:'Repeat customer credit limits',nextAction:'Arrange second session'}},
     changeHistory:[{date:'2026-10-12',phase:'During Implementation',consultant:'Consultant',progress:18}],fieldChanges:{}
   };

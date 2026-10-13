@@ -44,6 +44,7 @@ export function blankProjectDocument() {
     moduleData: {},
     trainingStages: {},
     changeHistory: [],
+    changeLog: [],
     fieldChanges: {},
   };
 }
@@ -121,6 +122,13 @@ export function normalizeProjectDocument(raw) {
         user: text(value.user, 300),
       };
     }),
+    changeLog: list(input.changeLog, 2000).map(item => {
+      const value = record(item);
+      return {
+        date: text(value.date, 20), at: text(value.at, 100), section: text(value.section, 100),
+        field: text(value.field, 160), label: text(value.label, 500), value: text(value.value, 2000), user: text(value.user, 300),
+      };
+    }).filter(item => item.date && item.field),
     fieldChanges: cleanFieldChanges(input.fieldChanges),
   };
 }

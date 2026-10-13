@@ -15,10 +15,13 @@ test('normalizes legacy ERP Discovery data and keeps special training notes', ()
     answers: { 'company.1': 'Retail' },
     checks: { 'training.1': true },
     notes: { 'training.1': 'Repeat month-end example' },
-    moduleData: { 'stock.1': { checked: true, note: 'Configured', action: 'Verify' } },
+    moduleData: { 'stock.1': { checked: true, note: 'Configured', action: 'Verify', users: ['user-1', 'user-2'] } },
+    changeLog: [{ date: '2026-10-13', at: '2026-10-13T10:00:00Z', section: 'module:stock', field: 'module.stock.1.users', label: 'Training attendees', value: 'Anna, George', user: 'tester' }],
   });
   assert.equal(document.answers['company.1'], 'Retail');
   assert.equal(document.moduleData['stock.1'].checked, true);
+  assert.deepEqual(document.moduleData['stock.1'].users, ['user-1', 'user-2']);
+  assert.equal(document.changeLog[0].label, 'Training attendees');
   assert.equal(document.trainingStages['training.1'], undefined);
   assert.equal(document.notes['training.1'], 'Repeat month-end example');
 });

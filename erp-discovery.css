@@ -11,11 +11,17 @@
 .erp-badge{padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.12);font-size:11px}
 .erp-projectbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.18)}
 .erp-projectbar select{min-width:220px;max-width:360px;padding:7px 9px;border:0;border-radius:7px;font:500 12px 'DM Sans',sans-serif}
+.erp-report-control{display:flex;align-items:center;gap:6px;padding:5px 7px;border:1px solid rgba(255,255,255,.2);border-radius:9px;background:rgba(255,255,255,.06)}
+.erp-report-control>span{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.72)}
+.erp-report-control select{min-width:118px;max-width:150px;padding:6px 7px}
+.erp-report-control input[type=date]{width:128px;padding:6px 7px;border:0;border-radius:7px;font:500 11px 'DM Sans',sans-serif}
+.erp-report-control input:disabled{display:none}
 .erp-btn{border:1px solid var(--border-md);background:#fff;color:var(--text-2);border-radius:7px;padding:7px 10px;font:600 11px 'DM Sans',sans-serif;cursor:pointer}
 .erp-btn:hover{border-color:var(--accent);color:var(--accent)}
 .erp-btn:disabled{opacity:.5;cursor:not-allowed}
 .erp-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 .erp-btn.on-dark{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff}
+.erp-email-report{text-decoration:none;display:inline-flex;align-items:center}
 .erp-btn.danger{border-color:#fecaca;color:#b91c1c;background:#fff7f7}
 .erp-save-state{font-size:11px;margin-left:auto;color:rgba(255,255,255,.75)}
 .erp-side{position:sticky;top:70px;max-height:calc(100vh - 86px);overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:5px;box-shadow:var(--shadow-sm)}
@@ -64,6 +70,11 @@
 .erp-module-item{display:grid;grid-template-columns:28px minmax(180px,1.2fr) minmax(140px,.7fr) minmax(170px,1fr);gap:10px;align-items:start}
 .erp-module-item>input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);margin-top:8px}
 .erp-module-title{font-size:12px;font-weight:650;padding-top:8px;line-height:1.35}
+.erp-attendees{display:flex;flex-wrap:wrap;gap:6px;padding:7px;border:1px solid var(--border);border-radius:8px;background:var(--surface2)}
+.erp-attendee{display:flex!important;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--border-md);border-radius:7px;background:#fff;color:var(--text)!important;font-size:11px!important;font-weight:600!important;text-transform:none!important;letter-spacing:0!important;cursor:pointer;margin:0!important}
+.erp-attendee input{width:16px;height:16px;accent-color:var(--accent);margin:0}
+.erp-attendee span{display:flex;flex-direction:column;line-height:1.2}
+.erp-attendee small{font-size:9px;font-weight:400;color:var(--text-3)}
 .erp-table-wrap{overflow:auto}
 .erp-table{width:100%;border-collapse:collapse;min-width:720px;font-size:11px}
 .erp-table th{background:var(--surface2);color:var(--text-3);font-size:9px;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:7px;border-bottom:1px solid var(--border-md)}
@@ -76,6 +87,7 @@
 .erp-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
 .erp-file{display:none}
 .erp-dirty-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#f59e0b;margin-right:5px}
-@media(max-width:980px){.erp-shell{grid-template-columns:190px minmax(0,1fr)}.erp-grid{grid-template-columns:1fr 1fr}.erp-fields{grid-template-columns:1fr 1fr}.erp-module-item{grid-template-columns:28px 1fr}.erp-module-item .erp-module-wide{grid-column:2}}
-@media(max-width:800px){.erp-shell{display:block}.erp-side{position:static;max-height:none;margin-bottom:12px;display:block;overflow:visible}.erp-topline{display:block}.erp-back{margin-bottom:10px}.erp-projectbar{align-items:stretch}.erp-projectbar select{max-width:none;width:100%}.erp-save-state{width:100%;margin-left:0}.erp-fields,.erp-grid{grid-template-columns:1fr}.erp-module-item{grid-template-columns:26px 1fr}.erp-title{font-size:20px}}
-@media print{body.sidemenu-pinned main,body.sidemenu-expanded main{margin-left:0!important;width:100%!important;max-width:100%!important}.erp-side,.erp-back,.erp-projectbar,.erp-actions,header,#sidemenu{display:none!important}.erp-shell{display:block}.erp-top{background:#fff!important;color:#111!important;box-shadow:none;border:1px solid #ccc}.erp-kicker,.erp-subtitle{color:#555!important}.erp-card{box-shadow:none;break-inside:avoid}.erp-main{display:block!important}}
+.erp-print-report{display:none}
+@media(max-width:980px){.erp-shell{grid-template-columns:190px minmax(0,1fr)}.erp-grid{grid-template-columns:1fr 1fr}.erp-fields{grid-template-columns:1fr 1fr}.erp-module-item{grid-template-columns:28px minmax(0,1fr)}.erp-module-item>.erp-field,.erp-module-item .erp-module-wide{grid-column:2}}
+@media(max-width:800px){.erp-shell{display:block}.erp-side{position:static;max-height:none;margin-bottom:12px;display:block;overflow:visible}.erp-topline{display:block}.erp-back{margin-bottom:10px}.erp-projectbar{align-items:stretch}.erp-projectbar select{max-width:none;width:auto}.erp-report-control{flex-wrap:wrap}.erp-report-control>span{width:100%}.erp-save-state{width:100%;margin-left:0}.erp-fields,.erp-grid{grid-template-columns:1fr}.erp-module-item{grid-template-columns:26px 1fr}.erp-title{font-size:20px}}
+@media print{body.sidemenu-pinned main,body.sidemenu-expanded main{margin-left:0!important;width:100%!important;max-width:100%!important}.erp-side,.erp-back,.erp-projectbar,.erp-actions,header,#sidemenu{display:none!important}.erp-shell{display:block}.erp-top{background:#fff!important;color:#111!important;box-shadow:none;border:1px solid #ccc}.erp-kicker,.erp-subtitle{color:#555!important}.erp-card{box-shadow:none;break-inside:avoid}.erp-main{display:block!important}body.erp-report-printing .erp-shell{display:none!important}body.erp-report-printing .erp-print-report{display:block!important}body.erp-report-printing .erp-print-report h1{font-size:22px;margin:0 0 4px}body.erp-report-printing .erp-print-report h2{font-size:16px;margin:0 0 16px;color:#1e3a6e}body.erp-report-printing .erp-print-report pre{white-space:pre-wrap;font:11px/1.45 'DM Sans',sans-serif}}
