@@ -1,7 +1,6 @@
 import { ERP_DISCOVERY_CATALOG as catalog } from './erp-discovery-catalog.mjs';
-import { blankProjectDocument, computeProjectProgress, computeTrainingProgress, normalizeProjectDocument } from './erp-discovery-model.mjs';
+import { blankProjectDocument, computeProjectProgress, normalizeProjectDocument } from './erp-discovery-model.mjs';
 
-const TRAINING_STATUSES = ['Not started', 'Scheduled', 'In progress', 'Waiting for client', 'Completed'];
 const MODULE_STATUSES = ['Not started', 'Needs setup', 'Needs training', 'In progress', 'Completed', 'Not applicable'];
 const PHASES = ['During Implementation', 'During Support'];
 const root = document.getElementById('client-workspace');
@@ -50,11 +49,15 @@ function hideStandardViews() {
 }
 
 function sectionGroups() {
-  const normal = catalog.sections.filter(section => !['training'].includes(section.id));
+  const discovery = [];
+  for (const section of catalog.sections) {
+    if (section.id === 'training') discovery.push({ id: 'training-roles', title: section.title });
+    else discovery.push({ id: section.id, title: section.title });
+    if (section.id === 'scenarios') discovery.push({ id: 'requirements', title: '11. Requirements / Decisions Log' });
+  }
   return [
-    { id: 'workspace', title: 'Workspace', items: [{ id: 'overview', title: 'Overview' }, { id: 'users', title: 'Client Users' }, { id: 'training-roles', title: 'Training Roles' }, { id: 'requirements', title: 'Requirements' }] },
-    { id: 'discovery', title: 'Discovery & Readiness', items: normal.map(section => ({ id: section.id, title: section.title })) },
-    { id: 'training', title: 'Training', items: [{ id: 'training', title: 'Training Stages' }] },
+    { id: 'workspace', title: 'Workspace', items: [{ id: 'overview', title: 'Overview' }, { id: 'users', title: 'Client Users' }] },
+    { id: 'discovery', title: 'Discovery & Readiness', items: discovery },
     { id: 'accounting', title: 'Accounting Modules', items: catalog.moduleSections.filter(section => section.group === 'accounting').map(section => ({ id: `module:${section.id}`, title: section.title })) },
     { id: 'stock', title: 'Stock Modules', items: catalog.moduleSections.filter(section => section.group === 'stock').map(section => ({ id: `module:${section.id}`, title: section.title })) },
   ];
@@ -105,7 +108,6 @@ function renderNoProject() {
 
 function renderOverview() {
   const discovery = computeProjectProgress(documentState, catalog);
-  const training = computeTrainingProgress(documentState, catalog);
   const openRequirements = documentState.requirements.filter(item => !['Done', 'Accepted'].includes(item.status)).length;
   return `<div class="erp-card">
     <h2>${esc(project.name)}</h2><div class="erp-muted">Project details are stored against ${esc(client.name)}. The client record remains the single source for company information.</div>
@@ -117,9 +119,8 @@ function renderOverview() {
       <div class="erp-field"><label>Live date</label><input class="erp-input" value="${attr(client.liveDate || 'Not set')}" disabled></div>
     </div>
   </div>
-  <div class="erp-grid">
+  <div class="erp-grid erp-grid-two">
     <div class="erp-stat"><strong>${discovery.percent}%</strong><span>Discovery completion</span><div class="erp-progress"><span style="width:${discovery.percent}%"></span></div><div class="erp-muted" style="margin-top:6px">${discovery.complete} of ${discovery.total} items</div></div>
-    <div class="erp-stat"><strong>${training.percent}%</strong><span>Training completion</span><div class="erp-progress"><span style="width:${training.percent}%"></span></div><div class="erp-muted" style="margin-top:6px">${training.complete} of ${training.total} stages</div></div>
     <div class="erp-stat"><strong>${openRequirements}</strong><span>Open requirements</span><div class="erp-muted" style="margin-top:14px">${documentState.requirements.length} total requirements</div></div>
   </div>
   <div class="erp-card" style="margin-top:12px"><h3>Project history</h3>${documentState.changeHistory.length ? documentState.changeHistory.slice().reverse().slice(0, 12).map(item => `<div class="erp-question"><strong>${esc(item.date || item.savedAt || '')}</strong> · ${esc(item.phase || '')}<div class="erp-muted">${esc(item.consultant || '')}${item.progress !== undefined ? ` · ${esc(item.progress)}%` : ''}</div></div>`).join('') : '<div class="erp-muted">No saved history yet.</div>'}</div>`;
@@ -136,38 +137,19 @@ function renderQuestions(section) {
   return `<div class="erp-card"><h2>${esc(section.title)}</h2><div class="erp-muted">${section.checklist ? 'Mark completed items and keep specific notes for each item.' : 'Record the discovery answer for each topic.'}</div>${items}</div>${migration}`;
 }
 
-function renderTraining() {
-  const section = catalog.sections.find(item => item.id === 'training');
-  const stages = section.questions.map((item, index) => {
-    const value = documentState.trainingStages[item.id] || { status: documentState.checks[item.id] ? 'Completed' : 'Not started' };
-    return `<div class="erp-stage" data-status="${attr(value.status || 'Not started')}">
-      <div class="erp-stage-head"><div class="erp-stage-title"><span class="erp-stage-num">${index + 1}</span>${esc(item.text)}</div><select class="erp-select" style="max-width:180px" data-stage-key="${attr(item.id)}" data-stage-field="status">${options(TRAINING_STATUSES, value.status || 'Not started')}</select></div>
-      <div class="erp-fields">
-        <div class="erp-field"><label>Planned date</label><input type="date" class="erp-input" data-stage-key="${attr(item.id)}" data-stage-field="plannedDate" value="${attr(value.plannedDate || '')}"></div>
-        <div class="erp-field"><label>Completed date</label><input type="date" class="erp-input" data-stage-key="${attr(item.id)}" data-stage-field="completedDate" value="${attr(value.completedDate || '')}"></div>
-        <div class="erp-field"><label>Trainer</label><input class="erp-input" data-stage-key="${attr(item.id)}" data-stage-field="trainer" value="${attr(value.trainer || project.consultant || client.implementor || '')}"></div>
-        <div class="erp-field"><label>Participants</label><input class="erp-input" data-stage-key="${attr(item.id)}" data-stage-field="participants" value="${attr(value.participants || '')}"></div>
-        <div class="erp-field"><label>Next action</label><input class="erp-input" data-stage-key="${attr(item.id)}" data-stage-field="nextAction" value="${attr(value.nextAction || '')}"></div>
-        <div class="erp-field"><label>Special notes</label><textarea class="erp-textarea" data-stage-key="${attr(item.id)}" data-stage-field="notes">${esc(value.notes || '')}</textarea></div>
-      </div>
-    </div>`;
-  }).join('');
-  return `<div class="erp-card"><h2>Training Plan</h2><div class="erp-alert">Training progress is calculated from completed stages and stays separate from the client's implementation progress.</div>${stages}</div>`;
-}
-
 function renderUsers() {
   return `<div class="erp-card"><div class="erp-actions"><div><h2>Client Users</h2><div class="erp-muted">People involved in discovery, implementation or training.</div></div><button class="erp-btn primary" data-add-user>+ Add user</button></div><div class="erp-table-wrap"><table class="erp-table"><thead><tr><th>Name</th><th>Position / Department</th><th></th></tr></thead><tbody>${documentState.users.map((item, index) => `<tr><td><input data-user-index="${index}" data-user-field="name" value="${attr(item.name)}"></td><td><input data-user-index="${index}" data-user-field="position" value="${attr(item.position)}"></td><td><button class="erp-btn danger" data-remove-user="${index}">Remove</button></td></tr>`).join('')}</tbody></table></div>${documentState.users.length ? '' : '<div class="erp-empty">No users recorded.</div>'}</div>`;
 }
 
 function renderTrainingRoles() {
-  return `<div class="erp-card"><div class="erp-actions"><div><h2>Training Roles</h2><div class="erp-muted">Plan training by role and actual work.</div></div><button class="erp-btn primary" data-add-role>+ Add role</button></div><div class="erp-table-wrap"><table class="erp-table"><thead><tr><th>Role / Department</th><th>Main tasks</th><th>Level</th><th>Training needs</th><th>Super user</th><th></th></tr></thead><tbody>${documentState.trainingRoles.map((item, index) => `<tr><td><input data-role-index="${index}" data-role-field="role" value="${attr(item.role)}"></td><td><textarea data-role-index="${index}" data-role-field="tasks">${esc(item.tasks)}</textarea></td><td><select data-role-index="${index}" data-role-field="level">${options(['1 - Beginner','2 - Basic User','3 - Experienced User','4 - Super User','5 - Administrator'], item.level)}</select></td><td><textarea data-role-index="${index}" data-role-field="training">${esc(item.training)}</textarea></td><td><select data-role-index="${index}" data-role-field="superUser">${options(['No','Yes'], item.superUser)}</select></td><td><button class="erp-btn danger" data-remove-role="${index}">Remove</button></td></tr>`).join('')}</tbody></table></div>${documentState.trainingRoles.length ? '' : '<div class="erp-empty">No training roles recorded.</div>'}</div>`;
+  return `<div class="erp-card"><div class="erp-actions"><div><h2>9. Training Topics ανά Ρόλο</h2><div class="erp-muted">Plan training by role and actual work.</div></div><button class="erp-btn primary" data-add-role>+ Add role</button></div><div class="erp-table-wrap"><table class="erp-table"><thead><tr><th>Role / Department</th><th>Main tasks</th><th>Level</th><th>Training needs</th><th>Super user</th><th></th></tr></thead><tbody>${documentState.trainingRoles.map((item, index) => `<tr><td><input data-role-index="${index}" data-role-field="role" value="${attr(item.role)}"></td><td><textarea data-role-index="${index}" data-role-field="tasks">${esc(item.tasks)}</textarea></td><td><select data-role-index="${index}" data-role-field="level">${options(['1 - Beginner','2 - Basic User','3 - Experienced User','4 - Super User','5 - Administrator'], item.level)}</select></td><td><textarea data-role-index="${index}" data-role-field="training">${esc(item.training)}</textarea></td><td><select data-role-index="${index}" data-role-field="superUser">${options(['No','Yes'], item.superUser)}</select></td><td><button class="erp-btn danger" data-remove-role="${index}">Remove</button></td></tr>`).join('')}</tbody></table></div>${documentState.trainingRoles.length ? '' : '<div class="erp-empty">No training roles recorded.</div>'}</div>`;
 }
 
 function renderRequirements() {
   const types = ['Process', 'Setup', 'Dev', 'Migration', 'Training'];
   const priorities = ['Low', 'Medium', 'High', 'Critical'];
   const statuses = ['Open', 'In Progress', 'Decision Required', 'Done', 'Accepted'];
-  return `<div class="erp-card"><div class="erp-actions"><div><h2>Requirements / Decisions</h2><div class="erp-muted">Track actions, decisions and training requirements for this project.</div></div><button class="erp-btn primary" data-add-requirement>+ Add requirement</button></div><div class="erp-table-wrap"><table class="erp-table"><thead><tr><th>ID</th><th>Topic</th><th>Type</th><th>Priority</th><th>Owner</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>${documentState.requirements.map((item, index) => `<tr><td><input data-req-index="${index}" data-req-field="id" value="${attr(item.id)}"></td><td><textarea data-req-index="${index}" data-req-field="topic">${esc(item.topic)}</textarea></td><td><select data-req-index="${index}" data-req-field="type">${options(types, item.type)}</select></td><td><select data-req-index="${index}" data-req-field="priority">${options(priorities, item.priority)}</select></td><td><input data-req-index="${index}" data-req-field="owner" value="${attr(item.owner)}"></td><td><select data-req-index="${index}" data-req-field="status">${options(statuses, item.status)}</select></td><td><input type="date" data-req-index="${index}" data-req-field="date" value="${attr(item.date)}"></td><td><button class="erp-btn danger" data-remove-requirement="${index}">Remove</button></td></tr>`).join('')}</tbody></table></div>${documentState.requirements.length ? '' : '<div class="erp-empty">No requirements recorded.</div>'}</div>`;
+  return `<div class="erp-card"><div class="erp-actions"><div><h2>11. Requirements / Decisions Log</h2><div class="erp-muted">Track actions, decisions and training requirements for this project.</div></div><button class="erp-btn primary" data-add-requirement>+ Add requirement</button></div><div class="erp-table-wrap"><table class="erp-table"><thead><tr><th>ID</th><th>Topic</th><th>Type</th><th>Priority</th><th>Owner</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>${documentState.requirements.map((item, index) => `<tr><td><input data-req-index="${index}" data-req-field="id" value="${attr(item.id)}"></td><td><textarea data-req-index="${index}" data-req-field="topic">${esc(item.topic)}</textarea></td><td><select data-req-index="${index}" data-req-field="type">${options(types, item.type)}</select></td><td><select data-req-index="${index}" data-req-field="priority">${options(priorities, item.priority)}</select></td><td><input data-req-index="${index}" data-req-field="owner" value="${attr(item.owner)}"></td><td><select data-req-index="${index}" data-req-field="status">${options(statuses, item.status)}</select></td><td><input type="date" data-req-index="${index}" data-req-field="date" value="${attr(item.date)}"></td><td><button class="erp-btn danger" data-remove-requirement="${index}">Remove</button></td></tr>`).join('')}</tbody></table></div>${documentState.requirements.length ? '' : '<div class="erp-empty">No requirements recorded.</div>'}</div>`;
 }
 
 function renderModule(section) {
@@ -190,7 +172,6 @@ function renderMain() {
   else if (activeSection === 'users') container.innerHTML = renderUsers();
   else if (activeSection === 'training-roles') container.innerHTML = renderTrainingRoles();
   else if (activeSection === 'requirements') container.innerHTML = renderRequirements();
-  else if (activeSection === 'training') container.innerHTML = renderTraining();
   else if (activeSection.startsWith('module:')) container.innerHTML = renderModule(catalog.moduleSections.find(item => item.id === activeSection.slice(7)));
   else container.innerHTML = renderQuestions(catalog.sections.find(item => item.id === activeSection));
   bindContent();
@@ -199,11 +180,6 @@ function renderMain() {
 function ensureModule(key) {
   if (!documentState.moduleData[key]) documentState.moduleData[key] = { checked: false, status: 'Not started', note: '', action: '', date: '', phase: project.phase || PHASES[0], users: [] };
   return documentState.moduleData[key];
-}
-
-function ensureStage(key) {
-  if (!documentState.trainingStages[key]) documentState.trainingStages[key] = { status: 'Not started', plannedDate: '', completedDate: '', trainer: project.consultant || client.implementor || '', participants: '', notes: '', nextAction: '' };
-  return documentState.trainingStages[key];
 }
 
 function bindInputs(selector, callback) {
@@ -218,10 +194,6 @@ function bindContent() {
   bindInputs('[data-note]', element => { documentState.notes[element.dataset.note] = element.value; });
   container.querySelectorAll('[data-check]').forEach(element => element.addEventListener('change', () => { documentState.checks[element.dataset.check] = element.checked; setDirty(); }));
   bindInputs('[data-migration]', element => { documentState.migrationExtra[element.dataset.migration] = element.value; });
-  bindInputs('[data-stage-key]', element => {
-    const stage = ensureStage(element.dataset.stageKey); stage[element.dataset.stageField] = element.value;
-    if (element.dataset.stageField === 'status') documentState.checks[element.dataset.stageKey] = element.value === 'Completed';
-  });
   container.querySelectorAll('[data-module-key]').forEach(element => element.addEventListener(element.type === 'checkbox' ? 'change' : 'input', () => {
     const item = ensureModule(element.dataset.moduleKey); item[element.dataset.moduleField] = element.type === 'checkbox' ? element.checked : element.value; setDirty();
   }));
@@ -292,10 +264,9 @@ async function saveProject() {
   const savingClient = { ...client };
   const savingDocument = normalizeProjectDocument(documentState);
   const progress = computeProjectProgress(savingDocument, catalog);
-  const training = computeTrainingProgress(savingDocument, catalog);
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
-  const historyItem = { date: today, savedAt: now.toISOString(), phase: savingProject.phase, consultant: savingProject.consultant, progress: progress.percent, trainingProgress: training.percent, user: api().getCurrentUser() };
+  const historyItem = { date: today, savedAt: now.toISOString(), phase: savingProject.phase, consultant: savingProject.consultant, progress: progress.percent, user: api().getCurrentUser() };
   const lastHistory = savingDocument.changeHistory.at(-1);
   if (lastHistory?.date === today) savingDocument.changeHistory[savingDocument.changeHistory.length - 1] = historyItem;
   else savingDocument.changeHistory.push(historyItem);
