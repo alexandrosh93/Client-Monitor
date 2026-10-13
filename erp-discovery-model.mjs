@@ -11,6 +11,17 @@ export function normalizeModuleStatus(value) {
   return 'Needs Training';
 }
 
+export function filterModuleItems(items, moduleData, filter = '') {
+  const source = Array.isArray(items) ? items : [];
+  if (!filter) return source;
+  const values = record(moduleData);
+  if (filter === 'selected') return source.filter(item => Boolean(values[item?.id]?.checked));
+  if (MODULE_STATUSES.includes(filter)) {
+    return source.filter(item => Boolean(values[item?.id]?.checked) && normalizeModuleStatus(values[item?.id]?.status) === filter);
+  }
+  return source;
+}
+
 function text(value, max = MAX_TEXT) {
   return typeof value === 'string' ? value.slice(0, max) : '';
 }

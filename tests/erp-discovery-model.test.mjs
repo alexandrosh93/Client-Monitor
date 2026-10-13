@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MODULE_STATUSES, computeProjectProgress, computeTrainingProgress, normalizeModuleStatus, normalizeProjectDocument, validateErpDiscoveryImport } from '../erp-discovery-model.mjs';
+import { MODULE_STATUSES, computeProjectProgress, computeTrainingProgress, filterModuleItems, normalizeModuleStatus, normalizeProjectDocument, validateErpDiscoveryImport } from '../erp-discovery-model.mjs';
 
 const catalog = {
   sections: [
@@ -45,6 +45,22 @@ test('module selection and training status have separate meanings', () => {
 
   selectedNeedsTraining.moduleData['stock.1'].status = 'Completed';
   assert.deepEqual(computeProjectProgress(selectedNeedsTraining, catalog), { total: 5, complete: 3, percent: 60 });
+});
+
+test('filters module screens by project selection and training status', () => {
+  const items = [{ id: 'screen.1' }, { id: 'screen.2' }, { id: 'screen.3' }, { id: 'screen.4' }];
+  const moduleData = {
+    'screen.1': { checked: true, status: 'Needs Training' },
+    'screen.2': { checked: true, status: 'In Progress' },
+    'screen.3': { checked: true, status: 'Completed' },
+    'screen.4': { checked: false, status: 'Completed' },
+  };
+
+  assert.deepEqual(filterModuleItems(items, moduleData, '').map(item => item.id), ['screen.1', 'screen.2', 'screen.3', 'screen.4']);
+  assert.deepEqual(filterModuleItems(items, moduleData, 'selected').map(item => item.id), ['screen.1', 'screen.2', 'screen.3']);
+  assert.deepEqual(filterModuleItems(items, moduleData, 'Needs Training').map(item => item.id), ['screen.1']);
+  assert.deepEqual(filterModuleItems(items, moduleData, 'In Progress').map(item => item.id), ['screen.2']);
+  assert.deepEqual(filterModuleItems(items, moduleData, 'Completed').map(item => item.id), ['screen.3']);
 });
 
 test('calculates discovery and training separately', () => {
