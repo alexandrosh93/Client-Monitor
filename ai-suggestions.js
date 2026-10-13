@@ -197,6 +197,7 @@
   function openWorkspace() {
     if(document.getElementById('login-screen') &&
        !document.getElementById('login-screen').classList.contains('hidden'))return;
+    if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();
     document.getElementById('home-view').classList.remove('active');
     document.querySelector('.control-bar').style.display='none';
     document.getElementById('list').style.display='none';
