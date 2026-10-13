@@ -1,6 +1,16 @@
 const MAX_TEXT = 20000;
 const MAX_COLLECTION = 1000;
 
+export const MODULE_STATUSES = ['Needs Training', 'In Progress', 'Completed'];
+
+export function normalizeModuleStatus(value) {
+  const status = text(value, 40).trim().toLowerCase();
+  if (status === 'completed') return 'Completed';
+  if (status === 'in progress') return 'In Progress';
+  if (status === 'needs training') return 'Needs Training';
+  return 'Needs Training';
+}
+
 function text(value, max = MAX_TEXT) {
   return typeof value === 'string' ? value.slice(0, max) : '';
 }
@@ -58,7 +68,7 @@ export function normalizeProjectDocument(raw) {
     const value = record(item);
     moduleData[key] = {
       checked: Boolean(value.checked),
-      status: text(value.status, 40),
+      status: normalizeModuleStatus(value.status),
       note: text(value.note),
       action: text(value.action),
       date: text(value.date, 20),
@@ -162,9 +172,10 @@ export function computeProjectProgress(document, catalog) {
   }
   for (const section of catalog.moduleSections || []) {
     for (const item of section.items || []) {
-      total += 1;
       const value = doc.moduleData[item.id] || {};
-      if (value.checked || value.status === 'Completed' || value.note?.trim() || value.action?.trim()) complete += 1;
+      if (!value.checked) continue;
+      total += 1;
+      if (value.status === 'Completed') complete += 1;
     }
   }
   return { total, complete, percent: total ? Math.round((complete / total) * 100) : 0 };

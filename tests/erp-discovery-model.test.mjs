@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeProjectProgress, computeTrainingProgress, normalizeProjectDocument, validateErpDiscoveryImport } from '../erp-discovery-model.mjs';
+import { MODULE_STATUSES, computeProjectProgress, computeTrainingProgress, normalizeModuleStatus, normalizeProjectDocument, validateErpDiscoveryImport } from '../erp-discovery-model.mjs';
 
 const catalog = {
   sections: [
@@ -20,20 +20,41 @@ test('normalizes legacy ERP Discovery data and keeps special training notes', ()
   });
   assert.equal(document.answers['company.1'], 'Retail');
   assert.equal(document.moduleData['stock.1'].checked, true);
+  assert.equal(document.moduleData['stock.1'].status, 'Needs Training');
   assert.deepEqual(document.moduleData['stock.1'].users, ['user-1', 'user-2']);
   assert.equal(document.changeLog[0].label, 'Training attendees');
   assert.equal(document.trainingStages['training.1'], undefined);
   assert.equal(document.notes['training.1'], 'Repeat month-end example');
 });
 
+test('module selection and training status have separate meanings', () => {
+  assert.deepEqual(MODULE_STATUSES, ['Needs Training', 'In Progress', 'Completed']);
+  assert.equal(normalizeModuleStatus('Needs training'), 'Needs Training');
+  assert.equal(normalizeModuleStatus('In progress'), 'In Progress');
+  assert.equal(normalizeModuleStatus('Not started'), 'Needs Training');
+
+  const selectedNeedsTraining = normalizeProjectDocument({
+    answers: { 'company.1': 'Retail' },
+    checks: { 'training.1': true },
+    moduleData: {
+      'stock.1': { checked: true, status: 'Not started' },
+      'stock.2': { checked: false, status: 'Completed' },
+    },
+  });
+  assert.deepEqual(computeProjectProgress(selectedNeedsTraining, catalog), { total: 5, complete: 2, percent: 40 });
+
+  selectedNeedsTraining.moduleData['stock.1'].status = 'Completed';
+  assert.deepEqual(computeProjectProgress(selectedNeedsTraining, catalog), { total: 5, complete: 3, percent: 60 });
+});
+
 test('calculates discovery and training separately', () => {
   const document = normalizeProjectDocument({
     answers: { 'company.1': 'Retail' },
     checks: { 'training.1': true },
-    moduleData: { 'stock.1': { status: 'Completed' } },
+    moduleData: { 'stock.1': { checked: true, status: 'Completed' } },
     trainingStages: { 'training.1': { status: 'Completed' }, 'training.2': { status: 'Scheduled' } },
   });
-  assert.deepEqual(computeProjectProgress(document, catalog), { total: 6, complete: 3, percent: 50 });
+  assert.deepEqual(computeProjectProgress(document, catalog), { total: 5, complete: 3, percent: 60 });
   assert.deepEqual(computeTrainingProgress(document, catalog), { total: 2, complete: 1, percent: 50 });
 });
 
