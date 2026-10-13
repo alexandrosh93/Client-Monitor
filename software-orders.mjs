@@ -11,6 +11,9 @@ export function money(value) {
 export function isPdfAttachment(a) {
   return !!a && !a.isInline && !a.is_inline && (a.contentType === 'application/pdf' || a.content_type === 'application/pdf' || /\.pdf$/i.test(a.name || ''));
 }
+export function isAdditionalLicenseRequest(value) {
+  return /\b(?:additional(?:\s+[a-z-]+){0,3}\s+licen[cs]es?|increase\s+(?:user\s+)?licen[cs]es?(?:\s+to)?|upgrade(?:\s+.*)?\s+licen[cs]es?|\d+(?:st|nd|rd|th)\s+licen[cs]e)\b|επιπλ[εέ]ον|αναβ[αά]θμι/i.test(text(value, 30000));
+}
 export function itemsToLines(items) {
   const rows = [];
   for (const item of items) {
@@ -62,7 +65,7 @@ export function parseSoftwareOrder(pages, meta = {}) {
   const orderNumber = source.text.match(/\bORD\d{6,12}(?!\d)/i)?.[0]?.toUpperCase() || '';
   const orderDate = header.match(/\bDate[\s:|]*(\d{1,2}\/\d{1,2}\/\d{4})/i)?.[1] || '';
   const clientNumber = header.match(/Client\s+No\.?[\s:|]*([A-Z0-9-]+)/i)?.[1] || '';
-  const additional = /additional|upgrade|increase\s+licen[cs]e|\b\d+(?:st|nd|rd|th)\s+licen[cs]e|επιπλ[εέ]ον|αναβ[αά]θμι/i.test(productArea + ' ' + meta.name);
+  const additional = isAdditionalLicenseRequest(productArea + ' ' + meta.name);
   const addressStart = at >= 0 ? at + (lines[at].replace(/^Licensee\s*:*/i, '').trim() ? 1 : 2) : -1;
   const addressEnd = lines.findIndex(l => /^Telephone\b/i.test(l));
   const address = addressStart >= 0 && addressEnd > addressStart ? lines.slice(addressStart, addressEnd).map(l => l.split(/\s*\|\s*|\s{3,}/)[0]).filter(l => l && !/^(?:Date\b|Client\s+No|ORD\d|Vat\s+No)/i.test(l)).map(l=>l.replace(/,$/, '')).join(', ') : '';

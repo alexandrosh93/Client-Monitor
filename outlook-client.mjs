@@ -1,6 +1,6 @@
 import { PublicClientApplication, InteractionRequiredAuthError } from './vendor/msal-browser.js';
-import { senderList } from './email-leads.mjs?v=orders-1';
-import { isPdfAttachment } from './software-orders.mjs';
+import { senderList } from './email-leads.mjs?v=ignore-license-increases-20261013';
+import { isPdfAttachment } from './software-orders.mjs?v=ignore-license-increases-20261013';
 
 const scopes = ['Mail.Read'];
 let instance;

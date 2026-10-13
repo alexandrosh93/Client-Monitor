@@ -1,5 +1,5 @@
 // Pure validation and candidate detection. Detection is deliberately labelled as rules, not AI.
-import { validateOrder, mergeOrders } from './software-orders.mjs';
+import { validateOrder, mergeOrders, isAdditionalLicenseRequest } from './software-orders.mjs?v=ignore-license-increases-20261013';
 export function cleanText(value, limit = 2000) {
   return typeof value === 'string' ? value.trim().slice(0, limit) : '';
 }
@@ -22,6 +22,9 @@ export function normalName(value) {
 export function isIgnoredProposal(value) {
   return /\bsoftware\s+proposal\b/i.test(cleanText(value, 500));
 }
+export function isIgnoredLicenseChange(value) {
+  return isAdditionalLicenseRequest(cleanText(value, 2000));
+}
 export function managerFromSender(value) {
   const local = String(value || '').trim().toLowerCase().split('@')[0];
   if (local === 'andreas' || local === 'andreas.kyriacou') return 'AK';
@@ -33,7 +36,7 @@ export function leadKey(row) {
 }
 export function validateLead(row) {
   if (!row || typeof row !== 'object' || Array.isArray(row)) return null;
-  if (isIgnoredProposal(row.source_subject)) return null;
+  if (isIgnoredProposal(row.source_subject) || isIgnoredLicenseChange([row.source_subject, row.classification, row.reason].join(' '))) return null;
   const sourceUrl = outlookLink(row.source_url);
   const date = cleanText(row.source_date, 40);
   let sender;
@@ -55,7 +58,7 @@ export function readReview(value) {
   if (!value || value.schema_version !== 1 || !Array.isArray(value.candidates) || value.candidates.length > 100) {
     throw new Error('Use a Client Monitor review file with schema_version 1 and up to 100 candidates.');
   }
-  const rows = value.candidates.filter(row => !isIgnoredProposal(row?.source_subject)).map(validateLead);
+  const rows = value.candidates.filter(row => !isIgnoredProposal(row?.source_subject) && !isIgnoredLicenseChange([row?.source_subject, row?.classification, row?.reason].join(' '))).map(validateLead);
   if (rows.some(x => !x)) throw new Error('The file contains an invalid candidate or a non-Outlook source link. Nothing was imported.');
   return rows;
 }
@@ -70,7 +73,7 @@ export function mergeLeads(current, incoming) {
 }
 export function candidateFromOrders(message, orders, allowedSenders) {
   const sender = String(message.from?.emailAddress?.address || '').toLowerCase();
-  if (!allowedSenders.includes(sender) || isIgnoredProposal(message.subject)) return null;
+  if (!allowedSenders.includes(sender) || isIgnoredProposal(message.subject) || isIgnoredLicenseChange(cleanText(message.subject) + ' ' + cleanText(message.bodyPreview))) return null;
   const found = orders.filter(o => o.kind === 'software_order' && !o.additional_licenses);
   const review = orders.filter(o => o.kind === 'needs_review');
   if (!found.length && !review.length) return null;
@@ -93,7 +96,7 @@ export function candidateFromMessage(message, allowedSenders) {
   const text = normalName(subject + ' ' + cleanText(message.bodyPreview));
   const exclude = /\b(additional|extension|extention|renewal|spam|automatic reply|out of office)\b|\bsoftware\s+proposal\b|επιπλεον|αναβαθμιση|προσθετ/;
   const signal = /\b(new client|new customer|new company|software order|software proposal|software requirements|positive response|signed order|payroll system|accounting software)\b|παραγγελια|θετικη.*ανταποκριση|νεο[ςι]? πελατ|συστημα μισθοδοσιας/;
-  if (exclude.test(text) || !signal.test(text)) return null;
+  if (exclude.test(text) || isIgnoredLicenseChange(subject + ' ' + cleanText(message.bodyPreview)) || !signal.test(text)) return null;
   return validateLead({
     client_name: subject.replace(/^(?:(?:re|fw|fwd):\s*)+/gi, ''),
     classification: 'Possible new client — confirm company',

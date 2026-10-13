@@ -31,7 +31,8 @@ test('live matches require exact sender and exclude upgrades and spam', () => {
   const message = {from:{emailAddress:{address:sample.source_sender}},subject:sample.source_subject,bodyPreview:'Positive response to proposal.',receivedDateTime:sample.source_date,webLink:sample.source_url};
   assert.ok(candidateFromMessage(message, [sample.source_sender]));
   assert.equal(candidateFromMessage(message, ['another@example.com']), null);
-  for (const subject of ['Software Order Additional Payroll Licenses','Software Proposal - Example Ltd','SPAM Software Order','Αναβάθμιση σύστημα μισθοδοσίας']) assert.equal(candidateFromMessage({...message,subject},[sample.source_sender]),null);
+  for (const subject of ['Software Order Additional Payroll Licenses','Additional User License','Increase License To 15 Users','Software Proposal - Example Ltd','SPAM Software Order','Αναβάθμιση σύστημα μισθοδοσίας']) assert.equal(candidateFromMessage({...message,subject},[sample.source_sender]),null);
+  assert.equal(candidateFromMessage({...message,subject:'Software Order',bodyPreview:'Please increase user license to 15 users.'},[sample.source_sender]),null);
   assert.ok(candidateFromMessage({...message,subject:'Παραγγελία συστήματος'},[sample.source_sender]));
 });
 test('review imports silently ignore Software Proposal candidates', () => {

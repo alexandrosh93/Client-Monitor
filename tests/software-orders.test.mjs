@@ -43,6 +43,15 @@ test('additional payroll licenses are ignored even with an order form',()=>{
   assert.equal(candidateFromOrders(m,[o],['sender@example.com']),null);
   assert.equal(candidateFromOrders(m,[o],['other@example.com']),null);
 });
+test('increase-license and additional-user-license orders are ignored',()=>{
+  const message={from:{emailAddress:{address:'sender@example.com'}},subject:'Software Order',bodyPreview:'',receivedDateTime:'2026-10-12T00:00:00Z',webLink:'https://outlook.office.com/mail/id/example'};
+  for (const phrase of ['Increase License To 15 Users','Additional User License']) {
+    const order=parseSoftwareOrder([form.replace('Less Discount',phrase + '\nLess Discount')],{name:'order.pdf'});
+    assert.equal(order.additional_licenses,true);
+    assert.equal(candidateFromOrders(message,[order],['sender@example.com']),null);
+  }
+  assert.equal(candidateFromOrders({...message,subject:'Increase License To 15 Users'},[parseSoftwareOrder([form],{name:'order.pdf'})],['sender@example.com']),null);
+});
 test('additional licenses are removed when an email also contains a new order',()=>{
   const newOrder=parseSoftwareOrder([form],{name:'new-order.pdf'});
   const additional={...newOrder,order_number:'ORD2600124',attachment_name:'additional.pdf',additional_licenses:true};
