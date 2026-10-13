@@ -19,11 +19,15 @@ export function senderList(value) {
 export function normalName(value) {
   return cleanText(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 }
+export function isIgnoredProposal(value) {
+  return /\bsoftware\s+proposal\b/i.test(cleanText(value, 500));
+}
 export function leadKey(row) {
   return [row.source_sender.toLowerCase(), row.source_date, row.source_subject.replace(/^(?:(?:re|fw|fwd):\s*)+/gi, '').trim().toLowerCase()].join('|');
 }
 export function validateLead(row) {
   if (!row || typeof row !== 'object' || Array.isArray(row)) return null;
+  if (isIgnoredProposal(row.source_subject)) return null;
   const sourceUrl = outlookLink(row.source_url);
   const date = cleanText(row.source_date, 40);
   let sender;
@@ -45,7 +49,7 @@ export function readReview(value) {
   if (!value || value.schema_version !== 1 || !Array.isArray(value.candidates) || value.candidates.length > 100) {
     throw new Error('Use a Client Monitor review file with schema_version 1 and up to 100 candidates.');
   }
-  const rows = value.candidates.map(validateLead);
+  const rows = value.candidates.filter(row => !isIgnoredProposal(row?.source_subject)).map(validateLead);
   if (rows.some(x => !x)) throw new Error('The file contains an invalid candidate or a non-Outlook source link. Nothing was imported.');
   return rows;
 }
@@ -60,7 +64,7 @@ export function mergeLeads(current, incoming) {
 }
 export function candidateFromOrders(message, orders, allowedSenders) {
   const sender = String(message.from?.emailAddress?.address || '').toLowerCase();
-  if (!allowedSenders.includes(sender)) return null;
+  if (!allowedSenders.includes(sender) || isIgnoredProposal(message.subject)) return null;
   const found = orders.filter(o => o.kind === 'software_order' && !o.additional_licenses);
   const review = orders.filter(o => o.kind === 'needs_review');
   if (!found.length && !review.length) return null;
@@ -81,7 +85,7 @@ export function candidateFromMessage(message, allowedSenders) {
   if (!allowedSenders.includes(sender)) return null;
   const subject = cleanText(message.subject, 400);
   const text = normalName(subject + ' ' + cleanText(message.bodyPreview));
-  const exclude = /\b(additional|extension|extention|renewal|spam|automatic reply|out of office)\b|επιπλεον|αναβαθμιση|προσθετ/;
+  const exclude = /\b(additional|extension|extention|renewal|spam|automatic reply|out of office)\b|\bsoftware\s+proposal\b|επιπλεον|αναβαθμιση|προσθετ/;
   const signal = /\b(new client|new customer|new company|software order|software proposal|software requirements|positive response|signed order|payroll system|accounting software)\b|παραγγελια|θετικη.*ανταποκριση|νεο[ςι]? πελατ|συστημα μισθοδοσιας/;
   if (exclude.test(text) || !signal.test(text)) return null;
   return validateLead({
