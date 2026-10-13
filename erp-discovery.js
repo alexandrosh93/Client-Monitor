@@ -22,53 +22,100 @@ const api = () => window.clientMonitorApi;
 const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
 const attr = esc;
 const options = (items, selected) => items.map(item => `<option${item === selected ? ' selected' : ''}>${esc(item)}</option>`).join('');
+const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+const questionLabels = new Map(catalog.sections.flatMap(section => section.questions.map(item => [item.id, item.text])));
+const moduleLabels = new Map(catalog.moduleSections.flatMap(section => section.items.map(item => [item.id, item.text])));
 
-function currentReportTitle() {
-  if (activeSection === 'overview') return 'ERP Project Overview';
-  if (activeSection === 'users') return 'Client Users';
-  if (activeSection === 'training-roles') return '9. Training Topics ανά Ρόλο';
-  if (activeSection === 'requirements') return '11. Requirements / Decisions Log';
-  if (activeSection.startsWith('module:')) return catalog.moduleSections.find(item => item.id === activeSection.slice(7))?.title || 'ERP Module Report';
-  return catalog.sections.find(item => item.id === activeSection)?.title || 'ERP Report';
+function reportHeader(title) {
+  return [client.name, title, `Consultant: ${project.consultant || client.implementor || 'Unassigned'}`, `Phase: ${project.phase || PHASES[0]}`, `Generated: ${new Date().toLocaleString('en-GB')}`, ''];
 }
 
-function currentReportText() {
-  const title = currentReportTitle();
-  const lines = [client.name, title, `Consultant: ${project.consultant || client.implementor || 'Unassigned'}`, `Phase: ${project.phase || PHASES[0]}`, ''];
-  if (activeSection === 'overview') {
-    const progress = computeProjectProgress(documentState, catalog);
-    lines.push(`Implementation progress: ${Number(client.progress || 0)}%`, `Discovery completion: ${progress.percent}% (${progress.complete}/${progress.total})`, `Open requirements: ${documentState.requirements.filter(item => !['Done', 'Accepted'].includes(item.status)).length}`, `Live date: ${client.liveDate || 'Not set'}`);
-  } else if (activeSection === 'users') {
-    documentState.users.forEach((item, index) => lines.push(`${index + 1}. ${item.name || 'Unnamed'} — ${item.position || 'No position'}`));
-  } else if (activeSection === 'training-roles') {
-    documentState.trainingRoles.forEach((item, index) => lines.push(`${index + 1}. ${item.role || 'Unnamed role'} | Tasks: ${item.tasks || '-'} | Level: ${item.level || '-'} | Training: ${item.training || '-'} | Super user: ${item.superUser || 'No'}`));
-  } else if (activeSection === 'requirements') {
-    documentState.requirements.forEach(item => lines.push(`${item.id || '-'} | ${item.topic || 'No topic'} | ${item.type || '-'} | ${item.priority || '-'} | Owner: ${item.owner || '-'} | ${item.status || '-'}`));
-  } else if (activeSection.startsWith('module:')) {
-    const section = catalog.moduleSections.find(item => item.id === activeSection.slice(7));
-    section?.items.forEach((item, index) => {
-      const value = documentState.moduleData[item.id] || {};
-      lines.push(`${index + 1}. ${item.text} | ${value.status || (value.checked ? 'Completed' : 'Not started')}${value.date ? ` | ${value.date}` : ''}${value.note ? ` | Notes: ${value.note}` : ''}${value.action ? ` | Next: ${value.action}` : ''}`);
-    });
-  } else {
-    const section = catalog.sections.find(item => item.id === activeSection);
-    section?.questions.forEach((item, index) => {
+function moduleReportLine(item, index) {
+  const value = documentState.moduleData[item.id] || {};
+  const attendees = (value.users || []).map(userId => documentState.users.find(user => user.id === userId)?.name || userId).filter(Boolean);
+  return `${index + 1}. ${item.text} | ${value.status || (value.checked ? 'Completed' : 'Not started')}${value.date ? ` | ${value.date}` : ''}${attendees.length ? ` | Training attendees: ${attendees.join(', ')}` : ''}${value.note ? ` | Notes: ${value.note}` : ''}${value.action ? ` | Next: ${value.action}` : ''}`;
+}
+
+function wholeProjectReportText() {
+  const progress = computeProjectProgress(documentState, catalog);
+  const lines = reportHeader('Whole ERP Project Report');
+  lines.push(`Implementation progress: ${Number(client.progress || 0)}%`, `Discovery completion: ${progress.percent}% (${progress.complete}/${progress.total})`, `Live date: ${client.liveDate || 'Not set'}`, '', 'CLIENT USERS');
+  documentState.users.forEach((item, index) => lines.push(`${index + 1}. ${item.name || 'Unnamed'} — ${item.position || 'No position'}`));
+  for (const section of catalog.sections) {
+    lines.push('', section.title.toUpperCase());
+    section.questions.forEach((item, index) => {
       if (section.checklist) lines.push(`${index + 1}. ${item.text} | ${documentState.checks[item.id] ? 'Completed' : 'Not completed'}${documentState.notes[item.id] ? ` | Notes: ${documentState.notes[item.id]}` : ''}`);
       else lines.push(`${index + 1}. ${item.text}\n${documentState.answers[item.id] || 'Not answered'}`);
     });
   }
-  lines.push('', `Generated from Client Monitor · ${new Date().toLocaleString('en-GB')}`);
-  const report = lines.join('\n');
-  return report.length > 7000 ? `${report.slice(0, 6800)}\n\n[Report shortened for email. Use Print / PDF for the complete report.]` : report;
+  lines.push('', 'TRAINING TOPICS BY ROLE');
+  documentState.trainingRoles.forEach((item, index) => lines.push(`${index + 1}. ${item.role || 'Unnamed role'} | Tasks: ${item.tasks || '-'} | Level: ${item.level || '-'} | Training: ${item.training || '-'} | Super user: ${item.superUser || 'No'}`));
+  lines.push('', 'REQUIREMENTS / DECISIONS LOG');
+  documentState.requirements.forEach(item => lines.push(`${item.id || '-'} | ${item.topic || 'No topic'} | ${item.type || '-'} | ${item.priority || '-'} | Owner: ${item.owner || '-'} | ${item.status || '-'} | ${item.date || '-'}`));
+  for (const section of catalog.moduleSections) {
+    lines.push('', section.title.toUpperCase());
+    section.items.forEach((item, index) => lines.push(moduleReportLine(item, index)));
+  }
+  return lines.join('\n');
 }
 
-function emailCurrentReport() {
-  const email = String(client.email || '').trim().toLowerCase();
-  if (!email) { api().toast('Add the email on the client card first.'); return; }
+function dateChangesReportText(date) {
+  const lines = reportHeader(`Project Changes — ${date || 'No date selected'}`);
+  const changes = (documentState.changeLog || []).filter(item => item.date === date);
+  if (changes.length) changes.forEach((item, index) => lines.push(`${index + 1}. ${item.label || item.field}: ${item.value || '(empty)'}${item.user ? ` — ${item.user}` : ''}`));
+  else lines.push('No detailed changes were recorded for this date.');
+  const saved = documentState.changeHistory.filter(item => item.date === date);
+  saved.forEach(item => lines.push(`Project saved · ${item.phase || '-'} · ${item.consultant || '-'}${item.progress !== undefined ? ` · ${item.progress}%` : ''}`));
+  return lines.join('\n');
+}
+
+function mailtoUrl(email, subject, report) {
   const recipient = encodeURIComponent(email).replace(/%40/gi, '@');
-  const subject = encodeURIComponent(`${client.name} — ${currentReportTitle()}`);
-  const body = encodeURIComponent(currentReportText());
-  window.location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
+  const prefix = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=`;
+  const note = '\n\n[Report shortened for email. Use Print / PDF for the complete report.]';
+  const original = report;
+  let body = report;
+  let url = `${prefix}${encodeURIComponent(body)}`;
+  while (url.length > 1900 && body.length > 300) {
+    body = `${original.slice(0, Math.max(300, Math.floor((body.length - note.length) * 0.72)))}${note}`;
+    url = `${prefix}${encodeURIComponent(body)}`;
+  }
+  return url;
+}
+
+function selectedReport(kind) {
+  const scope = root.querySelector(`[data-${kind}-scope]`)?.value || 'whole';
+  const date = root.querySelector(`[data-${kind}-date]`)?.value || '';
+  return scope === 'changes'
+    ? { title: `Project Changes — ${date || 'Select date'}`, text: dateChangesReportText(date), dateRequired: !date }
+    : { title: 'Whole ERP Project Report', text: wholeProjectReportText(), dateRequired: false };
+}
+
+function prepareEmailReport(event) {
+  const email = String(client.email || '').trim().toLowerCase();
+  if (!email) {
+    event.preventDefault();
+    api().toast('Add the email on the client card first.');
+    window.closeClientWorkspaceView();
+    api().goToClient(client.id);
+    return;
+  }
+  const report = selectedReport('email');
+  if (report.dateRequired) { event.preventDefault(); api().toast('Select a date for the changes report.'); return; }
+  event.currentTarget.href = mailtoUrl(email, `${client.name} — ${report.title}`, report.text);
+}
+
+function printSelectedReport() {
+  const report = selectedReport('print');
+  if (report.dateRequired) { api().toast('Select a date for the changes report.'); return; }
+  root.querySelector('.erp-print-report')?.remove();
+  const printable = document.createElement('section');
+  printable.className = 'erp-print-report';
+  printable.innerHTML = `<h1>${esc(client.name)}</h1><h2>${esc(report.title)}</h2><pre>${esc(report.text)}</pre>`;
+  root.append(printable);
+  document.body.classList.add('erp-report-printing');
+  window.addEventListener('afterprint', () => { document.body.classList.remove('erp-report-printing'); printable.remove(); }, { once: true });
+  window.print();
 }
 
 function setDirty(value = true) {
@@ -138,8 +185,8 @@ function renderShell() {
         </div>
       </div>
       <div class="erp-projectbar">
-        <button class="erp-btn on-dark" data-email-report ${client.email ? '' : 'disabled'} title="${client.email ? `Open this report for ${attr(client.email)} in your default email app` : 'Add an email on the client card first'}">Email this report</button>
-        <button class="erp-btn on-dark" data-project-print ${project ? '' : 'disabled'}>Print / PDF</button>
+        <div class="erp-report-control"><span>Email</span><select data-email-scope><option value="whole">Whole project</option><option value="changes">Changes on date</option></select><input type="date" data-email-date value="${localDate()}" disabled><a class="erp-btn on-dark erp-email-report" data-email-report href="#" role="button" title="${client.email ? `Open this report for ${attr(client.email)} in your default email app` : 'Add an email on the client card first'}">${client.email ? 'Open Outlook' : 'Add client email'}</a></div>
+        <div class="erp-report-control"><span>Print / PDF</span><select data-print-scope><option value="whole">Whole project</option><option value="changes">Changes on date</option></select><input type="date" data-print-date value="${localDate()}" disabled><button class="erp-btn on-dark" data-project-print ${project ? '' : 'disabled'}>Print / PDF</button></div>
         <span class="erp-save-state">${dirty ? '<span class="erp-dirty-dot"></span>Autosave pending…' : `Saved automatically${project?.updated_at ? ` · ${esc(new Date(project.updated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))}` : ''}`}</span>
       </div>
     </section>
@@ -204,7 +251,12 @@ function renderRequirements() {
 function renderModule(section) {
   const rows = section.items.map(item => {
     const value = documentState.moduleData[item.id] || {};
-    return `<div class="erp-module-item"><input type="checkbox" data-module-key="${attr(item.id)}" data-module-field="checked" ${value.checked ? 'checked' : ''}><div class="erp-module-title">${esc(item.text)}</div><div class="erp-field"><label>Status</label><select class="erp-select" data-module-key="${attr(item.id)}" data-module-field="status">${options(MODULE_STATUSES, value.status || (value.checked ? 'Completed' : 'Not started'))}</select><label style="margin-top:7px">Date</label><input type="date" class="erp-input" data-module-key="${attr(item.id)}" data-module-field="date" value="${attr(value.date || '')}"></div><div class="erp-module-wide"><div class="erp-field"><label>Special notes</label><textarea class="erp-textarea" data-module-key="${attr(item.id)}" data-module-field="note">${esc(value.note || '')}</textarea></div><div class="erp-field" style="margin-top:7px"><label>Requirement / next action</label><textarea class="erp-textarea" data-module-key="${attr(item.id)}" data-module-field="action">${esc(value.action || '')}</textarea></div></div></div>`;
+    const selectedUsers = new Set(value.users || []);
+    const attendees = documentState.users.length ? documentState.users.map(user => {
+      const selected = selectedUsers.has(user.id) || selectedUsers.has(user.name);
+      return `<label class="erp-attendee"><input type="checkbox" data-module-user-key="${attr(item.id)}" data-module-user-id="${attr(user.id)}" ${selected ? 'checked' : ''}><span>${esc(user.name || 'Unnamed user')}${user.position ? `<small>${esc(user.position)}</small>` : ''}</span></label>`;
+    }).join('') : '<div class="erp-muted">Add users in Client Users to select training attendees.</div>';
+    return `<div class="erp-module-item"><input type="checkbox" data-module-key="${attr(item.id)}" data-module-field="checked" ${value.checked ? 'checked' : ''}><div class="erp-module-title">${esc(item.text)}</div><div class="erp-field"><label>Status</label><select class="erp-select" data-module-key="${attr(item.id)}" data-module-field="status">${options(MODULE_STATUSES, value.status || (value.checked ? 'Completed' : 'Not started'))}</select><label style="margin-top:7px">Date</label><input type="date" class="erp-input" data-module-key="${attr(item.id)}" data-module-field="date" value="${attr(value.date || '')}"></div><div class="erp-module-wide"><div class="erp-field"><label>Training attendees</label><div class="erp-attendees">${attendees}</div></div><div class="erp-field" style="margin-top:9px"><label>Special notes</label><textarea class="erp-textarea" data-module-key="${attr(item.id)}" data-module-field="note">${esc(value.note || '')}</textarea></div><div class="erp-field" style="margin-top:7px"><label>Requirement / next action</label><textarea class="erp-textarea" data-module-key="${attr(item.id)}" data-module-field="action">${esc(value.action || '')}</textarea></div></div></div>`;
   }).join('');
   return `<div class="erp-card"><h2>${esc(section.title)}</h2><div class="erp-muted">${section.items.length} ERP functions · ${esc(section.group)}</div>${rows}</div>`;
 }
@@ -231,6 +283,16 @@ function ensureModule(key) {
   return documentState.moduleData[key];
 }
 
+function recordChange(field, label, value) {
+  const now = new Date();
+  const date = localDate(now);
+  const entry = { date, at: now.toISOString(), section: activeSection, field, label, value: String(value ?? ''), user: api().getCurrentUser() };
+  const existing = documentState.changeLog.findIndex(item => item.date === date && item.field === field);
+  if (existing >= 0) documentState.changeLog[existing] = entry;
+  else documentState.changeLog.push(entry);
+  if (documentState.changeLog.length > 2000) documentState.changeLog.splice(0, documentState.changeLog.length - 2000);
+}
+
 function bindInputs(selector, callback) {
   const container = root.querySelector('.erp-main') || root;
   container.querySelectorAll(selector).forEach(element => element.addEventListener('input', () => { callback(element); setDirty(); }));
@@ -238,23 +300,32 @@ function bindInputs(selector, callback) {
 
 function bindContent() {
   const container = root.querySelector('.erp-main') || root;
-  bindInputs('[data-project-field]', element => { project[element.dataset.projectField] = element.value; });
-  bindInputs('[data-answer]', element => { documentState.answers[element.dataset.answer] = element.value; });
-  bindInputs('[data-note]', element => { documentState.notes[element.dataset.note] = element.value; });
-  container.querySelectorAll('[data-check]').forEach(element => element.addEventListener('change', () => { documentState.checks[element.dataset.check] = element.checked; setDirty(); }));
-  bindInputs('[data-migration]', element => { documentState.migrationExtra[element.dataset.migration] = element.value; });
+  bindInputs('[data-project-field]', element => { project[element.dataset.projectField] = element.value; recordChange(`project.${element.dataset.projectField}`, `Project ${element.dataset.projectField}`, element.value); });
+  bindInputs('[data-answer]', element => { documentState.answers[element.dataset.answer] = element.value; recordChange(`answer.${element.dataset.answer}`, `${questionLabels.get(element.dataset.answer) || element.dataset.answer} — Answer`, element.value); });
+  bindInputs('[data-note]', element => { documentState.notes[element.dataset.note] = element.value; recordChange(`note.${element.dataset.note}`, `${questionLabels.get(element.dataset.note) || element.dataset.note} — Notes`, element.value); });
+  container.querySelectorAll('[data-check]').forEach(element => element.addEventListener('change', () => { documentState.checks[element.dataset.check] = element.checked; recordChange(`check.${element.dataset.check}`, questionLabels.get(element.dataset.check) || element.dataset.check, element.checked ? 'Completed' : 'Not completed'); setDirty(); }));
+  bindInputs('[data-migration]', element => { documentState.migrationExtra[element.dataset.migration] = element.value; recordChange(`migration.${element.dataset.migration}`, `Migration ${element.dataset.migration}`, element.value); });
   container.querySelectorAll('[data-module-key]').forEach(element => element.addEventListener(element.type === 'checkbox' ? 'change' : 'input', () => {
-    const item = ensureModule(element.dataset.moduleKey); item[element.dataset.moduleField] = element.type === 'checkbox' ? element.checked : element.value; setDirty();
+    const item = ensureModule(element.dataset.moduleKey); const value = element.type === 'checkbox' ? element.checked : element.value; item[element.dataset.moduleField] = value; recordChange(`module.${element.dataset.moduleKey}.${element.dataset.moduleField}`, `${moduleLabels.get(element.dataset.moduleKey) || element.dataset.moduleKey} — ${element.dataset.moduleField}`, value); setDirty();
   }));
-  bindInputs('[data-user-index]', element => { documentState.users[Number(element.dataset.userIndex)][element.dataset.userField] = element.value; });
-  bindInputs('[data-role-index]', element => { documentState.trainingRoles[Number(element.dataset.roleIndex)][element.dataset.roleField] = element.value; });
-  bindInputs('[data-req-index]', element => { documentState.requirements[Number(element.dataset.reqIndex)][element.dataset.reqField] = element.value; });
-  container.querySelector('[data-add-user]')?.addEventListener('click', () => { documentState.users.push({ id: crypto.randomUUID(), name: '', position: '' }); setDirty(); renderMain(); });
-  container.querySelectorAll('[data-remove-user]').forEach(button => button.addEventListener('click', () => { documentState.users.splice(Number(button.dataset.removeUser), 1); setDirty(); renderMain(); }));
-  container.querySelector('[data-add-role]')?.addEventListener('click', () => { documentState.trainingRoles.push({ role: '', tasks: '', level: '2 - Basic User', training: '', superUser: 'No' }); setDirty(); renderMain(); });
-  container.querySelectorAll('[data-remove-role]').forEach(button => button.addEventListener('click', () => { documentState.trainingRoles.splice(Number(button.dataset.removeRole), 1); setDirty(); renderMain(); }));
-  container.querySelector('[data-add-requirement]')?.addEventListener('click', () => { documentState.requirements.push({ id: `R${String(documentState.requirements.length + 1).padStart(2, '0')}`, topic: '', type: 'Process', priority: 'Medium', owner: '', status: 'Open', date: new Date().toISOString().slice(0, 10), phase: project.phase || PHASES[0] }); setDirty(); renderMain(); });
-  container.querySelectorAll('[data-remove-requirement]').forEach(button => button.addEventListener('click', () => { documentState.requirements.splice(Number(button.dataset.removeRequirement), 1); setDirty(); renderMain(); }));
+  container.querySelectorAll('[data-module-user-key]').forEach(element => element.addEventListener('change', () => {
+    const item = ensureModule(element.dataset.moduleUserKey);
+    const selected = new Set(item.users || []);
+    if (element.checked) selected.add(element.dataset.moduleUserId);
+    else selected.delete(element.dataset.moduleUserId);
+    item.users = [...selected];
+    recordChange(`module.${element.dataset.moduleUserKey}.users`, `${moduleLabels.get(element.dataset.moduleUserKey) || element.dataset.moduleUserKey} — Training attendees`, item.users.map(id => documentState.users.find(user => user.id === id)?.name || id).join(', '));
+    setDirty();
+  }));
+  bindInputs('[data-user-index]', element => { const index = Number(element.dataset.userIndex); documentState.users[index][element.dataset.userField] = element.value; recordChange(`user.${documentState.users[index].id}.${element.dataset.userField}`, `Client user ${element.dataset.userField}`, element.value); });
+  bindInputs('[data-role-index]', element => { const index = Number(element.dataset.roleIndex); documentState.trainingRoles[index][element.dataset.roleField] = element.value; recordChange(`role.${index}.${element.dataset.roleField}`, `Training role ${element.dataset.roleField}`, element.value); });
+  bindInputs('[data-req-index]', element => { const index = Number(element.dataset.reqIndex); documentState.requirements[index][element.dataset.reqField] = element.value; recordChange(`requirement.${index}.${element.dataset.reqField}`, `Requirement ${documentState.requirements[index].id || index + 1} ${element.dataset.reqField}`, element.value); });
+  container.querySelector('[data-add-user]')?.addEventListener('click', () => { const user = { id: crypto.randomUUID(), name: '', position: '' }; documentState.users.push(user); recordChange(`user.${user.id}`, 'Client user', 'Added'); setDirty(); renderMain(); });
+  container.querySelectorAll('[data-remove-user]').forEach(button => button.addEventListener('click', () => { const removed = documentState.users.splice(Number(button.dataset.removeUser), 1)[0]; recordChange(`user.${removed?.id || button.dataset.removeUser}`, 'Client user', `Removed ${removed?.name || ''}`); setDirty(); renderMain(); }));
+  container.querySelector('[data-add-role]')?.addEventListener('click', () => { documentState.trainingRoles.push({ role: '', tasks: '', level: '2 - Basic User', training: '', superUser: 'No' }); recordChange(`role.${documentState.trainingRoles.length - 1}`, 'Training role', 'Added'); setDirty(); renderMain(); });
+  container.querySelectorAll('[data-remove-role]').forEach(button => button.addEventListener('click', () => { const index = Number(button.dataset.removeRole); const removed = documentState.trainingRoles.splice(index, 1)[0]; recordChange(`role.${index}`, 'Training role', `Removed ${removed?.role || ''}`); setDirty(); renderMain(); }));
+  container.querySelector('[data-add-requirement]')?.addEventListener('click', () => { const item = { id: `R${String(documentState.requirements.length + 1).padStart(2, '0')}`, topic: '', type: 'Process', priority: 'Medium', owner: '', status: 'Open', date: localDate(), phase: project.phase || PHASES[0] }; documentState.requirements.push(item); recordChange(`requirement.${item.id}`, `Requirement ${item.id}`, 'Added'); setDirty(); renderMain(); });
+  container.querySelectorAll('[data-remove-requirement]').forEach(button => button.addEventListener('click', () => { const removed = documentState.requirements.splice(Number(button.dataset.removeRequirement), 1)[0]; recordChange(`requirement.${removed?.id || button.dataset.removeRequirement}`, `Requirement ${removed?.id || ''}`, 'Removed'); setDirty(); renderMain(); }));
 }
 
 function bindShell() {
@@ -265,8 +336,12 @@ function bindShell() {
     root.querySelectorAll('[data-erp-group-items]').forEach(items => { items.hidden = items.dataset.erpGroupItems !== expandedNavGroup; });
   }));
   root.querySelectorAll('[data-erp-nav]').forEach(button => button.addEventListener('click', () => { activeSection = button.dataset.erpNav; expandedNavGroup = button.dataset.erpNavGroup; renderShell(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
-  root.querySelector('[data-email-report]')?.addEventListener('click', emailCurrentReport);
-  root.querySelector('[data-project-print]')?.addEventListener('click', () => window.print());
+  root.querySelector('[data-email-report]')?.addEventListener('click', prepareEmailReport);
+  root.querySelector('[data-project-print]')?.addEventListener('click', printSelectedReport);
+  ['email', 'print'].forEach(kind => root.querySelector(`[data-${kind}-scope]`)?.addEventListener('change', event => {
+    const dateInput = root.querySelector(`[data-${kind}-date]`);
+    if (dateInput) dateInput.disabled = event.currentTarget.value !== 'changes';
+  }));
 }
 
 async function loadProject() {
@@ -315,7 +390,7 @@ async function saveProject() {
   const savingDocument = normalizeProjectDocument(documentState);
   const progress = computeProjectProgress(savingDocument, catalog);
   const now = new Date();
-  const today = now.toISOString().slice(0, 10);
+  const today = localDate(now);
   const historyItem = { date: today, savedAt: now.toISOString(), phase: savingProject.phase, consultant: savingProject.consultant, progress: progress.percent, user: api().getCurrentUser() };
   const lastHistory = savingDocument.changeHistory.at(-1);
   if (lastHistory?.date === today) savingDocument.changeHistory[savingDocument.changeHistory.length - 1] = historyItem;
