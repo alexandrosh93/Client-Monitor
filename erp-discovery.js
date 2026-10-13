@@ -55,8 +55,8 @@ function sectionGroups() {
     { id: 'workspace', title: 'Workspace', items: [{ id: 'overview', title: 'Overview' }, { id: 'users', title: 'Client Users' }, { id: 'training-roles', title: 'Training Roles' }, { id: 'requirements', title: 'Requirements' }] },
     { id: 'discovery', title: 'Discovery & Readiness', items: normal.map(section => ({ id: section.id, title: section.title })) },
     { id: 'training', title: 'Training', items: [{ id: 'training', title: 'Training Stages' }] },
-    { id: 'stock', title: 'Stock Modules', items: catalog.moduleSections.filter(section => section.group === 'stock').map(section => ({ id: `module:${section.id}`, title: section.title })) },
     { id: 'accounting', title: 'Accounting Modules', items: catalog.moduleSections.filter(section => section.group === 'accounting').map(section => ({ id: `module:${section.id}`, title: section.title })) },
+    { id: 'stock', title: 'Stock Modules', items: catalog.moduleSections.filter(section => section.group === 'stock').map(section => ({ id: `module:${section.id}`, title: section.title })) },
   ];
 }
 
