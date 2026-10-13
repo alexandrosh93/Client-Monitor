@@ -1,5 +1,5 @@
 import { ERP_DISCOVERY_CATALOG as catalog } from './erp-discovery-catalog.mjs';
-import { blankProjectDocument, computeProjectProgress, normalizeClientEmail, normalizeProjectDocument } from './erp-discovery-model.mjs';
+import { blankProjectDocument, computeProjectProgress, normalizeProjectDocument } from './erp-discovery-model.mjs';
 
 const MODULE_STATUSES = ['Not started', 'Needs setup', 'Needs training', 'In progress', 'Completed', 'Not applicable'];
 const PHASES = ['During Implementation', 'During Support'];
@@ -63,8 +63,8 @@ function currentReportText() {
 }
 
 function emailCurrentReport() {
-  const email = normalizeClientEmail(documentState.clientEmail);
-  if (!email) { api().toast('Enter a valid client email first.'); return; }
+  const email = String(client.email || '').trim().toLowerCase();
+  if (!email) { api().toast('Add the email on the client card first.'); return; }
   const recipient = encodeURIComponent(email).replace(/%40/gi, '@');
   const subject = encodeURIComponent(`${client.name} — ${currentReportTitle()}`);
   const body = encodeURIComponent(currentReportText());
@@ -138,8 +138,7 @@ function renderShell() {
         </div>
       </div>
       <div class="erp-projectbar">
-        <input class="erp-email-input" type="email" data-client-email value="${attr(documentState.clientEmail || '')}" placeholder="Client email" aria-label="Client email">
-        <button class="erp-btn on-dark" data-email-report ${normalizeClientEmail(documentState.clientEmail) ? '' : 'disabled'} title="Open this report in your default email app">Email this report</button>
+        <button class="erp-btn on-dark" data-email-report ${client.email ? '' : 'disabled'} title="${client.email ? `Open this report for ${attr(client.email)} in your default email app` : 'Add an email on the client card first'}">Email this report</button>
         <button class="erp-btn on-dark" data-project-print ${project ? '' : 'disabled'}>Print / PDF</button>
         <span class="erp-save-state">${dirty ? '<span class="erp-dirty-dot"></span>Autosave pending…' : `Saved automatically${project?.updated_at ? ` · ${esc(new Date(project.updated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))}` : ''}`}</span>
       </div>
@@ -266,17 +265,6 @@ function bindShell() {
     root.querySelectorAll('[data-erp-group-items]').forEach(items => { items.hidden = items.dataset.erpGroupItems !== expandedNavGroup; });
   }));
   root.querySelectorAll('[data-erp-nav]').forEach(button => button.addEventListener('click', () => { activeSection = button.dataset.erpNav; expandedNavGroup = button.dataset.erpNavGroup; renderShell(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
-  const emailInput = root.querySelector('[data-client-email]');
-  emailInput?.addEventListener('input', () => {
-    documentState.clientEmail = emailInput.value.trim();
-    const emailButton = root.querySelector('[data-email-report]');
-    if (emailButton) emailButton.disabled = !normalizeClientEmail(documentState.clientEmail);
-    setDirty();
-  });
-  emailInput?.addEventListener('blur', () => {
-    const normalized = normalizeClientEmail(emailInput.value);
-    if (normalized) { emailInput.value = normalized; documentState.clientEmail = normalized; }
-  });
   root.querySelector('[data-email-report]')?.addEventListener('click', emailCurrentReport);
   root.querySelector('[data-project-print]')?.addEventListener('click', () => window.print());
 }
