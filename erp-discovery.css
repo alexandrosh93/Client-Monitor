@@ -11,9 +11,6 @@
 .erp-badge{padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.12);font-size:11px}
 .erp-projectbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.18)}
 .erp-projectbar select{min-width:220px;max-width:360px;padding:7px 9px;border:0;border-radius:7px;font:500 12px 'DM Sans',sans-serif}
-.erp-email-input{min-width:220px;max-width:320px;padding:7px 9px;border:1px solid rgba(255,255,255,.35);border-radius:7px;background:rgba(255,255,255,.12);color:#fff;font:500 12px 'DM Sans',sans-serif}
-.erp-email-input::placeholder{color:rgba(255,255,255,.62)}
-.erp-email-input:focus{outline:2px solid rgba(255,255,255,.25);background:#fff;color:var(--text)}
 .erp-btn{border:1px solid var(--border-md);background:#fff;color:var(--text-2);border-radius:7px;padding:7px 10px;font:600 11px 'DM Sans',sans-serif;cursor:pointer}
 .erp-btn:hover{border-color:var(--accent);color:var(--accent)}
 .erp-btn:disabled{opacity:.5;cursor:not-allowed}
@@ -80,5 +77,5 @@
 .erp-file{display:none}
 .erp-dirty-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#f59e0b;margin-right:5px}
 @media(max-width:980px){.erp-shell{grid-template-columns:190px minmax(0,1fr)}.erp-grid{grid-template-columns:1fr 1fr}.erp-fields{grid-template-columns:1fr 1fr}.erp-module-item{grid-template-columns:28px 1fr}.erp-module-item .erp-module-wide{grid-column:2}}
-@media(max-width:800px){.erp-shell{display:block}.erp-side{position:static;max-height:none;margin-bottom:12px;display:block;overflow:visible}.erp-topline{display:block}.erp-back{margin-bottom:10px}.erp-projectbar{align-items:stretch}.erp-projectbar select,.erp-email-input{max-width:none;width:100%}.erp-save-state{width:100%;margin-left:0}.erp-fields,.erp-grid{grid-template-columns:1fr}.erp-module-item{grid-template-columns:26px 1fr}.erp-title{font-size:20px}}
+@media(max-width:800px){.erp-shell{display:block}.erp-side{position:static;max-height:none;margin-bottom:12px;display:block;overflow:visible}.erp-topline{display:block}.erp-back{margin-bottom:10px}.erp-projectbar{align-items:stretch}.erp-projectbar select{max-width:none;width:100%}.erp-save-state{width:100%;margin-left:0}.erp-fields,.erp-grid{grid-template-columns:1fr}.erp-module-item{grid-template-columns:26px 1fr}.erp-title{font-size:20px}}
 @media print{body.sidemenu-pinned main,body.sidemenu-expanded main{margin-left:0!important;width:100%!important;max-width:100%!important}.erp-side,.erp-back,.erp-projectbar,.erp-actions,header,#sidemenu{display:none!important}.erp-shell{display:block}.erp-top{background:#fff!important;color:#111!important;box-shadow:none;border:1px solid #ccc}.erp-kicker,.erp-subtitle{color:#555!important}.erp-card{box-shadow:none;break-inside:avoid}.erp-main{display:block!important}}

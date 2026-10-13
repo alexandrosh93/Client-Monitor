@@ -21,7 +21,7 @@
 <title>Client Monitor — A.V.PremierSoft</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="erp-discovery.css?v=client-email-report-20261013">
+<link rel="stylesheet" href="erp-discovery.css?v=client-email-card-20261013">
 <style>
 :root{
   --bg:#f4f6fb;
@@ -1214,6 +1214,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
     <h3>New client</h3>
     <div class="mf"><label class="lbl">Client name</label><input id="m-name" type="text" placeholder="Company Ltd"></div>
     <div class="mf"><label class="lbl">Main contact person</label><input id="m-contact" type="text" placeholder="Full name"></div>
+    <div class="mf"><label class="lbl">Client email</label><input id="m-email" type="email" placeholder="client@company.com"></div>
     <div class="mf"><label class="lbl">City</label><select id="m-city"><option>Limassol</option><option>Paphos</option></select></div>
     <div class="mf"><label class="lbl">Live Date <span style="font-weight:400;color:var(--text-3)">(planned go-live)</span></label><input id="m-livedate" type="date"></div>
     <div class="mf"><label class="lbl">Manager</label><select id="m-mgr"><option value="">— Select —</option><option>VT</option><option>AK</option></select></div>
@@ -1346,7 +1347,7 @@ const SUPA_URL='https://gdyibhbznfywnilqpjvo.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkeWliaGJ6bmZ5d25pbHFwanZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzOTM0OTQsImV4cCI6MjA5NDk2OTQ5NH0.wiyx0PBb3dtaH-kTpGVj68NWzeZpyVKWrD8XhWxftGQ';
 const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 
-function dbToClient(r){return {id:r.id,name:r.name,contact:r.contact||'',city:r.city||'',mgr:r.mgr||'',
+function dbToClient(r){return {id:r.id,name:r.name,contact:r.contact||'',email:r.email||'',city:r.city||'',mgr:r.mgr||'',
   implementor:r.implementor||'',status:r.status||'Not started',modules:r.modules||[],
   grade:r.grade||0,todo:r.todo||'',
   ...((()=>{const raw=r.comment||'';let log=[];try{const p=JSON.parse(raw);if(Array.isArray(p))log=p;}catch(e){if(raw)log=[{text:raw,ts:null,user:''}];}return{comment:log.length?log[0].text:'',commentLog:log};})()),
@@ -1354,7 +1355,7 @@ function dbToClient(r){return {id:r.id,name:r.name,contact:r.contact||'',city:r.
   vatDone:r.vat_done||false,stkDate:r.stk_date||'',stkDone:r.stk_done||false,
   liveDate:r.live_date||'',progress:r.progress||0,nextFollowupDate:r.next_followup_date||''};}
 function clientToDb(c){const d=v=>v||null;
-  return {id:c.id,name:c.name,contact:c.contact||'',city:c.city||'',mgr:c.mgr||'',
+  return {id:c.id,name:c.name,contact:c.contact||'',email:c.email||'',city:c.city||'',mgr:c.mgr||'',
   implementor:c.implementor||'',status:c.status||'Not started',modules:c.modules||[],
   grade:c.grade||0,comment:c.commentLog&&c.commentLog.length?JSON.stringify(c.commentLog):(c.comment||null),todo:c.todo||'',
   vat_date:d(c.vatDate),
@@ -2156,6 +2157,10 @@ function buildRow(c){
           <input type="text" class="xinput" value="${(c.contact||'').replace(/"/g,'&quot;')}" placeholder="Full name" onchange="fld(${c.id},'contact',this.value)">
         </div>
         <div>
+          <div class="xlbl">Client email</div>
+          <input type="email" class="xinput" value="${esc(c.email||'')}" placeholder="client@company.com" onchange="fldClientEmail(${c.id},this)">
+        </div>
+        <div>
           <div class="xlbl">Manager</div>
           <select class="xsel" onchange="fld(${c.id},'mgr',this.value)">
             <option${c.mgr==='VT'?' selected':''}>VT</option>
@@ -2288,7 +2293,7 @@ function fld(id,k,v){
   const old=c[k];
   c[k]=v;
   // audit readable field names
-  const fieldNames={name:'Name',contact:'Contact',city:'City',mgr:'Manager',implementor:'Implementor',
+  const fieldNames={name:'Name',contact:'Contact',email:'Client email',city:'City',mgr:'Manager',implementor:'Implementor',
     status:'Status',grade:'Grade',comment:'Comments',todo:'To-do',liveDate:'Live Date',
     vatDate:'VAT date',vatDone:'VAT done',
     stkDate:'Stock Take date',stkDone:'Stock Take done',progress:'Progress',nextFollowupDate:'Next Follow-up'};
@@ -2309,6 +2314,13 @@ function fld(id,k,v){
     });
   const was=expanded.has(id);render();if(was)expanded.add(id);
   buildVatBanner();buildStkBanner();
+}
+
+function fldClientEmail(id,input){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  const email=input.value.trim().toLowerCase();
+  if(email&&!input.checkValidity()){toast('Enter a valid client email.');input.value=c.email||'';return;}
+  fld(id,'email',email);
 }
 
 function _saveCommentLog(c){
@@ -2710,7 +2722,7 @@ async function removeImpl(i){
 /* ── ADD MODAL ── */
 function openAdd(){
   mGrade=0;
-  ['m-name','m-contact','m-comment'].forEach(i=>document.getElementById(i).value='');
+  ['m-name','m-contact','m-email','m-comment'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('m-city').value='Limassol';
   document.getElementById('m-mgr').value='';
   document.getElementById('m-status').value='Active';
@@ -2729,10 +2741,13 @@ function openAdd(){
 async function saveNew(){
   const name=document.getElementById('m-name').value.trim();
   if(!name){document.getElementById('m-name').focus();return;}
+  const emailInput=document.getElementById('m-email');
+  if(emailInput.value&&!emailInput.checkValidity()){toast('Enter a valid client email.');emailInput.focus();return;}
   const mods=[...document.querySelectorAll('.mods-check input:checked')].map(x=>x.value);
   const mImpl=document.getElementById('m-impl');
   const newC={id:nextId++,name,
     contact:document.getElementById('m-contact').value.trim(),
+    email:emailInput.value.trim().toLowerCase(),
     city:document.getElementById('m-city').value,
     mgr:document.getElementById('m-mgr').value,
     implementor:mImpl?mImpl.value:'',
@@ -3914,6 +3929,6 @@ sb.auth.onAuthStateChange(async(event,session)=>{
 <script src="ai-suggestions.js?v=orders-20261012" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
 <script src="email-suggestions.js?v=orders-20261012" defer></script>
-<script type="module" src="erp-discovery.js?v=client-email-report-20261013"></script>
+<script type="module" src="erp-discovery.js?v=client-email-card-20261013"></script>
 </body>
 </html>
