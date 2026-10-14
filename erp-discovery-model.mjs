@@ -22,6 +22,38 @@ export function filterModuleItems(items, moduleData, filter = '') {
   return source;
 }
 
+export function collectModuleItemsByStatus(moduleSections, moduleData, filter = '') {
+  const values = record(moduleData);
+  return (Array.isArray(moduleSections) ? moduleSections : []).flatMap(section =>
+    (Array.isArray(section?.items) ? section.items : [])
+      .filter(item => {
+        const value = values[item?.id];
+        if (!value?.checked) return false;
+        return !filter || normalizeModuleStatus(value.status) === filter;
+      })
+      .map(item => ({
+        id: item.id,
+        text: item.text,
+        sectionId: section.id,
+        sectionTitle: section.title,
+        group: section.group,
+        status: normalizeModuleStatus(values[item.id]?.status),
+        date: text(values[item.id]?.date, 20),
+        note: text(values[item.id]?.note),
+        action: text(values[item.id]?.action),
+      })),
+  );
+}
+
+export function filterModuleChangesByDate(changeLog, date) {
+  const selectedDate = text(date, 20);
+  if (!selectedDate) return [];
+  return (Array.isArray(changeLog) ? changeLog : [])
+    .filter(item => item?.date === selectedDate && String(item?.section || '').startsWith('module:'))
+    .slice()
+    .sort((a, b) => String(b?.at || '').localeCompare(String(a?.at || '')));
+}
+
 function text(value, max = MAX_TEXT) {
   return typeof value === 'string' ? value.slice(0, max) : '';
 }

@@ -1,5 +1,5 @@
 import { ERP_DISCOVERY_CATALOG as catalog } from './erp-discovery-catalog.mjs';
-import { MODULE_STATUSES, blankProjectDocument, computeProjectProgress, filterModuleItems, normalizeProjectDocument } from './erp-discovery-model.mjs';
+import { MODULE_STATUSES, blankProjectDocument, collectModuleItemsByStatus, computeProjectProgress, filterModuleChangesByDate, filterModuleItems, normalizeProjectDocument } from './erp-discovery-model.mjs';
 
 const PHASES = ['During Implementation', 'During Support'];
 const root = document.getElementById('client-workspace');
@@ -17,6 +17,8 @@ let saveQueued = false;
 let changeVersion = 0;
 let expandedNavGroup = 'workspace';
 let moduleViewFilter = '';
+let workspaceActivityDate = '';
+let workspaceStatusFilter = '';
 const expandedModuleItems = new Set();
 
 const api = () => window.clientMonitorApi;
@@ -204,8 +206,20 @@ function renderNoProject() {
 }
 
 function renderOverview() {
+  if (!workspaceActivityDate) workspaceActivityDate = localDate();
   const discovery = computeProjectProgress(documentState, catalog);
   const openRequirements = documentState.requirements.filter(item => !['Done', 'Accepted'].includes(item.status)).length;
+  const activity = filterModuleChangesByDate(documentState.changeLog, workspaceActivityDate);
+  const moduleItems = collectModuleItemsByStatus(catalog.moduleSections, documentState.moduleData, workspaceStatusFilter);
+  const allModuleItems = collectModuleItemsByStatus(catalog.moduleSections, documentState.moduleData);
+  const statusCounts = Object.fromEntries(MODULE_STATUSES.map(status => [status, allModuleItems.filter(item => item.status === status).length]));
+  const activityRows = activity.map(item => {
+    const section = catalog.moduleSections.find(candidate => `module:${candidate.id}` === item.section);
+    const moduleKey = String(item.field || '').split('.').slice(1, -1).join('.');
+    const time = item.at ? new Date(item.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
+    return `<button type="button" class="erp-activity-row" data-workspace-module="${attr(moduleKey)}" data-workspace-section="${attr(section?.id || '')}"${section && moduleKey ? '' : ' disabled'}><span class="erp-activity-time">${esc(time || '—')}</span><span class="erp-activity-copy"><strong>${esc(item.label || item.field)}</strong><small>${esc(section?.title || 'Module')} · ${esc(item.user || 'Unknown user')}</small><span>${esc(item.value || '(empty)')}</span></span><span class="erp-activity-arrow">›</span></button>`;
+  }).join('');
+  const moduleRows = moduleItems.map(item => `<button type="button" class="erp-workspace-module-row" data-workspace-module="${attr(item.id)}" data-workspace-section="${attr(item.sectionId)}"><span><strong>${esc(item.text)}</strong><small>${esc(item.sectionTitle)}${item.date ? ` · ${esc(item.date)}` : ''}</small></span><span class="erp-module-status status-${item.status.toLowerCase().replace(/\s+/g, '-')}">${esc(item.status)}</span><span class="erp-activity-arrow">›</span></button>`).join('');
   return `<div class="erp-card">
     <h2>${esc(project.name)}</h2><div class="erp-muted">Project details are stored against ${esc(client.name)}. The client record remains the single source for company information.</div>
     <div class="erp-fields" style="margin-top:14px">
@@ -219,6 +233,17 @@ function renderOverview() {
   <div class="erp-grid erp-grid-two">
     <div class="erp-stat"><strong>${discovery.percent}%</strong><span>Discovery completion</span><div class="erp-progress"><span style="width:${discovery.percent}%"></span></div><div class="erp-muted" style="margin-top:6px">${discovery.complete} of ${discovery.total} items</div></div>
     <div class="erp-stat"><strong>${openRequirements}</strong><span>Open requirements</span><div class="erp-muted" style="margin-top:14px">${documentState.requirements.length} total requirements</div></div>
+  </div>
+  <div class="erp-workspace-insights">
+    <section class="erp-card erp-activity-card">
+      <div class="erp-insight-head"><div><h3>Updates & comments</h3><div class="erp-muted">Changes made in any module on the selected date.</div></div><label class="erp-date-filter"><span>Date</span><input type="date" value="${attr(workspaceActivityDate)}" data-workspace-activity-date></label></div>
+      <div class="erp-activity-list">${activityRows || `<div class="erp-empty erp-insight-empty">No module updates or comments on ${esc(workspaceActivityDate)}.</div>`}</div>
+    </section>
+    <section class="erp-card erp-status-card">
+      <div class="erp-insight-head"><div><h3>All module screens</h3><div class="erp-muted">Filter every Accounting and Stock screen by training status.</div></div><strong class="erp-result-count">${moduleItems.length}</strong></div>
+      <div class="erp-status-filters"><button type="button" class="${workspaceStatusFilter ? '' : 'active'}" data-workspace-status="" aria-pressed="${!workspaceStatusFilter}">All <strong>${allModuleItems.length}</strong></button>${MODULE_STATUSES.map(status => `<button type="button" class="status-${status.toLowerCase().replace(/\s+/g, '-')}${workspaceStatusFilter === status ? ' active' : ''}" data-workspace-status="${attr(status)}" aria-pressed="${workspaceStatusFilter === status}">${esc(status)} <strong>${statusCounts[status]}</strong></button>`).join('')}</div>
+      <div class="erp-workspace-module-list">${moduleRows || `<div class="erp-empty erp-insight-empty">No screens match ${esc(workspaceStatusFilter || 'the selected filter')}.</div>`}</div>
+    </section>
   </div>
   <div class="erp-card" style="margin-top:12px"><h3>Project history</h3>${documentState.changeHistory.length ? documentState.changeHistory.slice().reverse().slice(0, 12).map(item => `<div class="erp-question"><strong>${esc(item.date || item.savedAt || '')}</strong> · ${esc(item.phase || '')}<div class="erp-muted">${esc(item.consultant || '')}${item.progress !== undefined ? ` · ${esc(item.progress)}%` : ''}</div></div>`).join('') : '<div class="erp-muted">No saved history yet.</div>'}</div>`;
 }
@@ -336,6 +361,18 @@ function bindInputs(selector, callback) {
 
 function bindContent() {
   const container = root.querySelector('.erp-main') || root;
+  container.querySelector('[data-workspace-activity-date]')?.addEventListener('change', event => { workspaceActivityDate = event.currentTarget.value || localDate(); renderMain(); });
+  container.querySelectorAll('[data-workspace-status]').forEach(button => button.addEventListener('click', () => { workspaceStatusFilter = button.dataset.workspaceStatus || ''; renderMain(); }));
+  container.querySelectorAll('[data-workspace-module]').forEach(button => button.addEventListener('click', () => {
+    const section = catalog.moduleSections.find(item => item.id === button.dataset.workspaceSection);
+    if (!section || !button.dataset.workspaceModule) return;
+    activeSection = `module:${section.id}`;
+    expandedNavGroup = section.group === 'stock' ? 'stock' : 'accounting';
+    moduleViewFilter = '';
+    expandedModuleItems.add(button.dataset.workspaceModule);
+    renderShell();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }));
   container.querySelectorAll('[data-module-toggle]').forEach(button => button.addEventListener('click', () => {
     const key = button.dataset.moduleToggle;
     if (expandedModuleItems.has(key)) expandedModuleItems.delete(key); else expandedModuleItems.add(key);
@@ -496,7 +533,7 @@ window.closeClientWorkspaceView = function closeClientWorkspaceView() {
 window.openClientWorkspace = async function openClientWorkspace(clientId) {
   const found = api()?.getClients().find(item => Number(item.id) === Number(clientId));
   if (!found) { api()?.toast('Client not found.'); return; }
-  client = found; project = null; documentState = blankProjectDocument(); activeSection = 'overview'; expandedNavGroup = 'workspace'; moduleViewFilter = ''; dirty = false; changeVersion = 0;
+  client = found; project = null; documentState = blankProjectDocument(); activeSection = 'overview'; expandedNavGroup = 'workspace'; moduleViewFilter = ''; workspaceActivityDate = localDate(); workspaceStatusFilter = ''; dirty = false; changeVersion = 0;
   hideStandardViews(); root.style.display = 'block'; root.classList.add('active'); root.innerHTML = '<div class="erp-empty">Loading client workspace…</div>'; window.scrollTo({ top: 0 });
   await loadProject();
 };

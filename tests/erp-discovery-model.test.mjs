@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MODULE_STATUSES, computeProjectProgress, computeTrainingProgress, filterModuleItems, normalizeModuleStatus, normalizeProjectDocument, validateErpDiscoveryImport } from '../erp-discovery-model.mjs';
+import { MODULE_STATUSES, collectModuleItemsByStatus, computeProjectProgress, computeTrainingProgress, filterModuleChangesByDate, filterModuleItems, normalizeModuleStatus, normalizeProjectDocument, validateErpDiscoveryImport } from '../erp-discovery-model.mjs';
 
 const catalog = {
   sections: [
@@ -61,6 +61,32 @@ test('filters module screens by project selection and training status', () => {
   assert.deepEqual(filterModuleItems(items, moduleData, 'Needs Training').map(item => item.id), ['screen.1']);
   assert.deepEqual(filterModuleItems(items, moduleData, 'In Progress').map(item => item.id), ['screen.2']);
   assert.deepEqual(filterModuleItems(items, moduleData, 'Completed').map(item => item.id), ['screen.3']);
+});
+
+test('workspace module filters combine every module section and keep section context', () => {
+  const sections = [
+    { id: 'accounting', title: 'Accounting', group: 'accounting', items: [{ id: 'a1', text: 'Accounts' }] },
+    { id: 'stock', title: 'Stock', group: 'stock', items: [{ id: 's1', text: 'Items' }, { id: 's2', text: 'Warehouses' }] },
+  ];
+  const values = {
+    a1: { checked: true, status: 'In Progress', note: 'Review' },
+    s1: { checked: true, status: 'Needs Training' },
+    s2: { checked: false, status: 'Completed' },
+  };
+  assert.deepEqual(collectModuleItemsByStatus(sections, values).map(item => item.id), ['a1', 's1']);
+  assert.deepEqual(collectModuleItemsByStatus(sections, values, 'In Progress').map(item => [item.id, item.sectionId, item.group]), [['a1', 'accounting', 'accounting']]);
+  assert.deepEqual(collectModuleItemsByStatus(sections, values, 'Completed'), []);
+});
+
+test('workspace activity filter returns module changes for the chosen date newest first', () => {
+  const changes = [
+    { date: '2026-10-14', at: '2026-10-14T08:00:00Z', section: 'module:accounting', field: 'module.a1.note' },
+    { date: '2026-10-14', at: '2026-10-14T10:00:00Z', section: 'module:stock', field: 'module.s1.status' },
+    { date: '2026-10-14', at: '2026-10-14T11:00:00Z', section: 'overview', field: 'project.version' },
+    { date: '2026-10-13', at: '2026-10-13T12:00:00Z', section: 'module:stock', field: 'module.s2.note' },
+  ];
+  assert.deepEqual(filterModuleChangesByDate(changes, '2026-10-14').map(item => item.field), ['module.s1.status', 'module.a1.note']);
+  assert.deepEqual(filterModuleChangesByDate(changes, ''), []);
 });
 
 test('calculates discovery and training separately', () => {
