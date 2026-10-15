@@ -1,5 +1,5 @@
 import { ERP_DISCOVERY_CATALOG as catalog } from './erp-discovery-catalog.mjs';
-import { MODULE_STATUSES, blankProjectDocument, buildClientReportSnapshot, collectModuleItemsByStatus, computeProjectProgress, filterModuleChangesByDate, filterModuleItems, normalizeProjectDocument } from './erp-discovery-model.mjs';
+import { MODULE_STATUSES, blankProjectDocument, buildClientJobReportItems, buildClientReportSnapshot, collectModuleItemsByStatus, computeProjectProgress, filterModuleChangesByDate, filterModuleItems, normalizeProjectDocument } from './erp-discovery-model.mjs';
 
 const PHASES = ['During Implementation', 'During Support'];
 const root = document.getElementById('client-workspace');
@@ -19,6 +19,13 @@ let expandedNavGroup = 'workspace';
 let moduleViewFilter = '';
 let workspaceActivityDate = '';
 let workspaceStatusFilter = '';
+let jobReportDate = '';
+let jobReportItems = new Set();
+let jobReportComments = new Map();
+let jobReportGeneralComment = '';
+let jobReportClientRepresentative = '';
+let jobReportConsultant = '';
+let jobReportDraftId = '';
 const expandedModuleItems = new Set();
 
 const api = () => window.clientMonitorApi;
@@ -183,6 +190,57 @@ function printSelectedReport() {
   window.print();
 }
 
+function jobReportSections() {
+  return buildClientJobReportItems(documentState, catalog, [...jobReportItems]);
+}
+
+function jobReportHtml() {
+  const sections = jobReportSections();
+  const rows = sections.flatMap(section => section.items.map(item => `<tr><td>${esc(section.title)}</td><td>${esc(item.text)}</td><td>${esc(jobReportComments.get(item.id) || '—')}</td></tr>`)).join('');
+  return `${reportCover('Client Job Report', reportDate(jobReportDate))}
+    <section class="erp-report-section"><h2>Visit details</h2><div class="erp-report-summary erp-job-details">
+      <div><span>Client ID</span><strong>${esc(client.clientCode || client.clientId || client.client_id || '—')}</strong></div>
+      <div><span>Main contact</span><strong>${esc(client.contact || '—')}</strong></div>
+      <div><span>Location</span><strong>${esc(client.city || '—')}</strong></div>
+      <div><span>Consultant</span><strong>${esc(jobReportConsultant || project.consultant || client.implementor || 'PremierSoft')}</strong></div>
+    </div></section>
+    <section class="erp-report-section"><h2>Training delivered</h2><p class="erp-report-intro">Training was provided on the following ERP screens on ${esc(reportDate(jobReportDate))}.</p><table><thead><tr><th>Module</th><th>Screen trained</th><th>Comment</th></tr></thead><tbody>${rows}</tbody></table></section>
+    ${jobReportGeneralComment ? `<section class="erp-report-section"><h2>General comments</h2><p class="erp-report-comment">${esc(jobReportGeneralComment)}</p></section>` : ''}
+    <section class="erp-report-signoff"><div><span>Client representative / signature</span><strong>${esc(jobReportClientRepresentative)}</strong></div><div><span>Consultant / signature</span><strong>${esc(jobReportConsultant)}</strong></div></section>
+    <footer>Prepared by ${esc(jobReportConsultant || project.consultant || client.implementor || 'PremierSoft')} · ${esc(new Date().toLocaleString('en-GB'))}</footer>`;
+}
+
+async function completeJobReport() {
+  if (!jobReportDate) { api().toast('Select the job report date.'); return; }
+  const sections = jobReportSections();
+  if (!sections.length) { api().toast('Tick at least one trained screen for the job report.'); return; }
+  const createdAt = new Date().toISOString();
+  const reportItems = sections.flatMap(section => section.items.map(item => ({ id: item.id, module: section.title, screen: item.text, comment: jobReportComments.get(item.id) || '' })));
+  const reportRecord = { id: jobReportDraftId, date: jobReportDate, items: reportItems, generalComment: jobReportGeneralComment, clientRepresentative: jobReportClientRepresentative, consultant: jobReportConsultant, createdAt, createdBy: api().getCurrentUser() };
+  const existingReport = documentState.jobReports.findIndex(item => item.id === jobReportDraftId);
+  if (existingReport >= 0) documentState.jobReports[existingReport] = reportRecord; else documentState.jobReports.push(reportRecord);
+  for (const section of sections) for (const screen of section.items) {
+    const value = ensureModule(screen.id);
+    value.date = jobReportDate;
+    if (value.status === 'Needs Training') value.status = 'In Progress';
+    const comment = jobReportComments.get(screen.id) || '';
+    if (comment && !String(value.note || '').includes(comment)) value.note = [value.note, `${reportDate(jobReportDate)}: ${comment}`].filter(Boolean).join('\n');
+    recordChange(`module.${screen.id}.date`, `${screen.text} — Training / review date`, jobReportDate, `module:${section.id}`, jobReportDate);
+    recordChange(`module.${screen.id}.status`, `${screen.text} — Training status`, value.status, `module:${section.id}`, jobReportDate);
+    if (comment) recordChange(`module.${screen.id}.note`, `${screen.text} — Comment`, comment, `module:${section.id}`, jobReportDate);
+  }
+  setDirty();
+  await saveProject();
+  root.querySelector('.erp-print-report')?.remove();
+  const printable = document.createElement('section');
+  printable.className = 'erp-print-report';
+  printable.innerHTML = jobReportHtml();
+  root.append(printable);
+  document.body.classList.add('erp-report-printing');
+  window.addEventListener('afterprint', () => { document.body.classList.remove('erp-report-printing'); printable.remove(); }, { once: true });
+  window.print();
+}
+
 function setDirty(value = true) {
   dirty = value;
   if (value) changeVersion += 1;
@@ -216,7 +274,7 @@ function sectionGroups() {
     if (section.id === 'scenarios') discovery.push({ id: 'requirements', title: '11. Requirements / Decisions Log' });
   }
   return [
-    { id: 'workspace', title: 'Workspace', items: [{ id: 'overview', title: 'Overview' }, { id: 'users', title: 'Client Users' }] },
+    { id: 'workspace', title: 'Workspace', items: [{ id: 'overview', title: 'Overview' }, { id: 'job-report', title: 'Client Job Report' }, { id: 'users', title: 'Client Users' }] },
     { id: 'discovery', title: 'Discovery & Readiness', items: discovery },
     { id: 'accounting', title: 'Accounting Modules', items: catalog.moduleSections.filter(section => section.group === 'accounting').map(section => ({ id: `module:${section.id}`, title: section.title })) },
     { id: 'stock', title: 'Stock Modules', items: catalog.moduleSections.filter(section => section.group === 'stock').map(section => ({ id: `module:${section.id}`, title: section.title })) },
@@ -325,6 +383,25 @@ function renderUsers() {
   return `<div class="erp-card"><div class="erp-actions"><div><h2>Client Users</h2><div class="erp-muted">People involved in discovery, implementation or training.</div></div><button class="erp-btn primary" data-add-user>+ Add user</button></div><div class="erp-table-wrap"><table class="erp-table"><thead><tr><th>Name</th><th>Position / Department</th><th></th></tr></thead><tbody>${documentState.users.map((item, index) => `<tr><td><input data-user-index="${index}" data-user-field="name" value="${attr(item.name)}"></td><td><input data-user-index="${index}" data-user-field="position" value="${attr(item.position)}"></td><td><button class="erp-btn danger" data-remove-user="${index}">Remove</button></td></tr>`).join('')}</tbody></table></div>${documentState.users.length ? '' : '<div class="erp-empty">No users recorded.</div>'}</div>`;
 }
 
+function renderJobReport() {
+  if (!jobReportDate) jobReportDate = localDate();
+  if (!jobReportClientRepresentative) jobReportClientRepresentative = client.contact || '';
+  if (!jobReportConsultant) jobReportConsultant = project.consultant || client.implementor || '';
+  if (!jobReportDraftId) jobReportDraftId = crypto.randomUUID();
+  const availableSections = catalog.moduleSections.map(section => ({
+    ...section,
+    items: section.items.filter(item => documentState.moduleData[item.id]?.checked),
+  })).filter(section => section.items.length);
+  const selectedCount = jobReportSections().reduce((total, section) => total + section.items.length, 0);
+  const checklists = availableSections.map(section => `<section class="erp-job-module"><h3>${esc(section.title)}</h3><div class="erp-job-screens">${section.items.map(item => `<div class="erp-job-screen${jobReportItems.has(item.id) ? ' selected' : ''}"><label><input type="checkbox" data-job-report-item="${attr(item.id)}" ${jobReportItems.has(item.id) ? 'checked' : ''}><span>${esc(item.text)}</span></label>${jobReportItems.has(item.id) ? `<textarea data-job-report-comment="${attr(item.id)}" placeholder="Optional short comment for this screen…">${esc(jobReportComments.get(item.id) || '')}</textarea>` : ''}</div>`).join('')}</div></section>`).join('');
+  return `<div class="erp-card erp-job-report-card">
+    <div class="erp-actions"><div><h2>Client Job Report</h2><div class="erp-muted">At the end of the visit, tick only the screens trained on this date. This selection is separate from project scope and training status.</div></div><span class="erp-job-count">${selectedCount} selected</span></div>
+    <div class="erp-job-toolbar"><label class="erp-field"><span>Visit / training date</span><input type="date" class="erp-input" data-job-report-date value="${attr(jobReportDate)}"></label><button type="button" class="erp-btn primary" data-complete-job-report ${selectedCount ? '' : 'disabled'}>Complete & Print PDF</button></div>
+    ${checklists || '<div class="erp-empty">No screens are currently included in this project. Select the required screens inside the Accounting or Stock modules first.</div>'}
+    <section class="erp-job-extras"><div class="erp-field"><label>General comment <span>(optional)</span></label><textarea class="erp-textarea" data-job-report-general placeholder="General notes about today’s training…">${esc(jobReportGeneralComment)}</textarea></div><div class="erp-job-signatures"><div class="erp-field"><label>Client representative</label><input class="erp-input" data-job-report-client value="${attr(jobReportClientRepresentative)}"></div><div class="erp-field"><label>Consultant</label><input class="erp-input" data-job-report-consultant value="${attr(jobReportConsultant)}"></div></div><div class="erp-muted">The PDF includes signature lines for both people.</div></section>
+  </div>`;
+}
+
 function renderTrainingRoles() {
   return `<div class="erp-card"><div class="erp-actions"><div><h2>9. Training Topics ανά Ρόλο</h2><div class="erp-muted">Plan training by role and actual work.</div></div><button class="erp-btn primary" data-add-role>+ Add role</button></div><div class="erp-table-wrap"><table class="erp-table"><thead><tr><th>Role / Department</th><th>Main tasks</th><th>Level</th><th>Training needs</th><th>Super user</th><th></th></tr></thead><tbody>${documentState.trainingRoles.map((item, index) => `<tr><td><input data-role-index="${index}" data-role-field="role" value="${attr(item.role)}"></td><td><textarea data-role-index="${index}" data-role-field="tasks">${esc(item.tasks)}</textarea></td><td><select data-role-index="${index}" data-role-field="level">${options(['1 - Beginner','2 - Basic User','3 - Experienced User','4 - Super User','5 - Administrator'], item.level)}</select></td><td><textarea data-role-index="${index}" data-role-field="training">${esc(item.training)}</textarea></td><td><select data-role-index="${index}" data-role-field="superUser">${options(['No','Yes'], item.superUser)}</select></td><td><button class="erp-btn danger" data-remove-role="${index}">Remove</button></td></tr>`).join('')}</tbody></table></div>${documentState.trainingRoles.length ? '' : '<div class="erp-empty">No training roles recorded.</div>'}</div>`;
 }
@@ -393,6 +470,7 @@ function renderMain() {
     return;
   }
   if (activeSection === 'overview') container.innerHTML = renderOverview();
+  else if (activeSection === 'job-report') container.innerHTML = renderJobReport();
   else if (activeSection === 'users') container.innerHTML = renderUsers();
   else if (activeSection === 'training-roles') container.innerHTML = renderTrainingRoles();
   else if (activeSection === 'requirements') container.innerHTML = renderRequirements();
@@ -406,10 +484,10 @@ function ensureModule(key) {
   return documentState.moduleData[key];
 }
 
-function recordChange(field, label, value) {
+function recordChange(field, label, value, section = activeSection, changeDate = '') {
   const now = new Date();
-  const date = localDate(now);
-  const entry = { date, at: now.toISOString(), section: activeSection, field, label, value: String(value ?? ''), user: api().getCurrentUser() };
+  const date = changeDate || localDate(now);
+  const entry = { date, at: now.toISOString(), section, field, label, value: String(value ?? ''), user: api().getCurrentUser() };
   const existing = documentState.changeLog.findIndex(item => item.date === date && item.field === field);
   if (existing >= 0) documentState.changeLog[existing] = entry;
   else documentState.changeLog.push(entry);
@@ -424,6 +502,16 @@ function bindInputs(selector, callback) {
 function bindContent() {
   const container = root.querySelector('.erp-main') || root;
   container.querySelector('[data-workspace-activity-date]')?.addEventListener('change', event => { workspaceActivityDate = event.currentTarget.value || localDate(); renderMain(); });
+  container.querySelector('[data-job-report-date]')?.addEventListener('change', event => { jobReportDate = event.currentTarget.value || localDate(); });
+  container.querySelectorAll('[data-job-report-item]').forEach(element => element.addEventListener('change', () => {
+    if (element.checked) jobReportItems.add(element.dataset.jobReportItem); else jobReportItems.delete(element.dataset.jobReportItem);
+    renderMain();
+  }));
+  container.querySelectorAll('[data-job-report-comment]').forEach(element => element.addEventListener('input', () => { jobReportComments.set(element.dataset.jobReportComment, element.value); }));
+  container.querySelector('[data-job-report-general]')?.addEventListener('input', event => { jobReportGeneralComment = event.currentTarget.value; });
+  container.querySelector('[data-job-report-client]')?.addEventListener('input', event => { jobReportClientRepresentative = event.currentTarget.value; });
+  container.querySelector('[data-job-report-consultant]')?.addEventListener('input', event => { jobReportConsultant = event.currentTarget.value; });
+  container.querySelector('[data-complete-job-report]')?.addEventListener('click', completeJobReport);
   container.querySelectorAll('[data-workspace-status]').forEach(button => button.addEventListener('click', () => { workspaceStatusFilter = button.dataset.workspaceStatus || ''; renderMain(); }));
   container.querySelectorAll('[data-workspace-module]').forEach(button => button.addEventListener('click', () => {
     const section = catalog.moduleSections.find(item => item.id === button.dataset.workspaceSection);
@@ -595,7 +683,7 @@ window.closeClientWorkspaceView = function closeClientWorkspaceView() {
 window.openClientWorkspace = async function openClientWorkspace(clientId) {
   const found = api()?.getClients().find(item => Number(item.id) === Number(clientId));
   if (!found) { api()?.toast('Client not found.'); return; }
-  client = found; project = null; documentState = blankProjectDocument(); activeSection = 'overview'; expandedNavGroup = 'workspace'; moduleViewFilter = ''; workspaceActivityDate = localDate(); workspaceStatusFilter = ''; dirty = false; changeVersion = 0;
+  client = found; project = null; documentState = blankProjectDocument(); activeSection = 'overview'; expandedNavGroup = 'workspace'; moduleViewFilter = ''; workspaceActivityDate = localDate(); workspaceStatusFilter = ''; jobReportDate = localDate(); jobReportItems = new Set(); jobReportComments = new Map(); jobReportGeneralComment = ''; jobReportClientRepresentative = found.contact || ''; jobReportConsultant = found.implementor || ''; jobReportDraftId = crypto.randomUUID(); dirty = false; changeVersion = 0;
   hideStandardViews(); root.style.display = 'block'; root.classList.add('active'); root.innerHTML = '<div class="erp-empty">Loading client workspace…</div>'; window.scrollTo({ top: 0 });
   await loadProject();
 };

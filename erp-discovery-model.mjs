@@ -84,6 +84,18 @@ export function buildClientReportSnapshot(document, catalog) {
   };
 }
 
+export function buildClientJobReportItems(document, catalog, selectedIds) {
+  const doc = normalizeProjectDocument(document);
+  const selected = new Set(Array.isArray(selectedIds) ? selectedIds.map(id => text(id, 80)) : []);
+  return (Array.isArray(catalog?.moduleSections) ? catalog.moduleSections : []).map(section => ({
+    id: text(section.id, 80),
+    title: text(section.title, 300),
+    items: (Array.isArray(section.items) ? section.items : [])
+      .filter(item => selected.has(item.id) && doc.moduleData[item.id]?.checked)
+      .map(item => ({ id: text(item.id, 80), text: text(item.text, 500) })),
+  })).filter(section => section.items.length);
+}
+
 function text(value, max = MAX_TEXT) {
   return typeof value === 'string' ? value.slice(0, max) : '';
 }
@@ -128,6 +140,7 @@ export function blankProjectDocument() {
     trainingStages: {},
     changeHistory: [],
     changeLog: [],
+    jobReports: [],
     fieldChanges: {},
   };
 }
@@ -212,6 +225,18 @@ export function normalizeProjectDocument(raw) {
         field: text(value.field, 160), label: text(value.label, 500), value: text(value.value, 2000), user: text(value.user, 300),
       };
     }).filter(item => item.date && item.field),
+    jobReports: list(input.jobReports, 500).map(item => {
+      const value = record(item);
+      return {
+        id: text(value.id, 100), date: text(value.date, 20), generalComment: text(value.generalComment),
+        clientRepresentative: text(value.clientRepresentative, 300), consultant: text(value.consultant, 300),
+        createdAt: text(value.createdAt, 100), createdBy: text(value.createdBy, 300),
+        items: list(value.items, 500).map(reportItem => {
+          const detail = record(reportItem);
+          return { id: text(detail.id, 80), module: text(detail.module, 300), screen: text(detail.screen, 500), comment: text(detail.comment, 2000) };
+        }).filter(reportItem => reportItem.id && reportItem.screen),
+      };
+    }).filter(item => item.id && item.date && item.items.length),
     fieldChanges: cleanFieldChanges(input.fieldChanges),
   };
 }
