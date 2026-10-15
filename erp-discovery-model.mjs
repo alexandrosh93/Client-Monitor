@@ -230,6 +230,8 @@ export function normalizeProjectDocument(raw) {
       return {
         id: text(value.id, 100), date: text(value.date, 20), generalComment: text(value.generalComment),
         clientRepresentative: text(value.clientRepresentative, 300), consultant: text(value.consultant, 300),
+        jobNumber: text(value.jobNumber, 100), customerComment: text(value.customerComment),
+        satisfaction: ['Satisfied', 'Neutral', 'Needs attention'].includes(value.satisfaction) ? value.satisfaction : '',
         createdAt: text(value.createdAt, 100), createdBy: text(value.createdBy, 300),
         items: list(value.items, 500).map(reportItem => {
           const detail = record(reportItem);

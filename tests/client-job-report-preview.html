@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Client Job Report - Sample</title>
+<link rel="stylesheet" href="../erp-discovery.css">
+<style>body{margin:0;background:#e8edf3}.erp-print-report{display:block;box-sizing:border-box;width:210mm;min-height:297mm;margin:24px auto;padding:14mm;background:white}@media print{body{background:white}.erp-print-report{width:auto;min-height:0;margin:0;padding:0}}</style></head>
+<body><section class="erp-print-report" id="report"></section>
+<script type="module">
+import {renderClientJobReport} from '../client-job-report.mjs';
+document.getElementById('report').innerHTML=renderClientJobReport({
+client:{name:'Demo Client Ltd',clientCode:'DEMO001',contact:'Maria Demo',city:'Limassol',email:'client@example.com'},
+date:'15 Oct 2026',jobNumber:'DEMO-001',consultant:'Consultant',representative:'Maria Demo',
+sections:[{title:'Accounting · Maintenance',items:[{id:'a1',text:'Customer accounts'},{id:'a2',text:'Sales invoices'}]},{title:'Stock · Transactions',items:[{id:'s1',text:'Goods receipts'}]}],
+comments:{a1:'Customer creation and account details.',a2:'Invoice entry, printing and corrections.',s1:'Παραλαβή αποθεμάτων και έλεγχος ποσοτήτων.'},
+generalComment:'Hands-on training using sample transactions. A follow-up session will cover month-end procedures.',
+customerComment:'',satisfaction:'Satisfied'});
+</script></body></html>
