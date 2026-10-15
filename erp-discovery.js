@@ -258,6 +258,7 @@ function scheduleAutosave(delay = 800) {
 }
 
 function hideStandardViews() {
+  window.closeTasksView?.();
   document.getElementById('home-view')?.classList.remove('active');
   const controls = document.querySelector('.control-bar');
   if (controls) controls.style.display = 'none';

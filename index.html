@@ -22,6 +22,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="erp-discovery.css?v=modern-service-report-20261015">
+<link rel="stylesheet" href="tasks.css?v=1">
 <style>
 :root{
   --bg:#f4f6fb;
@@ -916,6 +917,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
       <button class="view-btn" id="vbtn-home" onclick="goHome()">⌂ Home</button>
       <button class="view-btn active" id="vbtn-list" onclick="setView('list')">☰ List</button>
       <button class="view-btn" id="vbtn-dash" onclick="setView('dash')">⊞ Dashboard</button>
+      <button class="view-btn" id="vbtn-tasks" onclick="openTasksView({client:''})">✓ Tasks</button>
     </div>
     <button id="refresh-btn" class="refresh-btn no-print" onclick="manualRefresh()" title="Refresh data from GitHub" style="display:none">↻</button>
     <input type="text" id="search" placeholder="🔍 Search…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--border-md);border-radius:99px;background:var(--surface2);color:var(--text);outline:none;width:190px;transition:border-color .2s,background .2s,box-shadow .2s" onfocus="this.style.borderColor='var(--accent)';this.style.background='var(--surface)'" onblur="this.style.borderColor='';this.style.background='var(--surface2)'">
@@ -1112,6 +1114,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 
 <main>
   <div id="client-workspace"></div>
+  <div id="tasks-view"></div>
   <div id="home-view"></div>
   <div class="control-bar no-print">
     <!-- STAT PILLS -->
@@ -3092,7 +3095,7 @@ function wlTipShow(text,e){const t=document.getElementById('wl-tip');if(!t)retur
 function wlTipMove(e){const t=document.getElementById('wl-tip');if(!t)return;t.style.left=(e.clientX+14)+'px';t.style.top=(e.clientY-36)+'px';}
 function wlTipHide(){const t=document.getElementById('wl-tip');if(t)t.classList.remove('show');}
 function setView(v){
-  if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();
+  if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();if(window.closeTasksView)window.closeTasksView();
   currentView=v;
   // leaving the home (login) dashboard
   const home=document.getElementById('home-view');
@@ -3111,7 +3114,7 @@ function setView(v){
 
 /* ── HOME VIEW ── */
 function goHome(){
-  if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();
+  if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();if(window.closeTasksView)window.closeTasksView();
   document.getElementById('home-view').classList.add('active');
   document.querySelector('.control-bar').style.display='none';
   document.getElementById('list').style.display='none';
@@ -3122,7 +3125,7 @@ function goHome(){
   renderHomeDashboard();
 }
 function goClients(opts={}){
-  if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();
+  if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();if(window.closeTasksView)window.closeTasksView();
   document.getElementById('home-view').classList.remove('active');
   document.querySelector('.control-bar').style.display='';
   selStatuses.clear(); selImpls.clear(); selMgr=''; selCity='';
@@ -3144,7 +3147,7 @@ function goMyClients(){
   goClients({impl:implementor});
 }
 function goToClient(id){
-  if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();
+  if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();if(window.closeTasksView)window.closeTasksView();
   const c=clients.find(x=>x.id===id);if(!c)return;
   document.getElementById('home-view').classList.remove('active');
   document.querySelector('.control-bar').style.display='';
@@ -3266,6 +3269,7 @@ function renderHomeDashboard(){
     </div>
   </div>
 
+  <div id="hv-mytasks"></div>
   ${followupsDue.length?`
   <div class="hv-card" style="margin-bottom:1.25rem;border-left:3px solid #a32d2d">
     <div class="hv-card-hdr">
@@ -3368,6 +3372,7 @@ function renderHomeDashboard(){
       :'<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No upcoming events in the next 14 days. ✓</div>'}
     </div>
   </div>`;
+  if(window.renderMyTasksCard)window.renderMyTasksCard();
 }
 
 /* ── DASHBOARD ── */
@@ -3943,6 +3948,7 @@ buildVatBanner();buildStkBanner();
 window.clientMonitorApi={
   getSupabase:()=>sb,
   getClients:()=>clients,
+  getImplementors:()=>implementors,
   getCurrentUser:()=>currentUser,
   goClients,
   goToClient,
@@ -3967,6 +3973,7 @@ sb.auth.onAuthStateChange(async(event,session)=>{
 <script src="ai-suggestions.js?v=orders-20261012" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
 <script src="email-suggestions.js?v=pdf-client-name-20261013" defer></script>
+<script src="tasks.js?v=1" defer></script>
 <script type="module" src="erp-discovery.js?v=modern-service-report-20261015"></script>
 </body>
 </html>
