@@ -1,5 +1,5 @@
 import { ERP_DISCOVERY_CATALOG as catalog } from './erp-discovery-catalog.mjs';
-import { MODULE_STATUSES, blankProjectDocument, collectModuleItemsByStatus, computeProjectProgress, filterModuleChangesByDate, filterModuleItems, normalizeProjectDocument } from './erp-discovery-model.mjs';
+import { MODULE_STATUSES, blankProjectDocument, buildClientReportSnapshot, collectModuleItemsByStatus, computeProjectProgress, filterModuleChangesByDate, filterModuleItems, normalizeProjectDocument } from './erp-discovery-model.mjs';
 
 const PHASES = ['During Implementation', 'During Support'];
 const root = document.getElementById('client-workspace');
@@ -29,47 +29,114 @@ const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.ge
 const questionLabels = new Map(catalog.sections.flatMap(section => section.questions.map(item => [item.id, item.text])));
 const moduleLabels = new Map(catalog.moduleSections.flatMap(section => section.items.map(item => [item.id, item.text])));
 
-function reportHeader(title) {
-  return [client.name, title, `Consultant: ${project.consultant || client.implementor || 'Unassigned'}`, `Phase: ${project.phase || PHASES[0]}`, `Generated: ${new Date().toLocaleString('en-GB')}`, ''];
+function clientReportData() {
+  return buildClientReportSnapshot(documentState, catalog);
 }
 
-function moduleReportLine(item, index) {
-  const value = documentState.moduleData[item.id] || {};
-  const attendees = (value.users || []).map(userId => documentState.users.find(user => user.id === userId)?.name || userId).filter(Boolean);
-  return `${index + 1}. ${item.text} | Included in project: ${value.checked ? 'Yes' : 'No'}${value.checked ? ` | Status: ${value.status || 'Needs Training'}` : ''}${value.date ? ` | ${value.date}` : ''}${attendees.length ? ` | Training attendees: ${attendees.join(', ')}` : ''}${value.note ? ` | Notes: ${value.note}` : ''}${value.action ? ` | Next: ${value.action}` : ''}`;
+function reportDate(value) {
+  if (!value) return 'Not scheduled';
+  const parsed = new Date(`${value}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function clientGreeting() {
+  return client.contact ? `Hello ${client.contact},` : 'Hello,';
+}
+
+function changeLabel(item) {
+  return String(item.label || item.field || 'Project update')
+    .replace(/ — note$/i, ' — Comment')
+    .replace(/ — action$/i, ' — Next action')
+    .replace(/ — status$/i, ' — Training status')
+    .replace(/ — date$/i, ' — Training / review date')
+    .replace(/ — checked$/i, ' — Project scope');
+}
+
+function changeSectionTitle(sectionId) {
+  if (sectionId?.startsWith('module:')) return catalog.moduleSections.find(section => `module:${section.id}` === sectionId)?.title || 'Module';
+  if (sectionId === 'requirements') return 'Requirements / decisions';
+  if (sectionId === 'users') return 'Client users';
+  if (sectionId === 'overview') return 'Project summary';
+  return catalog.sections.find(section => section.id === sectionId)?.title || 'Project';
+}
+
+function reportSummaryLines() {
+  const progress = computeProjectProgress(documentState, catalog);
+  const data = clientReportData();
+  return [
+    `Project phase: ${project.phase || PHASES[0]}`,
+    `Implementation progress: ${Number(client.progress || 0)}%`,
+    `Target live date: ${client.liveDate ? reportDate(client.liveDate) : 'To be confirmed'}`,
+    `Discovery completion: ${progress.percent}%`,
+    `Screens in project: ${data.selectedModuleCount}`,
+    `Training status: ${data.statusCounts['Needs Training']} needs training · ${data.statusCounts['In Progress']} in progress · ${data.statusCounts.Completed} completed`,
+  ];
 }
 
 function wholeProjectReportText() {
-  const progress = computeProjectProgress(documentState, catalog);
-  const lines = reportHeader('Whole ERP Project Report');
-  lines.push(`Implementation progress: ${Number(client.progress || 0)}%`, `Discovery completion: ${progress.percent}% (${progress.complete}/${progress.total})`, `Live date: ${client.liveDate || 'Not set'}`, '', 'CLIENT USERS');
-  documentState.users.forEach((item, index) => lines.push(`${index + 1}. ${item.name || 'Unnamed'} — ${item.position || 'No position'}`));
-  for (const section of catalog.sections) {
-    lines.push('', section.title.toUpperCase());
-    section.questions.forEach((item, index) => {
-      if (section.checklist) lines.push(`${index + 1}. ${item.text} | ${documentState.checks[item.id] ? 'Completed' : 'Not completed'}${documentState.notes[item.id] ? ` | Notes: ${documentState.notes[item.id]}` : ''}`);
-      else lines.push(`${index + 1}. ${item.text}\n${documentState.answers[item.id] || 'Not answered'}`);
+  const data = clientReportData();
+  const openRequirements = data.requirements.filter(item => !['Done', 'Accepted'].includes(item.status));
+  const lines = [clientGreeting(), '', `Please find below the latest ERP project summary for ${client.name}.`, '', 'PROJECT SUMMARY', ...reportSummaryLines()];
+  if (openRequirements.length) {
+    lines.push('', 'OPEN ACTIONS & REQUIREMENTS');
+    openRequirements.forEach(item => lines.push(`• ${item.id || 'Action'} — ${item.topic}${item.owner ? ` | Owner: ${item.owner}` : ''}${item.status ? ` | ${item.status}` : ''}${item.date ? ` | ${reportDate(item.date)}` : ''}`));
+  }
+  if (data.moduleSections.length) {
+    lines.push('', 'MODULES & TRAINING');
+    data.moduleSections.forEach(section => {
+      lines.push('', section.title);
+      section.items.forEach(item => lines.push(`• ${item.text} — ${item.status}${item.date ? ` | ${reportDate(item.date)}` : ''}${item.attendees.length ? ` | Attendees: ${item.attendees.join(', ')}` : ''}${item.action ? ` | Next: ${item.action}` : ''}${item.note ? ` | Note: ${item.note}` : ''}`));
     });
   }
-  lines.push('', 'TRAINING TOPICS BY ROLE');
-  documentState.trainingRoles.forEach((item, index) => lines.push(`${index + 1}. ${item.role || 'Unnamed role'} | Tasks: ${item.tasks || '-'} | Level: ${item.level || '-'} | Training: ${item.training || '-'} | Super user: ${item.superUser || 'No'}`));
-  lines.push('', 'REQUIREMENTS / DECISIONS LOG');
-  documentState.requirements.forEach(item => lines.push(`${item.id || '-'} | ${item.topic || 'No topic'} | ${item.type || '-'} | ${item.priority || '-'} | Owner: ${item.owner || '-'} | ${item.status || '-'} | ${item.date || '-'}`));
-  for (const section of catalog.moduleSections) {
-    lines.push('', section.title.toUpperCase());
-    section.items.forEach((item, index) => lines.push(moduleReportLine(item, index)));
-  }
+  lines.push('', 'Kind regards,', project.consultant || client.implementor || 'PremierSoft');
   return lines.join('\n');
 }
 
+function dateChanges(date) {
+  return (documentState.changeLog || []).filter(item => item.date === date).slice().sort((a, b) => String(a.at || '').localeCompare(String(b.at || '')));
+}
+
 function dateChangesReportText(date) {
-  const lines = reportHeader(`Project Changes — ${date || 'No date selected'}`);
-  const changes = (documentState.changeLog || []).filter(item => item.date === date);
-  if (changes.length) changes.forEach((item, index) => lines.push(`${index + 1}. ${item.label || item.field}: ${item.value || '(empty)'}${item.user ? ` — ${item.user}` : ''}`));
-  else lines.push('No detailed changes were recorded for this date.');
-  const saved = documentState.changeHistory.filter(item => item.date === date);
-  saved.forEach(item => lines.push(`Project saved · ${item.phase || '-'} · ${item.consultant || '-'}${item.progress !== undefined ? ` · ${item.progress}%` : ''}`));
+  const changes = dateChanges(date);
+  const lines = [clientGreeting(), '', `Here is the ERP project update for ${client.name} on ${reportDate(date)}.`, '', 'PROJECT SUMMARY', ...reportSummaryLines(), '', 'UPDATES'];
+  if (changes.length) changes.forEach(item => {
+    const time = item.at ? new Date(item.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
+    lines.push(`• ${time ? `${time} · ` : ''}${changeSectionTitle(item.section)} · ${changeLabel(item)}: ${item.value || '(cleared)'}${item.user ? ` — ${item.user}` : ''}`);
+  });
+  else lines.push('No project updates were recorded for this date.');
+  lines.push('', 'Kind regards,', project.consultant || client.implementor || 'PremierSoft');
   return lines.join('\n');
+}
+
+function reportCover(title, subtitle = '') {
+  return `<header class="erp-report-cover"><div class="erp-report-brand">PREMIERSOFT</div><h1>${esc(client.name)}</h1><p>${esc(title)}</p>${subtitle ? `<span>${esc(subtitle)}</span>` : ''}</header>`;
+}
+
+function reportSummaryHtml() {
+  const progress = computeProjectProgress(documentState, catalog);
+  const data = clientReportData();
+  return `<section class="erp-report-section"><h2>Project summary</h2><div class="erp-report-summary">
+    <div><span>Project phase</span><strong>${esc(project.phase || PHASES[0])}</strong></div>
+    <div><span>Implementation progress</span><strong>${Number(client.progress || 0)}%</strong></div>
+    <div><span>Target live date</span><strong>${esc(client.liveDate ? reportDate(client.liveDate) : 'To be confirmed')}</strong></div>
+    <div><span>Discovery completion</span><strong>${progress.percent}%</strong></div>
+  </div><div class="erp-report-status"><span class="needs">${data.statusCounts['Needs Training']} Needs Training</span><span class="progress">${data.statusCounts['In Progress']} In Progress</span><span class="complete">${data.statusCounts.Completed} Completed</span></div></section>`;
+}
+
+function wholeProjectReportHtml() {
+  const data = clientReportData();
+  const openRequirements = data.requirements.filter(item => !['Done', 'Accepted'].includes(item.status));
+  const requirementsHtml = openRequirements.length ? `<section class="erp-report-section"><h2>Open actions & requirements</h2><table><thead><tr><th>ID</th><th>Action / requirement</th><th>Owner</th><th>Status</th><th>Target date</th></tr></thead><tbody>${openRequirements.map(item => `<tr><td>${esc(item.id || '—')}</td><td>${esc(item.topic)}</td><td>${esc(item.owner || '—')}</td><td>${esc(item.status || 'Open')}</td><td>${esc(item.date ? reportDate(item.date) : '—')}</td></tr>`).join('')}</tbody></table></section>` : '';
+  const modulesHtml = data.moduleSections.length ? `<section class="erp-report-section"><h2>Modules & training progress</h2>${data.moduleSections.map(section => `<div class="erp-report-group"><h3>${esc(section.title)}</h3><table><thead><tr><th>Screen</th><th>Status</th><th>Review date</th><th>Training attendees</th><th>Client notes / next action</th></tr></thead><tbody>${section.items.map(item => `<tr><td>${esc(item.text)}</td><td><span class="erp-report-pill status-${item.status.toLowerCase().replace(/\s+/g, '-')}">${esc(item.status)}</span></td><td>${esc(item.date ? reportDate(item.date) : '—')}</td><td>${esc(item.attendees.join(', ') || '—')}</td><td>${item.note ? `<strong>Note:</strong> ${esc(item.note)}` : ''}${item.note && item.action ? '<br>' : ''}${item.action ? `<strong>Next:</strong> ${esc(item.action)}` : (!item.note ? '—' : '')}</td></tr>`).join('')}</tbody></table></div>`).join('')}</section>` : '';
+  const discoveryHtml = data.discoverySections.length ? `<section class="erp-report-section"><h2>Confirmed discovery information</h2>${data.discoverySections.map(section => `<div class="erp-report-group"><h3>${esc(section.title)}</h3>${section.items.map(item => `<div class="erp-report-decision"><strong>${esc(item.text)}</strong>${item.answer ? `<p>${esc(item.answer)}</p>` : ''}${item.note ? `<p><b>Note:</b> ${esc(item.note)}</p>` : ''}</div>`).join('')}</div>`).join('')}</section>` : '';
+  return `${reportCover('ERP Implementation · Client Project Report', `Prepared ${new Date().toLocaleDateString('en-GB')}`)}${reportSummaryHtml()}${requirementsHtml}${modulesHtml}${discoveryHtml}<footer>Prepared by ${esc(project.consultant || client.implementor || 'PremierSoft')} · ${esc(new Date().toLocaleString('en-GB'))}</footer>`;
+}
+
+function dateChangesReportHtml(date) {
+  const changes = dateChanges(date);
+  const grouped = Map.groupBy ? Map.groupBy(changes, item => changeSectionTitle(item.section)) : changes.reduce((map, item) => { const key = changeSectionTitle(item.section); if (!map.has(key)) map.set(key, []); map.get(key).push(item); return map; }, new Map());
+  const updatesHtml = changes.length ? [...grouped].map(([section, items]) => `<div class="erp-report-group"><h3>${esc(section)}</h3>${items.map(item => { const time = item.at ? new Date(item.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''; return `<div class="erp-report-update"><span>${esc(time || '—')}</span><div><strong>${esc(changeLabel(item))}</strong><p>${esc(item.value || '(cleared)')}</p>${item.user ? `<small>Updated by ${esc(item.user)}</small>` : ''}</div></div>`; }).join('')}</div>`).join('') : '<div class="erp-report-empty">No project updates were recorded for this date.</div>';
+  return `${reportCover('ERP Implementation · Daily Project Update', reportDate(date))}${reportSummaryHtml()}<section class="erp-report-section"><h2>Updates on ${esc(reportDate(date))}</h2>${updatesHtml}</section><footer>Prepared by ${esc(project.consultant || client.implementor || 'PremierSoft')} · ${esc(new Date().toLocaleString('en-GB'))}</footer>`;
 }
 
 function mailtoUrl(email, subject, report) {
@@ -90,8 +157,8 @@ function selectedReport(kind) {
   const scope = root.querySelector(`[data-${kind}-scope]`)?.value || 'whole';
   const date = root.querySelector(`[data-${kind}-date]`)?.value || '';
   return scope === 'changes'
-    ? { title: `Project Changes — ${date || 'Select date'}`, text: dateChangesReportText(date), dateRequired: !date }
-    : { title: 'Whole ERP Project Report', text: wholeProjectReportText(), dateRequired: false };
+    ? { title: `Project Update — ${date || 'Select date'}`, text: dateChangesReportText(date), html: dateChangesReportHtml(date), dateRequired: !date }
+    : { title: 'ERP Project Summary', text: wholeProjectReportText(), html: wholeProjectReportHtml(), dateRequired: false };
 }
 
 function prepareEmailReport(event) {
@@ -114,7 +181,7 @@ function printSelectedReport() {
   root.querySelector('.erp-print-report')?.remove();
   const printable = document.createElement('section');
   printable.className = 'erp-print-report';
-  printable.innerHTML = `<h1>${esc(client.name)}</h1><h2>${esc(report.title)}</h2><pre>${esc(report.text)}</pre>`;
+  printable.innerHTML = report.html;
   root.append(printable);
   document.body.classList.add('erp-report-printing');
   window.addEventListener('afterprint', () => { document.body.classList.remove('erp-report-printing'); printable.remove(); }, { once: true });
@@ -188,8 +255,8 @@ function renderShell() {
         </div>
       </div>
       <div class="erp-projectbar">
-        <div class="erp-report-control"><span>Email</span><select data-email-scope><option value="whole">Whole project</option><option value="changes">Changes on date</option></select><input type="date" data-email-date value="${localDate()}" disabled><a class="erp-btn on-dark erp-email-report" data-email-report href="#" role="button" title="${client.email ? `Open this report for ${attr(client.email)} in your default email app` : 'Add an email on the client card first'}">${client.email ? 'Open Outlook' : 'Add client email'}</a></div>
-        <div class="erp-report-control"><span>Print / PDF</span><select data-print-scope><option value="whole">Whole project</option><option value="changes">Changes on date</option></select><input type="date" data-print-date value="${localDate()}" disabled><button class="erp-btn on-dark" data-project-print ${project ? '' : 'disabled'}>Print / PDF</button></div>
+        <div class="erp-report-control"><span>Email client</span><select data-email-scope><option value="whole">Client project summary</option><option value="changes">Updates on date</option></select><input type="date" data-email-date value="${localDate()}" disabled><a class="erp-btn on-dark erp-email-report" data-email-report href="#" role="button" title="${client.email ? `Prepare this client report for ${attr(client.email)} in your default email app` : 'Add an email on the client card first'}">${client.email ? 'Prepare email' : 'Add client email'}</a></div>
+        <div class="erp-report-control"><span>Client PDF</span><select data-print-scope><option value="whole">Client project summary</option><option value="changes">Updates on date</option></select><input type="date" data-print-date value="${localDate()}" disabled><button class="erp-btn on-dark" data-project-print ${project ? '' : 'disabled'}>Print / Save PDF</button></div>
         <span class="erp-save-state">${dirty ? '<span class="erp-dirty-dot"></span>Autosave pending…' : `Saved automatically${project?.updated_at ? ` · ${esc(new Date(project.updated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))}` : ''}`}</span>
       </div>
     </section>
