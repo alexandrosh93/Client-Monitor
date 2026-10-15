@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MODULE_STATUSES, collectModuleItemsByStatus, computeProjectProgress, computeTrainingProgress, filterModuleChangesByDate, filterModuleItems, normalizeModuleStatus, normalizeProjectDocument, validateErpDiscoveryImport } from '../erp-discovery-model.mjs';
+import { MODULE_STATUSES, buildClientReportSnapshot, collectModuleItemsByStatus, computeProjectProgress, computeTrainingProgress, filterModuleChangesByDate, filterModuleItems, normalizeModuleStatus, normalizeProjectDocument, validateErpDiscoveryImport } from '../erp-discovery-model.mjs';
 
 const catalog = {
   sections: [
@@ -87,6 +87,28 @@ test('workspace activity filter returns module changes for the chosen date newes
   ];
   assert.deepEqual(filterModuleChangesByDate(changes, '2026-10-14').map(item => item.field), ['module.s1.status', 'module.a1.note']);
   assert.deepEqual(filterModuleChangesByDate(changes, ''), []);
+});
+
+test('client report keeps useful completed data and removes empty or out-of-scope content', () => {
+  const reportCatalog = {
+    sections: [{ id: 'company', title: 'Company', checklist: false, questions: [{ id: 'company.1', text: 'Business?' }, { id: 'company.2', text: 'Empty?' }] }],
+    moduleSections: [{ id: 'stock', title: 'Stock', items: [{ id: 'stock.1', text: 'Items' }, { id: 'stock.2', text: 'Unused' }] }],
+  };
+  const report = buildClientReportSnapshot({
+    answers: { 'company.1': 'Retail', 'company.2': '' },
+    users: [{ id: 'u1', name: 'Maria', position: 'Accounts' }],
+    requirements: [{ id: 'R01', topic: 'Approve setup', owner: 'Client', status: 'Open' }, { id: 'R02', topic: '', owner: '', status: 'Open' }],
+    moduleData: {
+      'stock.1': { checked: true, status: 'In Progress', users: ['u1'], note: 'Configured', action: 'Approve' },
+      'stock.2': { checked: false, status: 'Completed', note: 'Internal' },
+    },
+  }, reportCatalog);
+  assert.equal(report.selectedModuleCount, 1);
+  assert.deepEqual(report.statusCounts, { 'Needs Training': 0, 'In Progress': 1, Completed: 0 });
+  assert.equal(report.moduleSections[0].items[0].attendees[0], 'Maria');
+  assert.equal(report.moduleSections[0].items.some(item => item.id === 'stock.2'), false);
+  assert.equal(report.discoverySections[0].items.length, 1);
+  assert.equal(report.requirements.length, 1);
 });
 
 test('calculates discovery and training separately', () => {
