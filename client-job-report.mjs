@@ -1,0 +1,16 @@
+const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+
+export function renderClientJobReport({ client, date, jobNumber = '', consultant = '', representative = '', sections = [], comments = {}, generalComment = '', customerComment = '', satisfaction = '' }) {
+  const e = escape;
+  const count = sections.reduce((total, section) => total + section.items.length, 0);
+  return `<article class="job-document">
+    <header class="job-brand"><div><div class="job-wordmark">Premier<span>Soft</span></div><p>Business Software Solutions</p></div><div class="job-company"><strong>A.V. PremierSoft Ltd</strong><div>P.O. Box 70128 · CY 4161 · Limassol / Cyprus</div><div>Tel: +357 25 818929</div><div>contact@premiersoft.com.cy</div></div></header>
+    <div class="job-title"><div><small>CLIENT JOB REPORT</small><h1>Service Report</h1><p>Αναφορά Υπηρεσίας</p></div><div><small>JOB DATE / ΗΜΕΡΟΜΗΝΙΑ</small><strong>${e(date)}</strong></div></div>
+    <section class="job-parties"><div class="job-customer"><small>CUSTOMER / ΠΕΛΑΤΗΣ</small><h2>${e(client.name)}</h2>${client.contact ? `<p>${e(client.contact)}</p>` : ''}${client.city ? `<p>${e(client.city)}</p>` : ''}${client.email ? `<p>${e(client.email)}</p>` : ''}</div><dl><div><dt>Job No.</dt><dd>${e(jobNumber || '—')}</dd></div><div><dt>Account Code</dt><dd>${e(client.clientCode || '—')}</dd></div><div><dt>Consultant</dt><dd>${e(consultant || '—')}</dd></div></dl></section>
+    <section class="job-service"><h2>Service details <span>Λεπτομέρειες Υπηρεσίας</span></h2><p class="job-lead">Training was provided on the following ${count === 1 ? 'ERP screen' : 'ERP screens'} during this visit.</p><table><thead><tr><th>Module / Screen</th><th>Training notes</th></tr></thead><tbody>${sections.flatMap(section => section.items.map(item => `<tr><td><small>${e(section.title)}</small><strong>${e(item.text)}</strong></td><td>${e(comments[item.id] || 'Training delivered.')}</td></tr>`)).join('')}</tbody></table></section>
+    ${generalComment ? `<section class="job-comment"><h2>General comments <span>Γενικές παρατηρήσεις</span></h2><p>${e(generalComment)}</p></section>` : ''}
+    <section class="job-feedback"><div><h2>Customer satisfaction</h2><p class="job-muted">Αξιολόγηση πελάτη</p>${['Satisfied', 'Neutral', 'Needs attention'].map(value => `<div class="job-rating"><span class="job-check">${satisfaction === value ? '✓' : ''}</span>${e(value)}</div>`).join('')}</div><div><h2>Customer comments</h2><p class="job-muted">Σχόλια πελάτη</p><div class="job-feedback-copy">${customerComment ? e(customerComment) : '<div class="job-write-line"></div><div class="job-write-line"></div>'}</div></div></section>
+    <section class="job-signatures"><div><h2>For ${e(client.name)}</h2><p>${e(representative || 'Client representative')}</p><div class="job-sign-line"></div><small>Signature / Υπογραφή</small></div><div><h2>For A.V. PremierSoft Ltd</h2><p>${e(consultant || 'Consultant')}</p><div class="job-sign-line"></div><small>Signature / Υπογραφή</small></div></section>
+    <footer class="job-footer"><span>A.V. PremierSoft Ltd · Client Job Report</span><span>${e(date)}${jobNumber ? ` · ${e(jobNumber)}` : ''}</span></footer>
+  </article>`;
+}

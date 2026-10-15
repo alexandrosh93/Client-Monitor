@@ -1,4 +1,5 @@
 import { ERP_DISCOVERY_CATALOG as catalog } from './erp-discovery-catalog.mjs';
+import { renderClientJobReport } from './client-job-report.mjs';
 import { MODULE_STATUSES, blankProjectDocument, buildClientJobReportItems, buildClientReportSnapshot, collectModuleItemsByStatus, computeProjectProgress, filterModuleChangesByDate, filterModuleItems, normalizeProjectDocument } from './erp-discovery-model.mjs';
 
 const PHASES = ['During Implementation', 'During Support'];
@@ -26,6 +27,9 @@ let jobReportGeneralComment = '';
 let jobReportClientRepresentative = '';
 let jobReportConsultant = '';
 let jobReportDraftId = '';
+let jobReportNumber = '';
+let jobReportCustomerComment = '';
+let jobReportSatisfaction = '';
 const expandedModuleItems = new Set();
 
 const api = () => window.clientMonitorApi;
@@ -195,19 +199,13 @@ function jobReportSections() {
 }
 
 function jobReportHtml() {
-  const sections = jobReportSections();
-  const rows = sections.flatMap(section => section.items.map(item => `<tr><td>${esc(section.title)}</td><td>${esc(item.text)}</td><td>${esc(jobReportComments.get(item.id) || '—')}</td></tr>`)).join('');
-  return `${reportCover('Client Job Report', reportDate(jobReportDate))}
-    <section class="erp-report-section"><h2>Visit details</h2><div class="erp-report-summary erp-job-details">
-      <div><span>Client ID</span><strong>${esc(client.clientCode || client.clientId || client.client_id || '—')}</strong></div>
-      <div><span>Main contact</span><strong>${esc(client.contact || '—')}</strong></div>
-      <div><span>Location</span><strong>${esc(client.city || '—')}</strong></div>
-      <div><span>Consultant</span><strong>${esc(jobReportConsultant || project.consultant || client.implementor || 'PremierSoft')}</strong></div>
-    </div></section>
-    <section class="erp-report-section"><h2>Training delivered</h2><p class="erp-report-intro">Training was provided on the following ERP screens on ${esc(reportDate(jobReportDate))}.</p><table><thead><tr><th>Module</th><th>Screen trained</th><th>Comment</th></tr></thead><tbody>${rows}</tbody></table></section>
-    ${jobReportGeneralComment ? `<section class="erp-report-section"><h2>General comments</h2><p class="erp-report-comment">${esc(jobReportGeneralComment)}</p></section>` : ''}
-    <section class="erp-report-signoff"><div><span>Client representative / signature</span><strong>${esc(jobReportClientRepresentative)}</strong></div><div><span>Consultant / signature</span><strong>${esc(jobReportConsultant)}</strong></div></section>
-    <footer>Prepared by ${esc(jobReportConsultant || project.consultant || client.implementor || 'PremierSoft')} · ${esc(new Date().toLocaleString('en-GB'))}</footer>`;
+  return renderClientJobReport({
+    client, date: reportDate(jobReportDate), jobNumber: jobReportNumber,
+    consultant: jobReportConsultant, representative: jobReportClientRepresentative,
+    sections: jobReportSections(), comments: Object.fromEntries(jobReportComments),
+    generalComment: jobReportGeneralComment, customerComment: jobReportCustomerComment,
+    satisfaction: jobReportSatisfaction,
+  });
 }
 
 async function completeJobReport() {
@@ -216,7 +214,7 @@ async function completeJobReport() {
   if (!sections.length) { api().toast('Tick at least one trained screen for the job report.'); return; }
   const createdAt = new Date().toISOString();
   const reportItems = sections.flatMap(section => section.items.map(item => ({ id: item.id, module: section.title, screen: item.text, comment: jobReportComments.get(item.id) || '' })));
-  const reportRecord = { id: jobReportDraftId, date: jobReportDate, items: reportItems, generalComment: jobReportGeneralComment, clientRepresentative: jobReportClientRepresentative, consultant: jobReportConsultant, createdAt, createdBy: api().getCurrentUser() };
+  const reportRecord = { id: jobReportDraftId, date: jobReportDate, items: reportItems, generalComment: jobReportGeneralComment, clientRepresentative: jobReportClientRepresentative, consultant: jobReportConsultant, jobNumber: jobReportNumber, customerComment: jobReportCustomerComment, satisfaction: jobReportSatisfaction, createdAt, createdBy: api().getCurrentUser() };
   const existingReport = documentState.jobReports.findIndex(item => item.id === jobReportDraftId);
   if (existingReport >= 0) documentState.jobReports[existingReport] = reportRecord; else documentState.jobReports.push(reportRecord);
   for (const section of sections) for (const screen of section.items) {
@@ -230,7 +228,11 @@ async function completeJobReport() {
     if (comment) recordChange(`module.${screen.id}.note`, `${screen.text} — Comment`, comment, `module:${section.id}`, jobReportDate);
   }
   setDirty();
-  await saveProject();
+  if (saveInFlight) {
+    api().toast('Saving changes. Please wait until saved, then complete the report again.');
+    return;
+  }
+  if (!await saveProject()) return;
   root.querySelector('.erp-print-report')?.remove();
   const printable = document.createElement('section');
   printable.className = 'erp-print-report';
@@ -397,8 +399,9 @@ function renderJobReport() {
   const checklists = availableSections.map(section => `<section class="erp-job-module"><h3>${esc(section.title)}</h3><div class="erp-job-screens">${section.items.map(item => `<div class="erp-job-screen${jobReportItems.has(item.id) ? ' selected' : ''}"><label><input type="checkbox" data-job-report-item="${attr(item.id)}" ${jobReportItems.has(item.id) ? 'checked' : ''}><span>${esc(item.text)}</span></label>${jobReportItems.has(item.id) ? `<textarea data-job-report-comment="${attr(item.id)}" placeholder="Optional short comment for this screen…">${esc(jobReportComments.get(item.id) || '')}</textarea>` : ''}</div>`).join('')}</div></section>`).join('');
   return `<div class="erp-card erp-job-report-card">
     <div class="erp-actions"><div><h2>Client Job Report</h2><div class="erp-muted">At the end of the visit, tick only the screens trained on this date. This selection is separate from project scope and training status.</div></div><span class="erp-job-count">${selectedCount} selected</span></div>
-    <div class="erp-job-toolbar"><label class="erp-field"><span>Visit / training date</span><input type="date" class="erp-input" data-job-report-date value="${attr(jobReportDate)}"></label><button type="button" class="erp-btn primary" data-complete-job-report ${selectedCount ? '' : 'disabled'}>Complete & Print PDF</button></div>
+    <div class="erp-job-toolbar"><label class="erp-field"><span>Visit / training date</span><input type="date" class="erp-input" data-job-report-date value="${attr(jobReportDate)}"></label><label class="erp-field"><span>Job No. (optional)</span><input class="erp-input" data-job-report-number maxlength="100" placeholder="From your service system" value="${attr(jobReportNumber)}"></label><button type="button" class="erp-btn primary" data-complete-job-report ${selectedCount ? '' : 'disabled'}>Complete & Print PDF</button></div>
     ${checklists || '<div class="erp-empty">No screens are currently included in this project. Select the required screens inside the Accounting or Stock modules first.</div>'}
+    <section class="erp-job-extras"><h3>Customer feedback <span class="erp-muted">(optional)</span></h3><div class="erp-job-signatures"><label class="erp-field"><span>Customer satisfaction</span><select class="erp-select" data-job-report-satisfaction><option value="">Not recorded</option>${options(['Satisfied', 'Neutral', 'Needs attention'], jobReportSatisfaction)}</select></label><label class="erp-field"><span>Customer comments</span><textarea class="erp-textarea" data-job-report-customer-comment placeholder="Feedback from the client…">${esc(jobReportCustomerComment)}</textarea></label></div></section>
     <section class="erp-job-extras"><div class="erp-field"><label>General comment <span>(optional)</span></label><textarea class="erp-textarea" data-job-report-general placeholder="General notes about today’s training…">${esc(jobReportGeneralComment)}</textarea></div><div class="erp-job-signatures"><div class="erp-field"><label>Client representative</label><input class="erp-input" data-job-report-client value="${attr(jobReportClientRepresentative)}"></div><div class="erp-field"><label>Consultant</label><input class="erp-input" data-job-report-consultant value="${attr(jobReportConsultant)}"></div></div><div class="erp-muted">The PDF includes signature lines for both people.</div></section>
   </div>`;
 }
@@ -510,6 +513,9 @@ function bindContent() {
   }));
   container.querySelectorAll('[data-job-report-comment]').forEach(element => element.addEventListener('input', () => { jobReportComments.set(element.dataset.jobReportComment, element.value); }));
   container.querySelector('[data-job-report-general]')?.addEventListener('input', event => { jobReportGeneralComment = event.currentTarget.value; });
+  container.querySelector('[data-job-report-number]')?.addEventListener('input', event => { jobReportNumber = event.currentTarget.value; });
+  container.querySelector('[data-job-report-customer-comment]')?.addEventListener('input', event => { jobReportCustomerComment = event.currentTarget.value; });
+  container.querySelector('[data-job-report-satisfaction]')?.addEventListener('change', event => { jobReportSatisfaction = event.currentTarget.value; });
   container.querySelector('[data-job-report-client]')?.addEventListener('input', event => { jobReportClientRepresentative = event.currentTarget.value; });
   container.querySelector('[data-job-report-consultant]')?.addEventListener('input', event => { jobReportConsultant = event.currentTarget.value; });
   container.querySelector('[data-complete-job-report]')?.addEventListener('click', completeJobReport);
@@ -688,6 +694,7 @@ window.closeClientWorkspaceView = function closeClientWorkspaceView() {
 };
 
 window.openClientWorkspace = async function openClientWorkspace(clientId) {
+  jobReportNumber = ''; jobReportCustomerComment = ''; jobReportSatisfaction = '';
   const found = api()?.getClients().find(item => Number(item.id) === Number(clientId));
   if (!found) { api()?.toast('Client not found.'); return; }
   client = found; project = null; documentState = blankProjectDocument(); activeSection = 'overview'; expandedNavGroup = 'workspace'; moduleViewFilter = ''; workspaceActivityDate = localDate(); workspaceStatusFilter = ''; jobReportDate = localDate(); jobReportItems = new Set(); jobReportComments = new Map(); jobReportGeneralComment = ''; jobReportClientRepresentative = found.contact || ''; jobReportConsultant = found.implementor || ''; jobReportDraftId = crypto.randomUUID(); dirty = false; changeVersion = 0;
