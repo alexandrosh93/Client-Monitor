@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MODULE_STATUSES, buildClientReportSnapshot, collectModuleItemsByStatus, computeProjectProgress, computeTrainingProgress, filterModuleChangesByDate, filterModuleItems, normalizeModuleStatus, normalizeProjectDocument, validateErpDiscoveryImport } from '../erp-discovery-model.mjs';
+import { MODULE_STATUSES, buildClientJobReportItems, buildClientReportSnapshot, collectModuleItemsByStatus, computeProjectProgress, computeTrainingProgress, filterModuleChangesByDate, filterModuleItems, normalizeModuleStatus, normalizeProjectDocument, validateErpDiscoveryImport } from '../erp-discovery-model.mjs';
 
 const catalog = {
   sections: [
@@ -109,6 +109,30 @@ test('client report keeps useful project data and excludes internal discovery co
   assert.equal(report.moduleSections[0].items.some(item => item.id === 'stock.2'), false);
   assert.equal('discoverySections' in report, false);
   assert.equal(report.requirements.length, 1);
+});
+
+test('client job report includes only ticked screens that belong to the project', () => {
+  const sections = buildClientJobReportItems({
+    moduleData: {
+      'stock.1': { checked: true },
+      'stock.2': { checked: false },
+    },
+  }, {
+    moduleSections: [{ id: 'stock', title: 'Stock', items: [{ id: 'stock.1', text: 'Items' }, { id: 'stock.2', text: 'Warehouses' }] }],
+  }, ['stock.1', 'stock.2', 'unknown']);
+  assert.deepEqual(sections, [{ id: 'stock', title: 'Stock', items: [{ id: 'stock.1', text: 'Items' }] }]);
+});
+
+test('normalizes saved client job reports and their screen comments', () => {
+  const document = normalizeProjectDocument({
+    jobReports: [{
+      id: 'visit-1', date: '2026-10-15', generalComment: 'Training completed on site.',
+      clientRepresentative: 'Maria', consultant: 'AH', createdAt: '2026-10-15T12:00:00Z', createdBy: 'AH',
+      items: [{ id: 'stock.1', module: 'Stock', screen: 'Items', comment: 'Reviewed item creation.' }],
+    }],
+  });
+  assert.equal(document.jobReports[0].items[0].comment, 'Reviewed item creation.');
+  assert.equal(document.jobReports[0].clientRepresentative, 'Maria');
 });
 
 test('calculates discovery and training separately', () => {
