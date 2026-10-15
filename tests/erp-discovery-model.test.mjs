@@ -89,7 +89,7 @@ test('workspace activity filter returns module changes for the chosen date newes
   assert.deepEqual(filterModuleChangesByDate(changes, ''), []);
 });
 
-test('client report keeps useful completed data and removes empty or out-of-scope content', () => {
+test('client report keeps useful project data and excludes internal discovery content', () => {
   const reportCatalog = {
     sections: [{ id: 'company', title: 'Company', checklist: false, questions: [{ id: 'company.1', text: 'Business?' }, { id: 'company.2', text: 'Empty?' }] }],
     moduleSections: [{ id: 'stock', title: 'Stock', items: [{ id: 'stock.1', text: 'Items' }, { id: 'stock.2', text: 'Unused' }] }],
@@ -107,7 +107,7 @@ test('client report keeps useful completed data and removes empty or out-of-scop
   assert.deepEqual(report.statusCounts, { 'Needs Training': 0, 'In Progress': 1, Completed: 0 });
   assert.equal(report.moduleSections[0].items[0].attendees[0], 'Maria');
   assert.equal(report.moduleSections[0].items.some(item => item.id === 'stock.2'), false);
-  assert.equal(report.discoverySections[0].items.length, 1);
+  assert.equal('discoverySections' in report, false);
   assert.equal(report.requirements.length, 1);
 });
 

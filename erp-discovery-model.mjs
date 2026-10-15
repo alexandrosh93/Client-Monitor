@@ -73,23 +73,12 @@ export function buildClientReportSnapshot(document, catalog) {
       };
     }),
   })).filter(section => section.items.length);
-  const discoverySections = (Array.isArray(catalog?.sections) ? catalog.sections : []).map(section => ({
-    id: section.id,
-    title: text(section.title, 300),
-    items: (Array.isArray(section.questions) ? section.questions : []).map(item => ({
-      id: item.id,
-      text: text(item.text, 1000),
-      answer: section.checklist ? (doc.checks[item.id] ? 'Completed' : '') : text(doc.answers[item.id]),
-      note: text(doc.notes[item.id]),
-    })).filter(item => item.answer || item.note),
-  })).filter(section => section.items.length);
   const requirements = doc.requirements.filter(item => item.topic || item.owner).map(item => ({ ...item }));
   const statusCounts = Object.fromEntries(MODULE_STATUSES.map(status => [status, moduleSections.flatMap(section => section.items).filter(item => item.status === status).length]));
   return {
     users: doc.users.filter(user => user.name),
     requirements,
     moduleSections,
-    discoverySections,
     statusCounts,
     selectedModuleCount: moduleSections.reduce((total, section) => total + section.items.length, 0),
   };

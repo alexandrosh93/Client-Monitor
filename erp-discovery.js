@@ -61,13 +61,11 @@ function changeSectionTitle(sectionId) {
 }
 
 function reportSummaryLines() {
-  const progress = computeProjectProgress(documentState, catalog);
   const data = clientReportData();
   return [
     `Project phase: ${project.phase || PHASES[0]}`,
     `Implementation progress: ${Number(client.progress || 0)}%`,
     `Target live date: ${client.liveDate ? reportDate(client.liveDate) : 'To be confirmed'}`,
-    `Discovery completion: ${progress.percent}%`,
     `Screens in project: ${data.selectedModuleCount}`,
     `Training status: ${data.statusCounts['Needs Training']} needs training · ${data.statusCounts['In Progress']} in progress · ${data.statusCounts.Completed} completed`,
   ];
@@ -93,7 +91,7 @@ function wholeProjectReportText() {
 }
 
 function dateChanges(date) {
-  return (documentState.changeLog || []).filter(item => item.date === date).slice().sort((a, b) => String(a.at || '').localeCompare(String(b.at || '')));
+  return filterModuleChangesByDate(documentState.changeLog, date).reverse();
 }
 
 function dateChangesReportText(date) {
@@ -113,13 +111,11 @@ function reportCover(title, subtitle = '') {
 }
 
 function reportSummaryHtml() {
-  const progress = computeProjectProgress(documentState, catalog);
   const data = clientReportData();
   return `<section class="erp-report-section"><h2>Project summary</h2><div class="erp-report-summary">
     <div><span>Project phase</span><strong>${esc(project.phase || PHASES[0])}</strong></div>
     <div><span>Implementation progress</span><strong>${Number(client.progress || 0)}%</strong></div>
     <div><span>Target live date</span><strong>${esc(client.liveDate ? reportDate(client.liveDate) : 'To be confirmed')}</strong></div>
-    <div><span>Discovery completion</span><strong>${progress.percent}%</strong></div>
   </div><div class="erp-report-status"><span class="needs">${data.statusCounts['Needs Training']} Needs Training</span><span class="progress">${data.statusCounts['In Progress']} In Progress</span><span class="complete">${data.statusCounts.Completed} Completed</span></div></section>`;
 }
 
@@ -128,15 +124,14 @@ function wholeProjectReportHtml() {
   const openRequirements = data.requirements.filter(item => !['Done', 'Accepted'].includes(item.status));
   const requirementsHtml = openRequirements.length ? `<section class="erp-report-section"><h2>Open actions & requirements</h2><table><thead><tr><th>ID</th><th>Action / requirement</th><th>Owner</th><th>Status</th><th>Target date</th></tr></thead><tbody>${openRequirements.map(item => `<tr><td>${esc(item.id || '—')}</td><td>${esc(item.topic)}</td><td>${esc(item.owner || '—')}</td><td>${esc(item.status || 'Open')}</td><td>${esc(item.date ? reportDate(item.date) : '—')}</td></tr>`).join('')}</tbody></table></section>` : '';
   const modulesHtml = data.moduleSections.length ? `<section class="erp-report-section"><h2>Modules & training progress</h2>${data.moduleSections.map(section => `<div class="erp-report-group"><h3>${esc(section.title)}</h3><table><thead><tr><th>Screen</th><th>Status</th><th>Review date</th><th>Training attendees</th><th>Client notes / next action</th></tr></thead><tbody>${section.items.map(item => `<tr><td>${esc(item.text)}</td><td><span class="erp-report-pill status-${item.status.toLowerCase().replace(/\s+/g, '-')}">${esc(item.status)}</span></td><td>${esc(item.date ? reportDate(item.date) : '—')}</td><td>${esc(item.attendees.join(', ') || '—')}</td><td>${item.note ? `<strong>Note:</strong> ${esc(item.note)}` : ''}${item.note && item.action ? '<br>' : ''}${item.action ? `<strong>Next:</strong> ${esc(item.action)}` : (!item.note ? '—' : '')}</td></tr>`).join('')}</tbody></table></div>`).join('')}</section>` : '';
-  const discoveryHtml = data.discoverySections.length ? `<section class="erp-report-section"><h2>Confirmed discovery information</h2>${data.discoverySections.map(section => `<div class="erp-report-group"><h3>${esc(section.title)}</h3>${section.items.map(item => `<div class="erp-report-decision"><strong>${esc(item.text)}</strong>${item.answer ? `<p>${esc(item.answer)}</p>` : ''}${item.note ? `<p><b>Note:</b> ${esc(item.note)}</p>` : ''}</div>`).join('')}</div>`).join('')}</section>` : '';
-  return `${reportCover('ERP Implementation · Client Project Report', `Prepared ${new Date().toLocaleDateString('en-GB')}`)}${reportSummaryHtml()}${requirementsHtml}${modulesHtml}${discoveryHtml}<footer>Prepared by ${esc(project.consultant || client.implementor || 'PremierSoft')} · ${esc(new Date().toLocaleString('en-GB'))}</footer>`;
+  return `${reportCover('ERP Implementation · Client Project Report', `Prepared ${new Date().toLocaleDateString('en-GB')}`)}${reportSummaryHtml()}${requirementsHtml}${modulesHtml}<footer>Prepared by ${esc(project.consultant || client.implementor || 'PremierSoft')} · ${esc(new Date().toLocaleString('en-GB'))}</footer>`;
 }
 
 function dateChangesReportHtml(date) {
   const changes = dateChanges(date);
   const grouped = Map.groupBy ? Map.groupBy(changes, item => changeSectionTitle(item.section)) : changes.reduce((map, item) => { const key = changeSectionTitle(item.section); if (!map.has(key)) map.set(key, []); map.get(key).push(item); return map; }, new Map());
-  const updatesHtml = changes.length ? [...grouped].map(([section, items]) => `<div class="erp-report-group"><h3>${esc(section)}</h3>${items.map(item => { const time = item.at ? new Date(item.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''; return `<div class="erp-report-update"><span>${esc(time || '—')}</span><div><strong>${esc(changeLabel(item))}</strong><p>${esc(item.value || '(cleared)')}</p>${item.user ? `<small>Updated by ${esc(item.user)}</small>` : ''}</div></div>`; }).join('')}</div>`).join('') : '<div class="erp-report-empty">No project updates were recorded for this date.</div>';
-  return `${reportCover('ERP Implementation · Daily Project Update', reportDate(date))}${reportSummaryHtml()}<section class="erp-report-section"><h2>Updates on ${esc(reportDate(date))}</h2>${updatesHtml}</section><footer>Prepared by ${esc(project.consultant || client.implementor || 'PremierSoft')} · ${esc(new Date().toLocaleString('en-GB'))}</footer>`;
+  const updatesHtml = changes.length ? [...grouped].map(([section, items]) => `<div class="erp-report-group"><h3>${esc(section)}</h3>${items.map(item => { const time = item.at ? new Date(item.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''; return `<div class="erp-report-update"><span>${esc(time || '—')}</span><div><strong>${esc(changeLabel(item))}</strong><p>${esc(item.value || '(cleared)')}</p>${item.user ? `<small>Updated by ${esc(item.user)}</small>` : ''}</div></div>`; }).join('')}</div>`).join('') : '<div class="erp-report-empty">No module or training updates were recorded for this date.</div>';
+  return `${reportCover('ERP Implementation · Training Day Report', reportDate(date))}${reportSummaryHtml()}<section class="erp-report-section"><h2>Module & training work completed on ${esc(reportDate(date))}</h2>${updatesHtml}</section><footer>Prepared by ${esc(project.consultant || client.implementor || 'PremierSoft')} · ${esc(new Date().toLocaleString('en-GB'))}</footer>`;
 }
 
 function mailtoUrl(email, subject, report) {
