@@ -3960,7 +3960,7 @@ async function doForgotPassword(){
     const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:PASSWORD_RECOVERY_URL});
     if(error){msg.style.color='#a32d2d';msg.textContent='Error: '+error.message;return;}
     msg.style.color='#2d7a4f';
-    msg.textContent='Reset link sent! Check your inbox.';
+    msg.textContent='If this email belongs to a user account, a reset link has been sent. Check your inbox and spam folder.';
   }catch(e){msg.style.color='#a32d2d';msg.textContent='Connection error. Try again.';}
 }
 
@@ -4036,7 +4036,11 @@ sb.auth.onAuthStateChange(async(event,session)=>{
   }
 });
 // Always require fresh login — sign out any lingering session on load
+// …except when arriving from a password-reset email link: keep that session so the
+// user can set a new password (signing out here would invalidate the reset link).
+const _isRecoveryLink=/type=recovery/.test(location.hash)||/[?&]code=/.test(location.search);
 (async()=>{
+  if(_isRecoveryLink)return;
   try{await sb.auth.signOut();}catch(e){}
   document.getElementById('login-user').focus();
 })();
