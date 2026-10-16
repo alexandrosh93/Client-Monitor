@@ -281,6 +281,10 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .view-btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 13px;border:none;background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;font-weight:500}
 .view-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent-light));color:#fff}
 .view-btn:not(.active):hover{background:var(--surface2)}
+.view-btn{padding:6px 10px;gap:0}
+.view-btn .vb-ico{font-size:14px;line-height:1;width:16px;text-align:center}
+.view-btn .vb-lbl{max-width:0;opacity:0;margin-left:0;overflow:hidden;white-space:nowrap;transform:translateX(-4px);transition:max-width .32s cubic-bezier(.22,1,.36,1),opacity .22s ease,margin .32s cubic-bezier(.22,1,.36,1),transform .32s cubic-bezier(.22,1,.36,1)}
+.view-btn:hover .vb-lbl,.view-btn:focus-visible .vb-lbl,.view-btn.active .vb-lbl{max-width:110px;opacity:1;margin-left:6px;transform:none}
 #login-screen{display:flex;position:fixed;inset:0;z-index:1000;background:#f0f2f5;align-items:center;justify-content:center;padding:1.5rem}
 #login-screen.hidden{display:none}
 /* FLOATING ACTION BUTTON */
@@ -938,10 +942,10 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
   <!-- Right-aligned actions -->
   <div class="hdr-actions">
     <div class="view-toggle">
-      <button class="view-btn" id="vbtn-home" onclick="goHome()">⌂ Home</button>
-      <button class="view-btn active" id="vbtn-list" onclick="setView('list')">☰ List</button>
-      <button class="view-btn" id="vbtn-dash" onclick="setView('dash')">⊞ Dashboard</button>
-      <button class="view-btn" id="vbtn-tasks" onclick="openTasksView({client:''})">✓ Tasks</button>
+      <button class="view-btn" id="vbtn-home" onclick="goHome()" title="Home" aria-label="Home"><span class="vb-ico">⌂</span><span class="vb-lbl">Home</span></button>
+      <button class="view-btn active" id="vbtn-list" onclick="setView('list')" title="List" aria-label="List"><span class="vb-ico">☰</span><span class="vb-lbl">List</span></button>
+      <button class="view-btn" id="vbtn-dash" onclick="setView('dash')" title="Dashboard" aria-label="Dashboard"><span class="vb-ico">⊞</span><span class="vb-lbl">Dashboard</span></button>
+      <button class="view-btn" id="vbtn-tasks" onclick="openTasksView({client:''})" title="Tasks" aria-label="Tasks"><span class="vb-ico">✓</span><span class="vb-lbl">Tasks</span></button>
     </div>
     <button id="refresh-btn" class="refresh-btn no-print" onclick="manualRefresh()" title="Refresh data from GitHub" style="display:none">↻</button>
     <input type="text" id="search" placeholder="🔍 Search…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--border-md);border-radius:99px;background:var(--surface2);color:var(--text);outline:none;width:190px;transition:border-color .2s,background .2s,box-shadow .2s" onfocus="this.style.borderColor='var(--accent)';this.style.background='var(--surface)'" onblur="this.style.borderColor='';this.style.background='var(--surface2)'">
@@ -3993,7 +3997,7 @@ sb.auth.onAuthStateChange(async(event,session)=>{
   document.getElementById('login-user').focus();
 })();
 </script>
-<script src="ai-suggestions.js?v=menu-20261016" defer></script>
+<script src="ai-suggestions.js?v=menu-20261016b" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
 <script src="email-suggestions.js?v=pdf-client-name-20261013" defer></script>
 <script src="tasks.js?v=9" defer></script>

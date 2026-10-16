@@ -178,7 +178,7 @@
     }
     var headerButton=document.createElement('button');
     headerButton.type='button';headerButton.className='view-btn';
-    headerButton.id='vbtn-ai';headerButton.textContent='✦ Suggestions';
+    headerButton.id='vbtn-ai';headerButton.title='AI Suggestions';headerButton.setAttribute('aria-label','AI Suggestions');headerButton.innerHTML='<span class="vb-ico">✦</span><span class="vb-lbl">Suggestions</span>';
     headerButton.addEventListener('click',openWorkspace);
     var toggle=document.querySelector('.view-toggle');
     if(toggle)toggle.appendChild(headerButton);
