@@ -2819,7 +2819,11 @@ async function saveNew(){
   else setSyncStatus('ok','Supabase ✓');
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-function bgClick(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+let _bgDown=null;
+document.addEventListener('mousedown',e=>{_bgDown=e.target;},true);
+/* close only when the press AND the release both happen on the backdrop,
+   so dragging a text selection out of the dialog doesn't close it */
+function bgClick(e,id){const bg=document.getElementById(id);if(e.target===bg&&_bgDown===bg)closeModal(id);}
 function tMod(l){const cb=l.querySelector('input');cb.checked=!cb.checked;l.classList.toggle('checked',cb.checked);}
 function setMG(n){mGrade=n;document.querySelectorAll('#m-grade span').forEach(s=>s.classList.toggle('lit',parseInt(s.dataset.v)<=n));}
 document.getElementById('m-grade').addEventListener('click',e=>{if(e.target.dataset.v)setMG(parseInt(e.target.dataset.v));});
