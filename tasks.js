@@ -66,23 +66,37 @@
     return `<span class="${late ? 'tk-late' : t.due_date === today() ? 'tk-today' : ''}">${late ? '⚠ ' : ''}${dt}</span>`;
   }
 
+  const STATUS_COLOR = { 'To do': '#9ca3af', 'In progress': '#3b6cc7', 'Blocked': '#dc2626', 'Done': '#10b981' };
+  const AV = ['#3b6cc7', '#8b5cf6', '#f59e0b', '#10b981', '#ec4899', '#06b6d4', '#ef4444', '#6366f1'];
+  const collapsed = new Set();
+  const initials = n => (n || '').split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+  const avColor = n => AV[[...(n || '')].reduce((a, c) => a + c.charCodeAt(0), 0) % AV.length];
+  const avatar = n => n ? `<span class="tk-av" style="background:${avColor(n)}" title="${esc(n)}">${esc(initials(n))}</span>` : '<span class="tk-av empty" title="Unassigned">＋</span>';
+  const flag = p => `<span class="tk-flag" style="color:${PRIO_COLOR[p]}" title="${p}">⚑</span>`;
+
   function rowHtml(t) {
-    return `<div class="tk-row${t.status === 'Done' ? ' done' : ''}" data-id="${t.id}">
-      <input type="checkbox" ${t.status === 'Done' ? 'checked' : ''} data-act="toggle" title="Mark done">
+    const done = t.status === 'Done';
+    return `<div class="tk-row${done ? ' done' : ''}" data-id="${t.id}">
+      <button class="tk-circle" data-act="toggle" style="--c:${STATUS_COLOR[t.status]}" title="${done ? 'Reopen' : 'Mark done'}">${done ? '✓' : ''}</button>
       <input class="tk-title" value="${esc(t.title)}" data-act="title">
       <a class="tk-client" data-act="client">${esc(clientName(t.client_id))}</a>
-      <select data-act="assignee"><option value="">Unassigned</option>${people().map(p => `<option${p === t.assignee ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>
-      <input type="date" value="${t.due_date || ''}" data-act="due">
-      <select data-act="priority" style="color:${PRIO_COLOR[t.priority]}">${PRIORITIES.map(p => `<option${p === t.priority ? ' selected' : ''}>${p}</option>`).join('')}</select>
-      <select data-act="status">${STATUSES.map(s => `<option${s === t.status ? ' selected' : ''}>${s}</option>`).join('')}</select>
+      <span class="tk-pick">${avatar(t.assignee)}<select data-act="assignee"><option value="">Unassigned</option>${people().map(p => `<option${p === t.assignee ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select></span>
+      <span class="tk-pick tk-due">${dueLabel(t)}<input type="date" value="${t.due_date || ''}" data-act="due"></span>
+      <span class="tk-pick">${flag(t.priority)}<select data-act="priority">${PRIORITIES.map(p => `<option${p === t.priority ? ' selected' : ''}>${p}</option>`).join('')}</select></span>
+      <span class="tk-pick"><span class="tk-pill" style="background:${STATUS_COLOR[t.status]}">${t.status}</span><select data-act="status">${STATUSES.map(s => `<option${s === t.status ? ' selected' : ''}>${s}</option>`).join('')}</select></span>
       <button class="tk-x" data-act="delete" title="Delete">×</button></div>`;
   }
 
   function cardHtml(t) {
-    return `<div class="tk-card" draggable="true" data-id="${t.id}">
+    return `<div class="tk-card" draggable="true" data-id="${t.id}" style="border-left:3px solid ${PRIO_COLOR[t.priority]}">
       <div class="tk-card-title">${esc(t.title)}</div>
       <div class="tk-card-meta"><a data-act="client">${esc(clientName(t.client_id))}</a></div>
-      <div class="tk-card-foot"><span style="color:${PRIO_COLOR[t.priority]};font-weight:700">● ${t.priority}</span>${dueLabel(t)}<span class="tk-muted">${esc(t.assignee || '—')}</span></div></div>`;
+      <div class="tk-card-foot">${flag(t.priority)}${dueLabel(t)}<span style="margin-left:auto">${avatar(t.assignee)}</span></div></div>`;
+  }
+
+  function groupHtml(s, items) {
+    const closed = collapsed.has(s);
+    return `<section class="tk-group"><div class="tk-group-h" data-group="${s}"><span class="tk-caret">${closed ? '▸' : '▾'}</span><span class="tk-pill" style="background:${STATUS_COLOR[s]}">${s}</span><span class="tk-muted">${items.length}</span></div>${closed ? '' : items.map(rowHtml).join('')}</section>`;
   }
 
   function render() {
@@ -92,34 +106,36 @@
     const me = api().getCurrentUser();
     const open = tasks.filter(t => t.status !== 'Done').length;
     const overdue = tasks.filter(t => t.status !== 'Done' && t.due_date && t.due_date < today()).length;
+    const shownStatuses = filter.showDone ? STATUSES : STATUSES.filter(s => s !== 'Done');
     el.innerHTML = `<div class="tk-wrap">
       <div class="tk-head"><div><div class="tk-h1">Tasks</div><div class="tk-muted">${open} open${overdue ? ` · <span class="tk-late">${overdue} overdue</span>` : ''}</div></div>
         <div class="tk-toggle"><button class="${mode === 'list' ? 'on' : ''}" data-mode="list">☰ List</button><button class="${mode === 'board' ? 'on' : ''}" data-mode="board">▥ Board</button></div></div>
+      <div class="tk-filters">
+        <select data-filter="client"><option value="">All clients</option>${clients.map(c => `<option value="${c.id}"${String(c.id) === filter.client ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select>
+        <select data-filter="assignee"><option value="">Everyone</option>${people().map(p => `<option${p === filter.assignee ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>
+        <button class="tk-chip${filter.assignee === me ? ' on' : ''}" data-filter-me>Me</button>
+        ${mode === 'list' ? `<label class="tk-muted"><input type="checkbox" data-filter-done ${filter.showDone ? 'checked' : ''}> Show done</label>` : ''}</div>
       <form class="tk-add" id="tk-add">
-        <input name="title" placeholder="＋ New task…" autocomplete="off">
+        <input name="title" placeholder="＋ Add task — type a name and press Enter" autocomplete="off">
         <select name="client"><option value="">Client…</option>${clients.map(c => `<option value="${c.id}"${String(c.id) === filter.client ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select>
         <select name="assignee"><option value="">Unassigned</option>${people().map(p => `<option${p === me ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>
         <input type="date" name="due"><select name="priority">${PRIORITIES.map(p => `<option${p === 'Normal' ? ' selected' : ''}>${p}</option>`).join('')}</select>
         <button class="tk-btn">Add</button></form>
-      <div class="tk-filters">
-        <select data-filter="client"><option value="">All clients</option>${clients.map(c => `<option value="${c.id}"${String(c.id) === filter.client ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select>
-        <select data-filter="assignee"><option value="">Everyone</option>${people().map(p => `<option${p === filter.assignee ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>
-        <button class="tk-chip${filter.assignee === me ? ' on' : ''}" data-filter-me>My tasks</button>
-        ${mode === 'list' ? `<label class="tk-muted"><input type="checkbox" data-filter-done ${filter.showDone ? 'checked' : ''}> Show done</label>` : ''}</div>
       ${!loaded ? '<div class="tk-muted">Loading…</div>' : mode === 'list'
-        ? (list.length ? list.map(rowHtml).join('') : '<div class="tk-empty">No tasks here. Add the first one above.</div>')
-        : `<div class="tk-board">${STATUSES.map(s => { const col = list.filter(t => t.status === s); return `<div class="tk-col" data-status="${s}"><div class="tk-col-h">${s} <span>${col.length}</span></div>${col.map(cardHtml).join('')}</div>`; }).join('')}</div>`}
+        ? (list.length ? shownStatuses.map(s => { const g = list.filter(t => t.status === s); return g.length ? groupHtml(s, g) : ''; }).join('') : '<div class="tk-empty">No tasks here. Add the first one above.</div>')
+        : `<div class="tk-board">${STATUSES.map(s => { const col = list.filter(t => t.status === s); return `<div class="tk-col" data-status="${s}"><div class="tk-col-h"><span class="tk-pill" style="background:${STATUS_COLOR[s]}">${s}</span><span>${col.length}</span></div>${col.map(cardHtml).join('')}</div>`; }).join('')}</div>`}
     </div>`;
   }
 
   function onClick(e) {
     const m = e.target.closest('[data-mode]'); if (m) { mode = m.dataset.mode; return render(); }
     if (e.target.closest('[data-filter-me]')) { const me = api().getCurrentUser(); filter.assignee = filter.assignee === me ? '' : me; return render(); }
+    const gh = e.target.closest('[data-group]'); if (gh) { const g = gh.dataset.group; collapsed.has(g) ? collapsed.delete(g) : collapsed.add(g); return render(); }
     const row = e.target.closest('[data-id]'); if (!row) return;
-    const id = row.dataset.id, a = e.target.dataset.act;
+    const act = e.target.closest('[data-act]'); const id = row.dataset.id, a = act && act.dataset.act;
     if (e.target.closest('[data-act="client"]')) { const t = tasks.find(x => x.id === id); api().goToClient(t.client_id); }
     else if (a === 'delete') remove(id);
-    else if (a === 'toggle') patch(id, { status: e.target.checked ? 'Done' : 'To do' });
+    else if (a === 'toggle') { const t = tasks.find(x => x.id === id); patch(id, { status: t.status === 'Done' ? 'To do' : 'Done' }); }
   }
   function onChange(e) {
     const t = e.target;

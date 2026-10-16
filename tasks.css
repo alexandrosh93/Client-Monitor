@@ -14,21 +14,34 @@
 .tk-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 16px;font:600 12px 'DM Sans',sans-serif;cursor:pointer}
 .tk-chip{border:1px solid var(--border-md);background:var(--surface);border-radius:99px;padding:5px 12px;font:600 12px 'DM Sans',sans-serif;cursor:pointer;color:var(--text-2)}
 .tk-chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-.tk-row{display:grid;grid-template-columns:20px 1fr 150px 120px 120px 80px 110px 24px;gap:6px;align-items:center;padding:6px 8px;border-bottom:1px solid var(--border-sm)}
+.tk-group{margin-bottom:14px}
+.tk-group-h{display:flex;align-items:center;gap:8px;padding:4px 6px;cursor:pointer;user-select:none}
+.tk-caret{color:var(--text-3);font-size:11px;width:10px}
+.tk-pill{display:inline-block;color:#fff;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:5px}
+.tk-row{display:grid;grid-template-columns:22px 1fr 150px 34px 90px 34px 112px 22px;gap:8px;align-items:center;padding:5px 8px;border-bottom:1px solid var(--border-sm);background:var(--surface)}
 .tk-row:hover{background:var(--surface2)}
+.tk-circle{width:18px;height:18px;border-radius:50%;border:2px solid var(--c);background:transparent;color:#fff;font-size:11px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}
+.tk-row.done .tk-circle{background:var(--c)}
 .tk-row.done .tk-title{text-decoration:line-through;color:var(--text-3)}
-.tk-row .tk-title{border-color:transparent;background:transparent;font-weight:500}
+.tk-row .tk-title{border-color:transparent;background:transparent;font-weight:500;font-size:13px}
 .tk-row .tk-title:focus,.tk-row .tk-title:hover{border-color:var(--border-md);background:var(--surface)}
-.tk-client,.tk-card-meta a{color:var(--accent);cursor:pointer;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tk-x{border:none;background:none;color:var(--text-3);font-size:16px;cursor:pointer}.tk-x:hover{color:#dc2626}
+.tk-pick{position:relative;display:inline-flex;align-items:center}
+.tk-pick select,.tk-pick input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0}
+.tk-av{width:24px;height:24px;border-radius:50%;color:#fff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.tk-av.empty{background:transparent;border:1.5px dashed var(--border-md);color:var(--text-3);font-size:12px}
+.tk-flag{font-size:15px}
+.tk-due{font-size:12px;color:var(--text-2)}
+.tk-client,.tk-card-meta a{color:var(--text-2);background:var(--surface2);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;justify-self:start;max-width:100%}
+.tk-client:hover,.tk-card-meta a:hover{color:var(--accent)}
+.tk-x{border:none;background:none;color:var(--text-3);font-size:16px;cursor:pointer;opacity:0}.tk-row:hover .tk-x{opacity:1}.tk-x:hover{color:#dc2626}
 .tk-empty{padding:2rem;text-align:center;color:var(--text-3);font-size:13px}
 .tk-board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:start}
 .tk-col{background:var(--surface2);border-radius:12px;padding:8px;min-height:120px}
-.tk-col-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin:2px 4px 8px;display:flex;justify-content:space-between}
+.tk-col-h{font-size:11px;font-weight:700;color:var(--text-3);margin:2px 4px 8px;display:flex;justify-content:space-between;align-items:center}
 .tk-card{background:var(--surface);border:1px solid var(--border-md);border-radius:10px;padding:8px 10px;margin-bottom:6px;cursor:grab}
 .tk-card-title{font-size:13px;font-weight:600;margin-bottom:3px;word-break:break-word}
 .tk-card-foot{display:flex;gap:8px;align-items:center;justify-content:space-between;font-size:11px;margin-top:6px}
 @media(max-width:768px){
-  .tk-row{grid-template-columns:20px 1fr 24px}.tk-row>:not(:nth-child(-n+2)):not(.tk-x){display:none}
+  .tk-row{grid-template-columns:22px 1fr 24px}.tk-row>:not(:nth-child(-n+2)):not(.tk-x){display:none}.tk-x{opacity:1}
   .tk-board{grid-template-columns:1fr}
 }
