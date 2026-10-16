@@ -11,6 +11,7 @@
   let tasks = [];
   let loaded = false;
   let mode = 'list';
+  let calMonth = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
   let filter = { client: '', assignee: '', showDone: false, q: '' };
   const PRESETS = ['Kickoff meeting', 'Collect client requirements', 'Install server / environment', 'Company & chart of accounts setup', 'Data migration', 'User training', 'UAT / testing with client', 'Go-live', 'Post go-live follow-up', 'VAT setup & test', 'Stock take', 'Support request'];
 
@@ -66,7 +67,7 @@
     (!filter.client || (filter.client === 'none' ? !t.client_id : String(t.client_id) === filter.client)) &&
     (!filter.assignee || t.assignee === filter.assignee) &&
     (!filter.q || (t.title + ' ' + clientName(t.client_id)).toLowerCase().includes(filter.q.toLowerCase())) &&
-    (filter.showDone || mode === 'board' || t.status !== 'Done'));
+    (filter.showDone || mode !== 'list' || t.status !== 'Done'));
 
   const sel = (name, items, val, extra = '') => `<select ${extra} data-f="${name}">${items.map(i => `<option${i === val ? ' selected' : ''}>${esc(i)}</option>`).join('')}</select>`;
   function dueLabel(t) {
@@ -109,6 +110,43 @@
     return `<section class="tk-group"><div class="tk-group-h" data-group="${s}"><span class="tk-caret">${closed ? '▸' : '▾'}</span><span class="tk-pill" style="background:${STATUS_COLOR[s]}">${s}</span><span class="tk-muted">${items.length}</span></div>${closed ? '' : items.map(rowHtml).join('')}</section>`;
   }
 
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  function reminderEvents() {
+    const q = filter.q.toLowerCase();
+    const out = [];
+    for (const c of api().getClients()) {
+      if (filter.client && filter.client !== 'none' && String(c.id) !== filter.client) continue;
+      if (filter.client === 'none') continue;
+      if (filter.assignee && c.implementor !== filter.assignee) continue;
+      if (q && !c.name.toLowerCase().includes(q)) continue;
+      if (c.vatDate && !c.vatDone) out.push({ date: c.vatDate, label: 'VAT', client: c, color: '#856404', bg: '#fff3cd' });
+      if (c.stkDate && !c.stkDone) out.push({ date: c.stkDate, label: 'Stock Take', client: c, color: '#7a6500', bg: '#fef9c3' });
+      if (c.liveDate) out.push({ date: c.liveDate, label: 'Go-live', client: c, color: '#065f46', bg: '#d1fae5' });
+      if (c.nextFollowupDate) out.push({ date: c.nextFollowupDate, label: 'Follow-up', client: c, color: '#15803d', bg: '#dcfce7' });
+    }
+    return out;
+  }
+  function calendarHtml(list) {
+    const year = calMonth.getFullYear(), month = calMonth.getMonth();
+    const first = new Date(year, month, 1), offset = (first.getDay() + 6) % 7;
+    const start = new Date(year, month, 1 - offset);
+    const byDate = {};
+    const push = (d, html) => { (byDate[d] = byDate[d] || []).push(html); };
+    list.filter(t => t.due_date).forEach(t => push(t.due_date, `<a class="cal-chip task${t.status === 'Done' ? ' done' : ''}" data-cal-task="${t.id}" style="border-left-color:${STATUS_COLOR[t.status]}" title="${esc(t.title)} · ${t.status} · ${esc(clientName(t.client_id))}">${esc(t.title)}</a>`));
+    reminderEvents().forEach(r => push(r.date, `<a class="cal-chip rem" data-cal-client="${r.client.id}" style="background:${r.bg};color:${r.color}" title="${r.label} · ${esc(r.client.name)}">${r.label}: ${esc(r.client.name)}</a>`));
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    let cells = '';
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i), key = iso(d);
+      const items = byDate[key] || [], show = items.slice(0, 3);
+      cells += `<div class="cal-cell${d.getMonth() !== month ? ' other' : ''}${key === today() ? ' today' : ''}"><div class="cal-num">${d.getDate()}</div>${show.join('')}${items.length > 3 ? `<details class="cal-more"><summary>+${items.length - 3} more</summary>${items.slice(3).join('')}</details>` : ''}</div>`;
+    }
+    const title = calMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    return `<div class="cal-head"><button class="tk-chip" data-cal-nav="-1">‹</button><div class="cal-title">${title}</div><button class="tk-chip" data-cal-nav="1">›</button><button class="tk-chip" data-cal-nav="0">Today</button>
+      <span class="tk-muted" style="margin-left:auto">Tasks by due date · coloured chips are client reminders</span></div>
+      <div class="cal-grid">${days.map(d => `<div class="cal-dow">${d}</div>`).join('')}${cells}</div>`;
+  }
+
   function render() {
     const el = root(); if (!el) return;
     const list = visible();
@@ -119,7 +157,7 @@
     const shownStatuses = filter.showDone ? STATUSES : STATUSES.filter(s => s !== 'Done');
     el.innerHTML = `<div class="tk-wrap">
       <div class="tk-head"><div><div class="tk-h1">Tasks</div><div class="tk-muted">${open} open${overdue ? ` · <span class="tk-late">${overdue} overdue</span>` : ''}</div></div>
-        <div class="tk-toggle"><button class="${mode === 'list' ? 'on' : ''}" data-mode="list">☰ List</button><button class="${mode === 'board' ? 'on' : ''}" data-mode="board">▥ Board</button></div></div>
+        <div class="tk-toggle"><button class="${mode === 'list' ? 'on' : ''}" data-mode="list">☰ List</button><button class="${mode === 'board' ? 'on' : ''}" data-mode="board">▥ Board</button><button class="${mode === 'calendar' ? 'on' : ''}" data-mode="calendar">▦ Calendar</button></div></div>
       <div class="tk-filters">
         <input class="tk-search" data-search placeholder="🔍 Search tasks or clients…" value="${esc(filter.q)}">
         <input data-filter-client list="tk-clients" placeholder="🔍 Filter by client…" value="${esc(filter.client ? (filter.client === 'none' ? GENERAL : clientName(Number(filter.client))) : '')}" autocomplete="off">
@@ -135,13 +173,20 @@
         <select name="assignee"><option value="">Unassigned</option>${people().map(p => `<option${p === me ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>
         <input type="date" name="due"><select name="priority">${PRIORITIES.map(p => `<option${p === 'Normal' ? ' selected' : ''}>${p}</option>`).join('')}</select>
         <button class="tk-btn">Add</button></form>
-      ${!loaded ? '<div class="tk-muted">Loading…</div>' : mode === 'list'
+      ${!loaded ? '<div class="tk-muted">Loading…</div>' : mode === 'calendar' ? calendarHtml(list)
+        : mode === 'list'
         ? (list.length ? shownStatuses.map(s => { const g = list.filter(t => t.status === s); return g.length ? groupHtml(s, g) : ''; }).join('') : '<div class="tk-empty">No tasks here. Add the first one above.</div>')
         : `<div class="tk-board">${STATUSES.map(s => { const col = list.filter(t => t.status === s); return `<div class="tk-col" data-status="${s}"><div class="tk-col-h"><span class="tk-pill" style="background:${STATUS_COLOR[s]}">${s}</span><span>${col.length}</span></div>${col.map(cardHtml).join('')}</div>`; }).join('')}</div>`}
     </div>`;
   }
 
   function onClick(e) {
+    const nav = e.target.closest('[data-cal-nav]');
+    if (nav) { const n = Number(nav.dataset.calNav); calMonth = n === 0 ? new Date(new Date().getFullYear(), new Date().getMonth(), 1) : new Date(calMonth.getFullYear(), calMonth.getMonth() + n, 1); return render(); }
+    const ct = e.target.closest('[data-cal-task]');
+    if (ct) { const x = tasks.find(y => y.id === ct.dataset.calTask); if (x) { filter.q = x.title; mode = 'list'; filter.showDone = true; } return render(); }
+    const cc = e.target.closest('[data-cal-client]');
+    if (cc) return api().goToClient(Number(cc.dataset.calClient));
     const m = e.target.closest('[data-mode]'); if (m) { mode = m.dataset.mode; return render(); }
     if (e.target.closest('[data-filter-me]')) { const me = api().getCurrentUser(); filter.assignee = filter.assignee === me ? '' : me; return render(); }
     const dueCell = e.target.closest('.tk-due');
