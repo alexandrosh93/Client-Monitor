@@ -204,16 +204,12 @@
     const all = tasks.filter(t => t.client_id === id)
       .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
     const open = all.filter(t => t.status !== 'Done').length;
-    const rows = all.slice(0, 3).map(t => {
-      const done = t.status === 'Done';
-      return `<div class="ctk-row${done ? ' done' : ''}" data-ctk-id="${t.id}">
-      <button class="tk-circle" data-ctk-toggle style="--c:${STATUS_COLOR[t.status]}" title="${done ? 'Reopen' : 'Mark done'}">${done ? '✓' : ''}</button>
-      <span class="ctk-title">${esc(t.title)}</span><span class="tk-pill" style="background:${STATUS_COLOR[t.status]}">${t.status}</span><span class="ctk-meta">${dueLabel(t)}</span>${avatar(t.assignee)}</div>`;
-    }).join('');
-    return `<div class="ctk-head"><span class="xlbl" style="margin:0">✓ Latest tasks <b>${open}</b> open</span>
-      <a data-ctk-open="${id}">${all.length > 3 ? `See all ${all.length}` : 'Open tasks'} →</a></div>
-      ${rows || '<div class="tk-muted" style="padding:2px 0">No tasks yet.</div>'}
-      <input class="ctk-add" data-ctk-add="${id}" placeholder="＋ Add task and press Enter" list="tk-presets" autocomplete="off">`;
+    const rows = all.slice(0, 3).map(t => `<div class="ctk-row${t.status === 'Done' ? ' done' : ''}" data-ctk-id="${t.id}">
+      <span class="ctk-title" title="${esc(t.title)}">${esc(t.title)}</span><span class="ctk-meta">${dueLabel(t)}</span>
+      <span class="tk-pick"><span class="tk-pill" style="background:${STATUS_COLOR[t.status]}">${t.status}</span><select data-ctk-status>${STATUSES.map(s => `<option${s === t.status ? ' selected' : ''}>${s}</option>`).join('')}</select></span></div>`).join('');
+    return `<div class="ctk-head"><span class="xlbl" style="margin:0">✓ Tasks · ${open} open</span>
+      <a data-ctk-open="${id}">${all.length > 3 ? `All ${all.length}` : 'Open'} →</a></div>
+      ${rows || '<div class="tk-muted">No tasks yet.</div>'}`;
   }
   window.fillClientTasks = async function () {
     const hosts = document.querySelectorAll('[data-ctk]'); if (!hosts.length) return;
@@ -228,19 +224,10 @@
   document.addEventListener('click', e => {
     const open = e.target.closest('[data-ctk-open]');
     if (open) { e.stopPropagation(); return window.openTasksView({ client: Number(open.dataset.ctkOpen) }); }
-    const tog = e.target.closest('[data-ctk-toggle]');
-    if (tog) { e.stopPropagation(); const id = tog.closest('[data-ctk-id]').dataset.ctkId; const x = tasks.find(y => y.id === id); patch(id, { status: x.status === 'Done' ? 'To do' : 'Done' }); }
   });
-  document.addEventListener('keydown', async e => {
-    const inp = e.target.closest && e.target.closest('[data-ctk-add]');
-    if (!inp || e.key !== 'Enter') return;
-    e.preventDefault();
-    const title = inp.value.trim(); if (!title) return;
-    const clientId = Number(inp.dataset.ctkAdd);
-    const { data, error } = await sb().from('tasks').insert({ client_id: clientId, title, assignee: api().getCurrentUser(), created_by: api().getCurrentUser() }).select().single();
-    if (error) { api().toast('Could not add task'); return; }
-    tasks.push(data); inp.value = ''; render(); window.fillClientTasks();
-    api().audit('Create', clientName(clientId), `Task added: "${title}"`);
+  document.addEventListener('change', e => {
+    const sel = e.target.closest && e.target.closest('[data-ctk-status]');
+    if (sel) patch(sel.closest('[data-ctk-id]').dataset.ctkId, { status: sel.value });
   });
 
   // Home dashboard card: my open tasks that are overdue / due today.

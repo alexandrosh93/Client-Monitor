@@ -22,7 +22,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="erp-discovery.css?v=modern-service-report-20261015">
-<link rel="stylesheet" href="tasks.css?v=5">
+<link rel="stylesheet" href="tasks.css?v=6">
 <style>
 :root{
   --bg:#f4f6fb;
@@ -2268,6 +2268,7 @@ function buildRow(c){
             <button onclick="toggleModEdit(${c.id})" style="margin-top:5px;font-family:'DM Sans',sans-serif;font-size:11px;padding:3px 12px;border:none;border-radius:5px;background:var(--accent);color:#fff;cursor:pointer;font-weight:500">done</button>
           </div>
         </div>
+        <div class="ctk no-print" data-ctk="${c.id}"></div>
       </div>
 
       <!-- COMMENTS + TODO — same style, tall boxes -->
@@ -2285,7 +2286,6 @@ function buildRow(c){
           <textarea class="xtarea" style="min-height:80px" placeholder="List what needs to be done…" onchange="fld(${c.id},'todo',this.value)">${c.todo||''}</textarea>
         </div>
       </div>
-      <div class="ctk no-print" data-ctk="${c.id}"></div>
       <div class="xactions no-print" style="justify-content:space-between;align-items:center">
         <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
           <span style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Progress</span>
@@ -3975,7 +3975,7 @@ sb.auth.onAuthStateChange(async(event,session)=>{
 <script src="ai-suggestions.js?v=orders-20261012" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
 <script src="email-suggestions.js?v=pdf-client-name-20261013" defer></script>
-<script src="tasks.js?v=6" defer></script>
+<script src="tasks.js?v=7" defer></script>
 <script type="module" src="erp-discovery.js?v=modern-service-report-20261015"></script>
 </body>
 </html>
