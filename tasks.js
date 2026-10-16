@@ -118,7 +118,7 @@
         <div class="tk-toggle"><button class="${mode === 'list' ? 'on' : ''}" data-mode="list">☰ List</button><button class="${mode === 'board' ? 'on' : ''}" data-mode="board">▥ Board</button></div></div>
       <div class="tk-filters">
         <input class="tk-search" data-search placeholder="🔍 Search tasks or clients…" value="${esc(filter.q)}">
-        <select data-filter="client"><option value="">All clients</option>${clients.map(c => `<option value="${c.id}"${String(c.id) === filter.client ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select>
+        <input data-filter-client list="tk-clients" placeholder="🔍 Filter by client…" value="${esc(filter.client ? clientName(Number(filter.client)) : '')}" autocomplete="off">
         <select data-filter="assignee"><option value="">Everyone</option>${people().map(p => `<option${p === filter.assignee ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>
         <button class="tk-chip${filter.assignee === me ? ' on' : ''}" data-filter-me>Me</button>
         ${mode === 'list' ? `<label class="tk-muted"><input type="checkbox" data-filter-done ${filter.showDone ? 'checked' : ''}> Show done</label>` : ''}</div>
@@ -155,6 +155,12 @@
   function onChange(e) {
     const t = e.target;
     if (t.hasAttribute('data-template')) { const f = document.getElementById('tk-add'); if (t.value) { f.title.value = t.value; f.title.focus(); } t.value = ''; return; }
+    if (t.hasAttribute('data-filter-client')) {
+      const v = t.value.trim().toLowerCase();
+      const m = api().getClients().filter(c => c.name.toLowerCase() === v);
+      if (!v) filter.client = ''; else if (m.length === 1) filter.client = String(m[0].id); else { api().toast('Pick a client from the list'); return; }
+      return render();
+    }
     if (t.dataset.filter) { filter[t.dataset.filter] = t.value; return render(); }
     if (t.hasAttribute('data-filter-done')) { filter.showDone = t.checked; return render(); }
     const row = t.closest('.tk-row'); if (!row || !t.dataset.act) return;
