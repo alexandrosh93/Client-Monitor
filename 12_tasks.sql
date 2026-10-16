@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS public.tasks (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  client_id bigint NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
+  client_id bigint REFERENCES public.clients(id) ON DELETE CASCADE,
   title text NOT NULL CHECK (char_length(title) BETWEEN 1 AND 300),
   assignee text NOT NULL DEFAULT '',
   status text NOT NULL DEFAULT 'To do' CHECK (status IN ('To do','In progress','Blocked','Done')),
@@ -25,3 +25,6 @@ CREATE POLICY authenticated_tasks ON public.tasks
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.tasks TO authenticated;
 
 NOTIFY pgrst, 'reload schema';
+
+-- Existing installs: allow general tasks that don't belong to a client.
+ALTER TABLE public.tasks ALTER COLUMN client_id DROP NOT NULL;

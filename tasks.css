@@ -58,3 +58,4 @@
 .ctk{grid-column:span 3;min-width:260px;margin:0;padding:.4rem .6rem;border:1px solid var(--border-md);border-radius:8px;background:var(--surface)}
 .ctk-row{gap:6px;padding:2px 0}.ctk-head{margin-bottom:2px}
 .ctk-row .tk-pill{font-size:8.5px;padding:2px 6px}.ctk-title{font-size:12px}
+.tk-client.general{background:transparent;border:1px dashed var(--border-md);color:var(--text-3);cursor:default}

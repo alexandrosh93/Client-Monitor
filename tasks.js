@@ -15,7 +15,8 @@
   const PRESETS = ['Kickoff meeting', 'Collect client requirements', 'Install server / environment', 'Company & chart of accounts setup', 'Data migration', 'User training', 'UAT / testing with client', 'Go-live', 'Post go-live follow-up', 'VAT setup & test', 'Stock take', 'Support request'];
 
   const root = () => document.getElementById('tasks-view');
-  const clientName = id => (api().getClients().find(c => c.id === id) || {}).name || '—';
+  const GENERAL = 'General';
+  const clientName = id => id ? ((api().getClients().find(c => c.id === id) || {}).name || '—') : GENERAL;
   const people = () => api().getImplementors();
 
   async function load() {
@@ -41,9 +42,12 @@
     const title = f.title.value.trim();
     const typed = f.client.value.trim().toLowerCase();
     const match = api().getClients().filter(c => c.name.toLowerCase() === typed);
-    const clientId = match.length === 1 ? match[0].id : (typed ? 0 : (filter.client ? Number(filter.client) : 0));
-    if (typed && !clientId) { api().toast('Pick a client from the list'); return; }
-    if (!title || !clientId) { api().toast('Task title and client are required'); return; }
+    let clientId = null;
+    if (typed && typed !== GENERAL.toLowerCase()) {
+      if (match.length !== 1) { api().toast('Pick a client from the list, or leave empty for a General task'); return; }
+      clientId = match[0].id;
+    } else if (!typed && filter.client && filter.client !== 'none') clientId = Number(filter.client);
+    if (!title) { api().toast('Task title is required'); return; }
     const row = { client_id: clientId, title, assignee: f.assignee.value, priority: f.priority.value, due_date: f.due.value || null, created_by: api().getCurrentUser() };
     const { data, error } = await sb().from('tasks').insert(row).select().single();
     if (error) { api().toast('Could not add task'); console.error(error); return; }
@@ -59,7 +63,7 @@
   }
 
   const visible = () => tasks.filter(t =>
-    (!filter.client || String(t.client_id) === filter.client) &&
+    (!filter.client || (filter.client === 'none' ? !t.client_id : String(t.client_id) === filter.client)) &&
     (!filter.assignee || t.assignee === filter.assignee) &&
     (!filter.q || (t.title + ' ' + clientName(t.client_id)).toLowerCase().includes(filter.q.toLowerCase())) &&
     (filter.showDone || mode === 'board' || t.status !== 'Done'));
@@ -85,7 +89,7 @@
     return `<div class="tk-row${done ? ' done' : ''}" data-id="${t.id}">
       <button class="tk-circle" data-act="toggle" style="--c:${STATUS_COLOR[t.status]}" title="${done ? 'Reopen' : 'Mark done'}">${done ? '✓' : ''}</button>
       <input class="tk-title" value="${esc(t.title)}" data-act="title">
-      <a class="tk-client" data-act="client">${esc(clientName(t.client_id))}</a>
+      ${t.client_id ? `<a class="tk-client" data-act="client">${esc(clientName(t.client_id))}</a>` : '<span class="tk-client general">General</span>'}
       <span class="tk-pick">${avatar(t.assignee)}<select data-act="assignee"><option value="">Unassigned</option>${people().map(p => `<option${p === t.assignee ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select></span>
       <span class="tk-pick tk-due">${dueLabel(t)}<input type="date" value="${t.due_date || ''}" data-act="due"></span>
       <span class="tk-pick">${flag(t.priority)}<select data-act="priority">${PRIORITIES.map(p => `<option${p === t.priority ? ' selected' : ''}>${p}</option>`).join('')}</select></span>
@@ -96,7 +100,7 @@
   function cardHtml(t) {
     return `<div class="tk-card" draggable="true" data-id="${t.id}" style="border-left:3px solid ${PRIO_COLOR[t.priority]}">
       <div class="tk-card-title">${esc(t.title)}</div>
-      <div class="tk-card-meta"><a data-act="client">${esc(clientName(t.client_id))}</a></div>
+      <div class="tk-card-meta">${t.client_id ? `<a data-act="client">${esc(clientName(t.client_id))}</a>` : '<span class="tk-client general">General</span>'}</div>
       <div class="tk-card-foot">${flag(t.priority)}${dueLabel(t)}<span style="margin-left:auto">${avatar(t.assignee)}</span></div></div>`;
   }
 
@@ -118,7 +122,7 @@
         <div class="tk-toggle"><button class="${mode === 'list' ? 'on' : ''}" data-mode="list">☰ List</button><button class="${mode === 'board' ? 'on' : ''}" data-mode="board">▥ Board</button></div></div>
       <div class="tk-filters">
         <input class="tk-search" data-search placeholder="🔍 Search tasks or clients…" value="${esc(filter.q)}">
-        <input data-filter-client list="tk-clients" placeholder="🔍 Filter by client…" value="${esc(filter.client ? clientName(Number(filter.client)) : '')}" autocomplete="off">
+        <input data-filter-client list="tk-clients" placeholder="🔍 Filter by client…" value="${esc(filter.client ? (filter.client === 'none' ? GENERAL : clientName(Number(filter.client))) : '')}" autocomplete="off">
         <select data-filter="assignee"><option value="">Everyone</option>${people().map(p => `<option${p === filter.assignee ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>
         <button class="tk-chip${filter.assignee === me ? ' on' : ''}" data-filter-me>Me</button>
         ${mode === 'list' ? `<label class="tk-muted"><input type="checkbox" data-filter-done ${filter.showDone ? 'checked' : ''}> Show done</label>` : ''}</div>
@@ -126,8 +130,8 @@
         <input name="title" list="tk-presets" placeholder="＋ Add task — type a name or pick a template" autocomplete="off">
         <select data-template title="Predefined titles"><option value="">Templates…</option>${PRESETS.map(p => `<option>${esc(p)}</option>`).join('')}</select>
         <datalist id="tk-presets">${PRESETS.map(p => `<option value="${esc(p)}">`).join('')}</datalist>
-        <input name="client" list="tk-clients" placeholder="Search client…" value="${esc(filter.client ? clientName(Number(filter.client)) : '')}" autocomplete="off">
-        <datalist id="tk-clients">${clients.map(c => `<option value="${esc(c.name)}">`).join('')}</datalist>
+        <input name="client" list="tk-clients" placeholder="Client (empty = General task)" value="${esc(filter.client ? (filter.client === 'none' ? GENERAL : clientName(Number(filter.client))) : '')}" autocomplete="off">
+        <datalist id="tk-clients"><option value="General">${clients.map(c => `<option value="${esc(c.name)}">`).join('')}</datalist>
         <select name="assignee"><option value="">Unassigned</option>${people().map(p => `<option${p === me ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>
         <input type="date" name="due"><select name="priority">${PRIORITIES.map(p => `<option${p === 'Normal' ? ' selected' : ''}>${p}</option>`).join('')}</select>
         <button class="tk-btn">Add</button></form>
@@ -143,7 +147,7 @@
     const gh = e.target.closest('[data-group]'); if (gh) { const g = gh.dataset.group; collapsed.has(g) ? collapsed.delete(g) : collapsed.add(g); return render(); }
     const row = e.target.closest('[data-id]'); if (!row) return;
     const act = e.target.closest('[data-act]'); const id = row.dataset.id, a = act && act.dataset.act;
-    if (e.target.closest('[data-act="client"]')) { const t = tasks.find(x => x.id === id); api().goToClient(t.client_id); }
+    if (e.target.closest('[data-act="client"]')) { const t = tasks.find(x => x.id === id); if (t.client_id) api().goToClient(t.client_id); }
     else if (a === 'delete') remove(id);
     else if (a === 'toggle') { const t = tasks.find(x => x.id === id); patch(id, { status: t.status === 'Done' ? 'To do' : 'Done' }); }
   }
@@ -158,7 +162,7 @@
     if (t.hasAttribute('data-filter-client')) {
       const v = t.value.trim().toLowerCase();
       const m = api().getClients().filter(c => c.name.toLowerCase() === v);
-      if (!v) filter.client = ''; else if (m.length === 1) filter.client = String(m[0].id); else { api().toast('Pick a client from the list'); return; }
+      if (!v) filter.client = ''; else if (v === GENERAL.toLowerCase()) filter.client = 'none'; else if (m.length === 1) filter.client = String(m[0].id); else { api().toast('Pick a client from the list'); return; }
       return render();
     }
     if (t.dataset.filter) { filter[t.dataset.filter] = t.value; return render(); }
@@ -240,7 +244,7 @@
     if (!mine.length) { host.innerHTML = ''; return; }
     host.innerHTML = `<div class="hv-card" style="margin-bottom:1.25rem;border-left:3px solid #3b6cc7">
       <div class="hv-card-hdr"><div class="hv-card-title">✓ My Tasks Due</div><button class="hv-card-link" onclick="openTasksView({})">All tasks →</button></div>
-      <div class="hv-upcoming-list">${mine.slice(0, 8).map(t => `<div class="hv-event" onclick="openTasksView({client:${t.client_id}})">
+      <div class="hv-upcoming-list">${mine.slice(0, 8).map(t => `<div class="hv-event" onclick="openTasksView({client:${t.client_id || 'none'}})">
         <div class="hv-event-date" style="color:${t.due_date < today() ? '#a32d2d' : '#856404'};font-weight:800">${t.due_date < today() ? 'Overdue' : 'Today'}</div>
         <div class="hv-event-client">${esc(t.title)}</div><div class="hv-event-impl">${esc(clientName(t.client_id))}</div></div>`).join('')}</div></div>`;
   };
