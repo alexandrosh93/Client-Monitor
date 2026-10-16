@@ -111,16 +111,16 @@ test('client report keeps useful project data and excludes internal discovery co
   assert.equal(report.requirements.length, 1);
 });
 
-test('client job report includes only ticked screens that belong to the project', () => {
+test('client job report includes the ticked screens from any module, in or out of project scope', () => {
   const sections = buildClientJobReportItems({
     moduleData: {
       'stock.1': { checked: true },
       'stock.2': { checked: false },
     },
   }, {
-    moduleSections: [{ id: 'stock', title: 'Stock', items: [{ id: 'stock.1', text: 'Items' }, { id: 'stock.2', text: 'Warehouses' }] }],
+    moduleSections: [{ id: 'stock', title: 'Stock', items: [{ id: 'stock.1', text: 'Items' }, { id: 'stock.2', text: 'Warehouses' }, { id: 'stock.3', text: 'Units' }] }],
   }, ['stock.1', 'stock.2', 'unknown']);
-  assert.deepEqual(sections, [{ id: 'stock', title: 'Stock', items: [{ id: 'stock.1', text: 'Items' }] }]);
+  assert.deepEqual(sections, [{ id: 'stock', title: 'Stock', items: [{ id: 'stock.1', text: 'Items' }, { id: 'stock.2', text: 'Warehouses' }] }]);
 });
 
 test('normalizes saved client job reports and their screen comments', () => {

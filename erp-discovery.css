@@ -193,3 +193,18 @@
 @media(max-width:520px){.erp-module-overview{grid-template-columns:1fr}.erp-module-summary{grid-template-columns:62px minmax(0,1fr)}.erp-module-scope{font-size:8px}.erp-module-open{padding:10px 9px;gap:7px}}
 @page{size:A4;margin:14mm}
 @media print{body.sidemenu-pinned main,body.sidemenu-expanded main{margin-left:0!important;width:100%!important;max-width:100%!important}.erp-side,.erp-back,.erp-projectbar,.erp-actions,body>header,#sidemenu{display:none!important}.erp-shell{display:block}.erp-top{background:#fff!important;color:#111!important;box-shadow:none;border:1px solid #ccc}.erp-kicker,.erp-subtitle{color:#555!important}.erp-card{box-shadow:none;break-inside:avoid}.erp-main{display:block!important}body.erp-report-printing .erp-shell{display:none!important}body.erp-report-printing .erp-print-report{display:block!important;width:100%;color:#172b4d;font:10px/1.4 'DM Sans',Arial,sans-serif}body.erp-report-printing .erp-report-cover{-webkit-print-color-adjust:exact;print-color-adjust:exact}body.erp-report-printing .erp-report-summary>div,body.erp-report-printing .erp-report-status span,body.erp-report-printing .erp-report-pill,body.erp-report-printing th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+.erp-job-search{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.erp-job-search .erp-input{flex:1;min-width:200px}
+.erp-link{background:none;border:none;color:#214d92;font-weight:700;font-size:12px;cursor:pointer;padding:4px 6px}.erp-link:hover{text-decoration:underline}
+.erp-job-group-title{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;margin:6px 2px 8px}
+details.erp-job-module{border:1px solid #dbe3ef;border-radius:12px;margin-bottom:8px;background:#fff;overflow:hidden}
+details.erp-job-module>summary{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;list-style:none;font-weight:700}
+details.erp-job-module>summary::-webkit-details-marker{display:none}
+details.erp-job-module>summary::before{content:'▸';color:#6b7280;transition:transform .2s}
+details.erp-job-module[open]>summary::before{transform:rotate(90deg)}
+details.erp-job-module[open]>summary{background:#f6f8fc;border-bottom:1px solid #e5eaf3}
+.erp-job-module-title{flex:1}.erp-job-module-meta{font-size:11px;font-weight:500;color:#6b7280}
+.erp-job-picked{background:#214d92;color:#fff;border-radius:999px;font-size:11px;padding:2px 9px}
+.erp-job-module-tools{display:flex;gap:6px;padding:6px 10px 0}
+details.erp-job-module .erp-job-screens{padding:8px 12px 12px}
+.erp-job-tag{font-style:normal;font-size:10px;font-weight:700;color:#0f766e;background:#ccfbf1;border-radius:6px;padding:1px 6px;margin-left:8px}

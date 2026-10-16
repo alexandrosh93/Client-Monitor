@@ -85,13 +85,12 @@ export function buildClientReportSnapshot(document, catalog) {
 }
 
 export function buildClientJobReportItems(document, catalog, selectedIds) {
-  const doc = normalizeProjectDocument(document);
   const selected = new Set(Array.isArray(selectedIds) ? selectedIds.map(id => text(id, 80)) : []);
   return (Array.isArray(catalog?.moduleSections) ? catalog.moduleSections : []).map(section => ({
     id: text(section.id, 80),
     title: text(section.title, 300),
     items: (Array.isArray(section.items) ? section.items : [])
-      .filter(item => selected.has(item.id) && doc.moduleData[item.id]?.checked)
+      .filter(item => selected.has(item.id))
       .map(item => ({ id: text(item.id, 80), text: text(item.text, 500) })),
   })).filter(section => section.items.length);
 }

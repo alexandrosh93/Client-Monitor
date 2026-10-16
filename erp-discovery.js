@@ -22,6 +22,7 @@ let workspaceActivityDate = '';
 let workspaceStatusFilter = '';
 let jobReportDate = '';
 let jobReportItems = new Set();
+const jobReportOpen = new Set();
 let jobReportComments = new Map();
 let jobReportGeneralComment = '';
 let jobReportClientRepresentative = '';
@@ -218,6 +219,7 @@ async function completeJobReport() {
   const existingReport = documentState.jobReports.findIndex(item => item.id === jobReportDraftId);
   if (existingReport >= 0) documentState.jobReports[existingReport] = reportRecord; else documentState.jobReports.push(reportRecord);
   for (const section of sections) for (const screen of section.items) {
+    if (!documentState.moduleData[screen.id]?.checked) continue; // out-of-project screens appear only in the report
     const value = ensureModule(screen.id);
     value.date = jobReportDate;
     if (value.status === 'Needs Training') value.status = 'In Progress';
@@ -392,16 +394,28 @@ function renderJobReport() {
   if (!jobReportClientRepresentative) jobReportClientRepresentative = client.contact || '';
   if (!jobReportConsultant) jobReportConsultant = project.consultant || client.implementor || '';
   if (!jobReportDraftId) jobReportDraftId = crypto.randomUUID();
-  const availableSections = catalog.moduleSections.map(section => ({
-    ...section,
-    items: section.items.filter(item => documentState.moduleData[item.id]?.checked),
-  })).filter(section => section.items.length);
+  const selectedBySection = section => section.items.filter(item => jobReportItems.has(item.id)).length;
+  const groupTitles = { accounting: 'Accounting Modules', stock: 'Stock Modules' };
+  const checklists = ['accounting', 'stock'].map(group => {
+    const sections = catalog.moduleSections.filter(section => section.group === group && section.items.length);
+    if (!sections.length) return '';
+    return `<div class="erp-job-group"><h3 class="erp-job-group-title">${groupTitles[group]}</h3>${sections.map(section => {
+      const picked = selectedBySection(section);
+      const inProject = section.items.filter(item => documentState.moduleData[item.id]?.checked).length;
+      const open = jobReportOpen.has(section.id) || picked > 0;
+      return `<details class="erp-job-module" data-job-module="${attr(section.id)}"${open ? ' open' : ''}>
+        <summary><span class="erp-job-module-title">${esc(section.title)}</span><span class="erp-job-module-meta">${inProject ? `${inProject} in project · ` : ''}${section.items.length} screens</span>${picked ? `<span class="erp-job-picked">${picked} selected</span>` : ''}</summary>
+        <div class="erp-job-module-tools"><button type="button" class="erp-link" data-job-select-all="${attr(section.id)}">Select all</button><button type="button" class="erp-link" data-job-clear="${attr(section.id)}">Clear</button></div>
+        <div class="erp-job-screens">${section.items.map(item => `<div class="erp-job-screen${jobReportItems.has(item.id) ? ' selected' : ''}" data-job-text="${attr(item.text.toLowerCase())}"><label><input type="checkbox" data-job-report-item="${attr(item.id)}" ${jobReportItems.has(item.id) ? 'checked' : ''}><span>${esc(item.text)}</span>${documentState.moduleData[item.id]?.checked ? '<em class="erp-job-tag">In project</em>' : ''}</label>${jobReportItems.has(item.id) ? `<textarea data-job-report-comment="${attr(item.id)}" placeholder="Optional short comment for this screen…">${esc(jobReportComments.get(item.id) || '')}</textarea>` : ''}</div>`).join('')}</div>
+      </details>`;
+    }).join('')}</div>`;
+  }).join('');
   const selectedCount = jobReportSections().reduce((total, section) => total + section.items.length, 0);
-  const checklists = availableSections.map(section => `<section class="erp-job-module"><h3>${esc(section.title)}</h3><div class="erp-job-screens">${section.items.map(item => `<div class="erp-job-screen${jobReportItems.has(item.id) ? ' selected' : ''}"><label><input type="checkbox" data-job-report-item="${attr(item.id)}" ${jobReportItems.has(item.id) ? 'checked' : ''}><span>${esc(item.text)}</span></label>${jobReportItems.has(item.id) ? `<textarea data-job-report-comment="${attr(item.id)}" placeholder="Optional short comment for this screen…">${esc(jobReportComments.get(item.id) || '')}</textarea>` : ''}</div>`).join('')}</div></section>`).join('');
   return `<div class="erp-card erp-job-report-card">
-    <div class="erp-actions"><div><h2>Client Job Report</h2><div class="erp-muted">At the end of the visit, tick only the screens trained on this date. This selection is separate from project scope and training status.</div></div><span class="erp-job-count">${selectedCount} selected</span></div>
+    <div class="erp-actions"><div><h2>Client Job Report</h2><div class="erp-muted">Open a module and tick only the screens you trained on this date. Any screen can be selected, whether or not it is in the project.</div></div><span class="erp-job-count">${selectedCount} selected</span></div>
     <div class="erp-job-toolbar"><label class="erp-field"><span>Visit / training date</span><input type="date" class="erp-input" data-job-report-date value="${attr(jobReportDate)}"></label><label class="erp-field"><span>Job No. (optional)</span><input class="erp-input" data-job-report-number maxlength="100" placeholder="From your service system" value="${attr(jobReportNumber)}"></label><button type="button" class="erp-btn primary" data-complete-job-report ${selectedCount ? '' : 'disabled'}>Complete & Print PDF</button></div>
-    ${checklists || '<div class="erp-empty">No screens are currently included in this project. Select the required screens inside the Accounting or Stock modules first.</div>'}
+    <div class="erp-job-search"><input class="erp-input" type="search" data-job-search placeholder="Search screens…"><button type="button" class="erp-link" data-job-expand="all">Expand all</button><button type="button" class="erp-link" data-job-expand="none">Collapse all</button></div>
+    ${checklists}
     <section class="erp-job-extras"><h3>Customer feedback <span class="erp-muted">(optional)</span></h3><div class="erp-job-signatures"><label class="erp-field"><span>Customer satisfaction</span><select class="erp-select" data-job-report-satisfaction><option value="">Not recorded</option>${options(['Satisfied', 'Neutral', 'Needs attention'], jobReportSatisfaction)}</select></label><label class="erp-field"><span>Customer comments</span><textarea class="erp-textarea" data-job-report-customer-comment placeholder="Feedback from the client…">${esc(jobReportCustomerComment)}</textarea></label></div></section>
     <section class="erp-job-extras"><div class="erp-field"><label>General comment <span>(optional)</span></label><textarea class="erp-textarea" data-job-report-general placeholder="General notes about today’s training…">${esc(jobReportGeneralComment)}</textarea></div><div class="erp-job-signatures"><div class="erp-field"><label>Client representative</label><input class="erp-input" data-job-report-client value="${attr(jobReportClientRepresentative)}"></div><div class="erp-field"><label>Consultant</label><input class="erp-input" data-job-report-consultant value="${attr(jobReportConsultant)}"></div></div><div class="erp-muted">The PDF includes signature lines for both people.</div></section>
   </div>`;
@@ -512,6 +526,26 @@ function bindContent() {
     if (element.checked) jobReportItems.add(element.dataset.jobReportItem); else jobReportItems.delete(element.dataset.jobReportItem);
     renderMain();
   }));
+  container.querySelectorAll('[data-job-module]').forEach(el => el.addEventListener('toggle', () => { if (el.open) jobReportOpen.add(el.dataset.jobModule); else jobReportOpen.delete(el.dataset.jobModule); }));
+  container.querySelectorAll('[data-job-select-all],[data-job-clear]').forEach(btn => btn.addEventListener('click', () => {
+    const id = btn.dataset.jobSelectAll || btn.dataset.jobClear;
+    const section = catalog.moduleSections.find(item => item.id === id); if (!section) return;
+    const visibleIds = [...btn.closest('details').querySelectorAll('.erp-job-screen:not([hidden]) [data-job-report-item]')].map(input => input.dataset.jobReportItem);
+    for (const itemId of visibleIds) { if (btn.dataset.jobSelectAll) jobReportItems.add(itemId); else jobReportItems.delete(itemId); }
+    jobReportOpen.add(id); renderMain();
+  }));
+  container.querySelectorAll('[data-job-expand]').forEach(btn => btn.addEventListener('click', () => {
+    container.querySelectorAll('[data-job-module]').forEach(el => { el.open = btn.dataset.jobExpand === 'all'; });
+  }));
+  container.querySelector('[data-job-search]')?.addEventListener('input', event => {
+    const q = event.currentTarget.value.trim().toLowerCase();
+    container.querySelectorAll('[data-job-module]').forEach(module => {
+      let hits = 0;
+      module.querySelectorAll('.erp-job-screen').forEach(row => { const show = !q || row.dataset.jobText.includes(q); row.hidden = !show; if (show) hits += 1; });
+      module.hidden = !!q && !hits;
+      if (q && hits) module.open = true;
+    });
+  });
   container.querySelectorAll('[data-job-report-comment]').forEach(element => element.addEventListener('input', () => { jobReportComments.set(element.dataset.jobReportComment, element.value); }));
   container.querySelector('[data-job-report-general]')?.addEventListener('input', event => { jobReportGeneralComment = event.currentTarget.value; });
   container.querySelector('[data-job-report-number]')?.addEventListener('input', event => { jobReportNumber = event.currentTarget.value; });
