@@ -144,6 +144,8 @@
   function onClick(e) {
     const m = e.target.closest('[data-mode]'); if (m) { mode = m.dataset.mode; return render(); }
     if (e.target.closest('[data-filter-me]')) { const me = api().getCurrentUser(); filter.assignee = filter.assignee === me ? '' : me; return render(); }
+    const dueCell = e.target.closest('.tk-due');
+    if (dueCell) { const inp = dueCell.querySelector('input[type=date]'); try { inp.showPicker(); } catch (_) { inp.focus(); } return; }
     const gh = e.target.closest('[data-group]'); if (gh) { const g = gh.dataset.group; collapsed.has(g) ? collapsed.delete(g) : collapsed.add(g); return render(); }
     const row = e.target.closest('[data-id]'); if (!row) return;
     const act = e.target.closest('[data-act]'); const id = row.dataset.id, a = act && act.dataset.act;

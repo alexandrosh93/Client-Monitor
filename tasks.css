@@ -63,3 +63,4 @@
 .hv-mt-row:last-child{border-bottom:none}.hv-mt-due{font-size:12px}
 .hv-mt-row .tk-client{justify-self:start}
 @media(max-width:768px){.hv-mt-row{grid-template-columns:60px 1fr 100px}.hv-mt-row .tk-client{display:none}}
+.tk-due{cursor:pointer;min-width:70px}.tk-due:hover{background:var(--surface2);border-radius:6px}
