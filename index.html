@@ -3208,7 +3208,7 @@ function renderHomeDashboard(){
   // who is looking: managers/admin see the whole picture, everyone else only their own clients
   const myImpl=getLoggedInImplementor();
   const meKeys=[currentUser,currentFullName,String(currentFullName||'').trim().split(/\s+/)[0]].map(identityKey).filter(Boolean);
-  const isMgr=isAdminUser||['VT','AK'].some(m=>meKeys.includes(identityKey(m)));
+  const isMgr=['VT','AK'].some(m=>meKeys.includes(identityKey(m)));
   const scope=isMgr?clients:clients.filter(c=>myImpl&&c.implementor===myImpl);
 
   // stats
