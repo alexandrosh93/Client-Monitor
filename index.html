@@ -3205,11 +3205,17 @@ function renderHomeDashboard(){
   const todayISO=now.toISOString().slice(0,10);
   const initials=currentUser.split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);
 
+  // who is looking: managers/admin see the whole picture, everyone else only their own clients
+  const myImpl=getLoggedInImplementor();
+  const meKeys=[currentUser,currentFullName,String(currentFullName||'').trim().split(/\s+/)[0]].map(identityKey).filter(Boolean);
+  const isMgr=isAdminUser||['VT','AK'].some(m=>meKeys.includes(identityKey(m)));
+  const scope=isMgr?clients:clients.filter(c=>myImpl&&c.implementor===myImpl);
+
   // stats
-  const total=clients.length;
-  const vatOverdue=clients.filter(c=>!c.vatDone&&c.vatDate&&c.vatDate<todayISO).length;
-  const stkOverdue=clients.filter(c=>!c.stkDone&&c.stkDate&&c.stkDate<todayISO).length;
-  const followupsDue=clients.filter(c=>c.nextFollowupDate&&c.nextFollowupDate<=todayISO)
+  const total=scope.length;
+  const vatOverdue=scope.filter(c=>!c.vatDone&&c.vatDate&&c.vatDate<todayISO).length;
+  const stkOverdue=scope.filter(c=>!c.stkDone&&c.stkDate&&c.stkDate<todayISO).length;
+  const followupsDue=scope.filter(c=>c.nextFollowupDate&&c.nextFollowupDate<=todayISO)
     .sort((a,b)=>a.nextFollowupDate.localeCompare(b.nextFollowupDate));
 
   // status data for chart
@@ -3266,12 +3272,23 @@ function renderHomeDashboard(){
     return{m,color,bySt,active:mine.length,completed,overdue};
   });
   const maxWl2=Math.max(...mgrWl2.map(x=>x.active),1);
+  const myStatus=wlOrder.map(st=>({st,n:scope.filter(c=>c.status===st).length})).filter(x=>x.n);
+  const myDone=scope.filter(c=>c.status==='Completed').length;
+  const myCard=`<div class="hv-card" style="margin-bottom:1.25rem">
+    <div class="hv-card-hdr"><div><div class="hv-card-title">My Clients</div>
+      <div style="font-size:10px;color:var(--text-3);margin-top:2px">${myImpl?'Click a status to see those clients':'No implementor is linked to your account yet.'}</div></div>
+      ${myImpl?`<button class="hv-card-link" onclick="goMyClients()">View all →</button>`:''}</div>
+    ${myStatus.length?myStatus.map(x=>`<div class="hv-wl-row" onclick="goClients({impl:'${esc(myImpl)}',status:'${x.st}'})">
+      <div class="hv-wl-av" style="background:${wlColors[x.st]}">${x.n}</div><div class="hv-wl-name" style="min-width:130px">${x.st}</div>
+      <div class="hv-wl-track"><div class="hv-wl-seg" style="width:${x.n/Math.max(...myStatus.map(y=>y.n))*100}%;background:${wlColors[x.st]}"></div></div>
+      <div class="hv-wl-arrow">→</div></div>`).join('')+(myDone?`<div style="font-size:11px;color:#1e3a6e;font-weight:600;padding:.4rem 0 0">✓ ${myDone} completed</div>`:''):(myImpl?'<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No clients assigned to you yet.</div>':'')}
+  </div>`;
 
   // upcoming events
   const f14=new Date(now);f14.setDate(f14.getDate()+14);
   const f14ISO=f14.toISOString().slice(0,10);
   const events=[];
-  clients.forEach(c=>{
+  scope.forEach(c=>{
     if(c.vatDate&&!c.vatDone&&c.vatDate>=todayISO&&c.vatDate<=f14ISO) events.push({date:c.vatDate,type:'VAT',client:c.name,impl:c.implementor||''});
     if(c.stkDate&&!c.stkDone&&c.stkDate>=todayISO&&c.stkDate<=f14ISO) events.push({date:c.stkDate,type:'STK',client:c.name,impl:c.implementor||''});
     if(c.liveDate&&c.liveDate>=todayISO&&c.liveDate<=f14ISO) events.push({date:c.liveDate,type:'LIVE',client:c.name,impl:c.implementor||''});
@@ -3282,7 +3299,7 @@ function renderHomeDashboard(){
 
   // smart banner subline
   const attention=vatOverdue+stkOverdue;
-  const dueToday=clients.filter(c=>(c.vatDate&&!c.vatDone&&c.vatDate===todayISO)||(c.stkDate&&!c.stkDone&&c.stkDate===todayISO)||(c.liveDate&&c.liveDate===todayISO)).length;
+  const dueToday=scope.filter(c=>(c.vatDate&&!c.vatDone&&c.vatDate===todayISO)||(c.stkDate&&!c.stkDone&&c.stkDate===todayISO)||(c.liveDate&&c.liveDate===todayISO)).length;
   let subline;
   if(attention) subline=`⚠️ <b>${attention}</b> item${attention!==1?'s':''} need${attention===1?'s':''} attention${dueToday?` · <b>${dueToday}</b> due today`:''}`;
   else if(dueToday) subline=`<b>${dueToday}</b> task${dueToday!==1?'s':''} due today — you're on track ✓`;
@@ -3333,6 +3350,7 @@ function renderHomeDashboard(){
     </div>
   </div>`:''}
 
+  ${isMgr?`
   <div class="hv-card" style="margin-bottom:1.25rem">
     <div class="hv-card-hdr">
       <div>
@@ -3365,6 +3383,7 @@ function renderHomeDashboard(){
       }).join('')}
     </div>
   </div>
+  `:myCard}
 
   <div class="hv-card">
     <div class="hv-card-hdr">
