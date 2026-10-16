@@ -168,13 +168,13 @@
       if(btn.dataset.aiAction==='approve')approve(item);
       if(btn.dataset.aiAction==='open')goToClient(item.clientId);
     });
-    var ref=document.querySelector('#sidemenu button[onclick^="openVatReport"]');
+    var ref=document.querySelector('#sidemenu button[onclick^="goHome"]');
     if(ref){
       var link=document.createElement('button');
       link.className='smenu-item';link.type='button';
       link.innerHTML='<span aria-hidden="true" style="font-size:16px;width:16px">✦</span><span class="smenu-label">AI Suggestions</span>';
       link.addEventListener('click',function(){openWorkspace();closeSideMenuAfterAction();});
-      ref.parentNode.insertBefore(link,ref);
+      ref.parentNode.insertBefore(link,ref.nextSibling);
     }
     var headerButton=document.createElement('button');
     headerButton.type='button';headerButton.className='view-btn';
