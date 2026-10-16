@@ -208,3 +208,9 @@ details.erp-job-module[open]>summary{background:#f6f8fc;border-bottom:1px solid 
 .erp-job-module-tools{display:flex;gap:6px;padding:6px 10px 0}
 details.erp-job-module .erp-job-screens{padding:8px 12px 12px}
 .erp-job-tag{font-style:normal;font-size:10px;font-weight:700;color:#0f766e;background:#ccfbf1;border-radius:6px;padding:1px 6px;margin-left:8px}
+
+.erp-job-modules{column-count:2;column-gap:10px}
+.erp-job-modules details.erp-job-module{break-inside:avoid;margin-bottom:8px;display:block}
+.erp-job-modules .erp-job-screens{grid-template-columns:1fr}
+.erp-job-module-meta{white-space:nowrap}
+@media(max-width:820px){.erp-job-modules{column-count:1}}

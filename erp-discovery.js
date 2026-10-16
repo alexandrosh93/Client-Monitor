@@ -399,7 +399,7 @@ function renderJobReport() {
   const checklists = ['accounting', 'stock'].map(group => {
     const sections = catalog.moduleSections.filter(section => section.group === group && section.items.length);
     if (!sections.length) return '';
-    return `<div class="erp-job-group"><h3 class="erp-job-group-title">${groupTitles[group]}</h3>${sections.map(section => {
+    return `<div class="erp-job-group"><h3 class="erp-job-group-title">${groupTitles[group]}</h3><div class="erp-job-modules">${sections.map(section => {
       const picked = selectedBySection(section);
       const inProject = section.items.filter(item => documentState.moduleData[item.id]?.checked).length;
       const open = jobReportOpen.has(section.id) || picked > 0;
@@ -408,7 +408,7 @@ function renderJobReport() {
         <div class="erp-job-module-tools"><button type="button" class="erp-link" data-job-select-all="${attr(section.id)}">Select all</button><button type="button" class="erp-link" data-job-clear="${attr(section.id)}">Clear</button></div>
         <div class="erp-job-screens">${section.items.map(item => `<div class="erp-job-screen${jobReportItems.has(item.id) ? ' selected' : ''}" data-job-text="${attr(item.text.toLowerCase())}"><label><input type="checkbox" data-job-report-item="${attr(item.id)}" ${jobReportItems.has(item.id) ? 'checked' : ''}><span>${esc(item.text)}</span>${documentState.moduleData[item.id]?.checked ? '<em class="erp-job-tag">In project</em>' : ''}</label>${jobReportItems.has(item.id) ? `<textarea data-job-report-comment="${attr(item.id)}" placeholder="Optional short comment for this screen…">${esc(jobReportComments.get(item.id) || '')}</textarea>` : ''}</div>`).join('')}</div>
       </details>`;
-    }).join('')}</div>`;
+    }).join('')}</div></div>`;
   }).join('');
   const selectedCount = jobReportSections().reduce((total, section) => total + section.items.length, 0);
   return `<div class="erp-card erp-job-report-card">
