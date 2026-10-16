@@ -201,14 +201,18 @@
   // Per-client shortcut inside the expanded client card.
   let loadTried = false;
   function clientTasksHtml(id) {
-    const mine = tasks.filter(t => t.client_id === id && t.status !== 'Done')
-      .sort((a, b) => (a.due_date || '9999').localeCompare(b.due_date || '9999'));
-    const rows = mine.slice(0, 6).map(t => `<div class="ctk-row" data-ctk-id="${t.id}">
-      <button class="tk-circle" data-ctk-done style="--c:${STATUS_COLOR[t.status]}" title="Mark done"></button>
-      <span class="ctk-title">${esc(t.title)}</span><span class="ctk-meta">${dueLabel(t)}</span>${avatar(t.assignee)}</div>`).join('');
-    return `<div class="ctk-head"><span class="xlbl" style="margin:0">✓ Tasks <b>${mine.length}</b> open</span>
-      <a data-ctk-open="${id}">Open all →</a></div>${rows}
-      ${mine.length > 6 ? `<div class="tk-muted">+${mine.length - 6} more…</div>` : ''}
+    const all = tasks.filter(t => t.client_id === id)
+      .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    const open = all.filter(t => t.status !== 'Done').length;
+    const rows = all.slice(0, 3).map(t => {
+      const done = t.status === 'Done';
+      return `<div class="ctk-row${done ? ' done' : ''}" data-ctk-id="${t.id}">
+      <button class="tk-circle" data-ctk-toggle style="--c:${STATUS_COLOR[t.status]}" title="${done ? 'Reopen' : 'Mark done'}">${done ? '✓' : ''}</button>
+      <span class="ctk-title">${esc(t.title)}</span><span class="tk-pill" style="background:${STATUS_COLOR[t.status]}">${t.status}</span><span class="ctk-meta">${dueLabel(t)}</span>${avatar(t.assignee)}</div>`;
+    }).join('');
+    return `<div class="ctk-head"><span class="xlbl" style="margin:0">✓ Latest tasks <b>${open}</b> open</span>
+      <a data-ctk-open="${id}">${all.length > 3 ? `See all ${all.length}` : 'Open tasks'} →</a></div>
+      ${rows || '<div class="tk-muted" style="padding:2px 0">No tasks yet.</div>'}
       <input class="ctk-add" data-ctk-add="${id}" placeholder="＋ Add task and press Enter" list="tk-presets" autocomplete="off">`;
   }
   window.fillClientTasks = async function () {
@@ -224,8 +228,8 @@
   document.addEventListener('click', e => {
     const open = e.target.closest('[data-ctk-open]');
     if (open) { e.stopPropagation(); return window.openTasksView({ client: Number(open.dataset.ctkOpen) }); }
-    const done = e.target.closest('[data-ctk-done]');
-    if (done) { e.stopPropagation(); patch(done.closest('[data-ctk-id]').dataset.ctkId, { status: 'Done' }); }
+    const tog = e.target.closest('[data-ctk-toggle]');
+    if (tog) { e.stopPropagation(); const id = tog.closest('[data-ctk-id]').dataset.ctkId; const x = tasks.find(y => y.id === id); patch(id, { status: x.status === 'Done' ? 'To do' : 'Done' }); }
   });
   document.addEventListener('keydown', async e => {
     const inp = e.target.closest && e.target.closest('[data-ctk-add]');

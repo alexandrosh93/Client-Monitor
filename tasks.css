@@ -54,3 +54,4 @@
 .ctk-meta{font-size:11px}
 .ctk-add{width:100%;margin-top:6px;font:12px 'DM Sans',sans-serif;padding:5px 8px;border:1px dashed var(--border-md);border-radius:8px;background:transparent;color:var(--text);outline:none;box-sizing:border-box}
 .ctk-add:focus{border-style:solid;border-color:var(--accent)}
+.ctk-row.done .ctk-title{text-decoration:line-through;color:var(--text-3)}.ctk-row .tk-pill{font-size:9px;padding:2px 7px}
