@@ -188,6 +188,7 @@
     goClients=function(){closeWorkspace();return origClients.apply(this,arguments);};
     goToClient=function(){closeWorkspace();return origClient.apply(this,arguments);};
   }
+  window.closeAiSuggestionsView=function(){closeWorkspace();};
   function closeWorkspace() {
     var page=document.getElementById(PANEL_ID);
     if(page)page.classList.remove('active');
@@ -198,6 +199,7 @@
     if(document.getElementById('login-screen') &&
        !document.getElementById('login-screen').classList.contains('hidden'))return;
     if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();
+    if(window.closeTasksView)window.closeTasksView();
     document.getElementById('home-view').classList.remove('active');
     document.querySelector('.control-bar').style.display='none';
     document.getElementById('list').style.display='none';

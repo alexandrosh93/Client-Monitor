@@ -187,6 +187,7 @@
   async function open(opts = {}) {
     const el = root(); if (!el) return;
     window.closeClientWorkspaceView && window.closeClientWorkspaceView();
+    window.closeAiSuggestionsView && window.closeAiSuggestionsView();
     document.getElementById('home-view')?.classList.remove('active');
     const cb = document.querySelector('.control-bar'); if (cb) cb.style.display = 'none';
     ['list', 'dashboard'].forEach(i => { const n = document.getElementById(i); if (n) n.style.display = 'none'; });
