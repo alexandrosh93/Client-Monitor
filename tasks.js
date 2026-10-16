@@ -29,9 +29,9 @@
     const before = { ...t };
     Object.assign(t, fields, { updated_at: new Date().toISOString() });
     if ('status' in fields) t.completed_at = fields.status === 'Done' ? new Date().toISOString() : null;
-    render();
+    render(); window.fillClientTasks && window.fillClientTasks();
     const { error } = await sb().from('tasks').update({ ...fields, updated_at: t.updated_at, completed_at: t.completed_at }).eq('id', id);
-    if (error) { Object.assign(t, before); render(); api().toast('Save failed'); }
+    if (error) { Object.assign(t, before); render(); window.fillClientTasks(); api().toast('Save failed'); }
     else if ('status' in fields) api().audit('Edit', clientName(t.client_id), `Task "${t.title}": ${before.status} → ${fields.status}`);
   }
 
@@ -192,6 +192,47 @@
   };
   window.openTasksView = open;
 
+  // Per-client shortcut inside the expanded client card.
+  let loadTried = false;
+  function clientTasksHtml(id) {
+    const mine = tasks.filter(t => t.client_id === id && t.status !== 'Done')
+      .sort((a, b) => (a.due_date || '9999').localeCompare(b.due_date || '9999'));
+    const rows = mine.slice(0, 6).map(t => `<div class="ctk-row" data-ctk-id="${t.id}">
+      <button class="tk-circle" data-ctk-done style="--c:${STATUS_COLOR[t.status]}" title="Mark done"></button>
+      <span class="ctk-title">${esc(t.title)}</span><span class="ctk-meta">${dueLabel(t)}</span>${avatar(t.assignee)}</div>`).join('');
+    return `<div class="ctk-head"><span class="xlbl" style="margin:0">✓ Tasks <b>${mine.length}</b> open</span>
+      <a data-ctk-open="${id}">Open all →</a></div>${rows}
+      ${mine.length > 6 ? `<div class="tk-muted">+${mine.length - 6} more…</div>` : ''}
+      <input class="ctk-add" data-ctk-add="${id}" placeholder="＋ Add task and press Enter" list="tk-presets" autocomplete="off">`;
+  }
+  window.fillClientTasks = async function () {
+    const hosts = document.querySelectorAll('[data-ctk]'); if (!hosts.length) return;
+    if (!loaded && !loadTried) { loadTried = true; await load(); }
+    if (!loaded) return;
+    document.querySelectorAll('[data-ctk]').forEach(h => {
+      const keep = h.querySelector('.ctk-add')?.value;
+      h.innerHTML = clientTasksHtml(Number(h.dataset.ctk));
+      if (keep) h.querySelector('.ctk-add').value = keep;
+    });
+  };
+  document.addEventListener('click', e => {
+    const open = e.target.closest('[data-ctk-open]');
+    if (open) { e.stopPropagation(); return window.openTasksView({ client: Number(open.dataset.ctkOpen) }); }
+    const done = e.target.closest('[data-ctk-done]');
+    if (done) { e.stopPropagation(); patch(done.closest('[data-ctk-id]').dataset.ctkId, { status: 'Done' }); }
+  });
+  document.addEventListener('keydown', async e => {
+    const inp = e.target.closest && e.target.closest('[data-ctk-add]');
+    if (!inp || e.key !== 'Enter') return;
+    e.preventDefault();
+    const title = inp.value.trim(); if (!title) return;
+    const clientId = Number(inp.dataset.ctkAdd);
+    const { data, error } = await sb().from('tasks').insert({ client_id: clientId, title, assignee: api().getCurrentUser(), created_by: api().getCurrentUser() }).select().single();
+    if (error) { api().toast('Could not add task'); return; }
+    tasks.push(data); inp.value = ''; render(); window.fillClientTasks();
+    api().audit('Create', clientName(clientId), `Task added: "${title}"`);
+  });
+
   // Home dashboard card: my open tasks that are overdue / due today.
   window.renderMyTasksCard = async function () {
     const host = document.getElementById('hv-mytasks'); if (!host) return;
@@ -208,6 +249,7 @@
   };
 
   document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('tk-presets')) document.body.insertAdjacentHTML('beforeend', `<datalist id="tk-presets">${PRESETS.map(p => `<option value="${esc(p)}">`).join('')}</datalist>`);
     const el = root(); if (!el) return;
     el.addEventListener('click', onClick);
     el.addEventListener('change', onChange);
