@@ -30,7 +30,7 @@
     const before = { ...t };
     Object.assign(t, fields, { updated_at: new Date().toISOString() });
     if ('status' in fields) t.completed_at = fields.status === 'Done' ? new Date().toISOString() : null;
-    render(); window.fillClientTasks && window.fillClientTasks(); window.renderMyTasksCard && window.renderMyTasksCard(); window.renderTeamTasksCard && window.renderTeamTasksCard();
+    render(); window.fillClientTasks && window.fillClientTasks(); window.renderMyTasksCard && window.renderMyTasksCard();
     const { error } = await sb().from('tasks').update({ ...fields, updated_at: t.updated_at, completed_at: t.completed_at }).eq('id', id);
     if (error) { Object.assign(t, before); render(); window.fillClientTasks(); api().toast('Save failed'); }
     else if ('status' in fields) api().audit('Edit', clientName(t.client_id), `Task "${t.title}": ${before.status} → ${fields.status}`);
@@ -255,34 +255,6 @@
         <button class="hv-card-link" onclick="openTasksView({})">All tasks →</button></div>
       ${rows || '<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No open tasks assigned to you. ✓</div>'}
       ${mine.length > 6 ? `<div class="tk-muted" style="padding:.35rem 0 0">+${mine.length - 6} more…</div>` : ''}</div>`;
-  };
-
-  // Home: open tasks per implementor (team workload on the task side).
-  window.renderTeamTasksCard = async function () {
-    const host = document.getElementById('hv-teamtasks'); if (!host) return;
-    if (!loaded) await load();
-    const open = tasks.filter(t => t.status !== 'Done');
-    const names = [...new Set([...people(), ...open.map(t => t.assignee).filter(Boolean)])];
-    const rows = names.map(n => {
-      const mine = open.filter(t => t.assignee === n);
-      const by = {}; STATUSES.slice(0, 3).forEach(s => by[s] = mine.filter(t => t.status === s).length);
-      const od = mine.filter(t => t.due_date && t.due_date < today()).length;
-      return { n, total: mine.length, by, od };
-    }).filter(r => r.total).sort((a, b) => b.total - a.total);
-    const unassigned = open.filter(t => !t.assignee).length;
-    const max = Math.max(...rows.map(r => r.total), unassigned, 1);
-    host.innerHTML = `<div class="hv-card" style="margin-bottom:1.25rem">
-      <div class="hv-card-hdr"><div><div class="hv-card-title">Team Tasks</div>
-        <div style="font-size:10px;color:var(--text-3);margin-top:2px">Open tasks per implementor · click a row to see them</div></div>
-        <button class="hv-card-link" onclick="openTasksView({})">All tasks →</button></div>
-      ${rows.length || unassigned ? rows.map(r => `<div class="hv-wl-row" onclick="openTasksView({assignee:'${esc(r.n)}'})">
-        <div class="hv-wl-av" style="background:${avColor(r.n)}">${esc(initials(r.n))}</div>
-        <div class="hv-wl-name">${esc(r.n)}</div>
-        <div class="hv-wl-track">${STATUSES.slice(0, 3).map(s => r.by[s] ? `<div class="hv-wl-seg" style="width:${r.by[s] / max * 100}%;background:${STATUS_COLOR[s]}" title="${s}: ${r.by[s]}"></div>` : '').join('')}</div>
-        <div class="hv-wl-count">${r.total}</div>${r.od ? `<div class="hv-wl-od">⚠ ${r.od}</div>` : ''}<div class="hv-wl-arrow">→</div></div>`).join('') +
-        (unassigned ? `<div class="hv-wl-row" onclick="openTasksView({assignee:''})"><div class="hv-wl-av" style="background:var(--text-3)">—</div><div class="hv-wl-name" style="color:var(--text-3)">Unassigned</div><div class="hv-wl-track"><div style="width:${unassigned / max * 100}%;background:var(--text-3);height:100%;opacity:.35"></div></div><div class="hv-wl-count" style="color:var(--text-3)">${unassigned}</div><div class="hv-wl-arrow">→</div></div>` : '')
-        : '<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No open tasks yet.</div>'}
-    </div>`;
   };
 
   document.addEventListener('DOMContentLoaded', () => {
