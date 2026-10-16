@@ -30,7 +30,7 @@
     const before = { ...t };
     Object.assign(t, fields, { updated_at: new Date().toISOString() });
     if ('status' in fields) t.completed_at = fields.status === 'Done' ? new Date().toISOString() : null;
-    render(); window.fillClientTasks && window.fillClientTasks();
+    render(); window.fillClientTasks && window.fillClientTasks(); window.renderMyTasksCard && window.renderMyTasksCard();
     const { error } = await sb().from('tasks').update({ ...fields, updated_at: t.updated_at, completed_at: t.completed_at }).eq('id', id);
     if (error) { Object.assign(t, before); render(); window.fillClientTasks(); api().toast('Save failed'); }
     else if ('status' in fields) api().audit('Edit', clientName(t.client_id), `Task "${t.title}": ${before.status} → ${fields.status}`);
@@ -240,14 +240,20 @@
     const host = document.getElementById('hv-mytasks'); if (!host) return;
     if (!loaded) await load();
     const me = api().getCurrentUser();
-    const mine = tasks.filter(t => t.assignee === me && t.status !== 'Done' && t.due_date && t.due_date <= today())
-      .sort((a, b) => a.due_date.localeCompare(b.due_date));
-    if (!mine.length) { host.innerHTML = ''; return; }
+    const mine = tasks.filter(t => t.assignee === me && t.status !== 'Done')
+      .sort((a, b) => (a.due_date || '9999').localeCompare(b.due_date || '9999'));
+    const overdue = mine.filter(t => t.due_date && t.due_date < today()).length;
+    const rows = mine.slice(0, 6).map(t => `<div class="hv-mt-row" data-ctk-id="${t.id}">
+      <span class="hv-mt-due">${dueLabel(t)}</span>
+      <span class="ctk-title" title="${esc(t.title)}">${esc(t.title)}</span>
+      ${t.client_id ? `<a class="tk-client" onclick="goToClient(${t.client_id})">${esc(clientName(t.client_id))}</a>` : '<span class="tk-client general">General</span>'}
+      <span class="tk-pick"><span class="tk-pill" style="background:${STATUS_COLOR[t.status]}">${t.status}</span><select data-ctk-status>${STATUSES.map(s => `<option${s === t.status ? ' selected' : ''}>${s}</option>`).join('')}</select></span></div>`).join('');
     host.innerHTML = `<div class="hv-card" style="margin-bottom:1.25rem;border-left:3px solid #3b6cc7">
-      <div class="hv-card-hdr"><div class="hv-card-title">✓ My Tasks Due</div><button class="hv-card-link" onclick="openTasksView({})">All tasks →</button></div>
-      <div class="hv-upcoming-list">${mine.slice(0, 8).map(t => `<div class="hv-event" onclick="openTasksView({client:${t.client_id || 'none'}})">
-        <div class="hv-event-date" style="color:${t.due_date < today() ? '#a32d2d' : '#856404'};font-weight:800">${t.due_date < today() ? 'Overdue' : 'Today'}</div>
-        <div class="hv-event-client">${esc(t.title)}</div><div class="hv-event-impl">${esc(clientName(t.client_id))}</div></div>`).join('')}</div></div>`;
+      <div class="hv-card-hdr"><div><div class="hv-card-title">✓ My Tasks</div>
+        <div style="font-size:10px;color:var(--text-3);margin-top:2px">${mine.length} open${overdue ? ` · <span class="tk-late">${overdue} overdue</span>` : ''}</div></div>
+        <button class="hv-card-link" onclick="openTasksView({})">All tasks →</button></div>
+      ${rows || '<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No open tasks assigned to you. ✓</div>'}
+      ${mine.length > 6 ? `<div class="tk-muted" style="padding:.35rem 0 0">+${mine.length - 6} more…</div>` : ''}</div>`;
   };
 
   document.addEventListener('DOMContentLoaded', () => {

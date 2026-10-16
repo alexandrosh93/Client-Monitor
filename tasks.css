@@ -59,3 +59,7 @@
 .ctk-row{gap:6px;padding:2px 0}.ctk-head{margin-bottom:2px}
 .ctk-row .tk-pill{font-size:8.5px;padding:2px 6px}.ctk-title{font-size:12px}
 .tk-client.general{background:transparent;border:1px dashed var(--border-md);color:var(--text-3);cursor:default}
+.hv-mt-row{display:grid;grid-template-columns:70px 1fr 150px 112px;gap:10px;align-items:center;padding:6px 2px;border-bottom:1px solid var(--border-sm)}
+.hv-mt-row:last-child{border-bottom:none}.hv-mt-due{font-size:12px}
+.hv-mt-row .tk-client{justify-self:start}
+@media(max-width:768px){.hv-mt-row{grid-template-columns:60px 1fr 100px}.hv-mt-row .tk-client{display:none}}
