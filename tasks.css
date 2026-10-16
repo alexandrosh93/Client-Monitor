@@ -45,3 +45,4 @@
   .tk-row{grid-template-columns:22px 1fr 24px}.tk-row>:not(:nth-child(-n+2)):not(.tk-x){display:none}.tk-x{opacity:1}
   .tk-board{grid-template-columns:1fr}
 }
+.tk-search{min-width:220px}.tk-add select[data-template]{max-width:150px}

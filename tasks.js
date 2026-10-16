@@ -11,7 +11,8 @@
   let tasks = [];
   let loaded = false;
   let mode = 'list';
-  let filter = { client: '', assignee: '', showDone: false };
+  let filter = { client: '', assignee: '', showDone: false, q: '' };
+  const PRESETS = ['Kickoff meeting', 'Collect client requirements', 'Install server / environment', 'Company & chart of accounts setup', 'Data migration', 'User training', 'UAT / testing with client', 'Go-live', 'Post go-live follow-up', 'VAT setup & test', 'Stock take', 'Support request'];
 
   const root = () => document.getElementById('tasks-view');
   const clientName = id => (api().getClients().find(c => c.id === id) || {}).name || '—';
@@ -37,7 +38,11 @@
   async function add(e) {
     e.preventDefault();
     const f = e.target;
-    const title = f.title.value.trim(), clientId = Number(f.client.value);
+    const title = f.title.value.trim();
+    const typed = f.client.value.trim().toLowerCase();
+    const match = api().getClients().filter(c => c.name.toLowerCase() === typed);
+    const clientId = match.length === 1 ? match[0].id : (typed ? 0 : (filter.client ? Number(filter.client) : 0));
+    if (typed && !clientId) { api().toast('Pick a client from the list'); return; }
     if (!title || !clientId) { api().toast('Task title and client are required'); return; }
     const row = { client_id: clientId, title, assignee: f.assignee.value, priority: f.priority.value, due_date: f.due.value || null, created_by: api().getCurrentUser() };
     const { data, error } = await sb().from('tasks').insert(row).select().single();
@@ -56,6 +61,7 @@
   const visible = () => tasks.filter(t =>
     (!filter.client || String(t.client_id) === filter.client) &&
     (!filter.assignee || t.assignee === filter.assignee) &&
+    (!filter.q || (t.title + ' ' + clientName(t.client_id)).toLowerCase().includes(filter.q.toLowerCase())) &&
     (filter.showDone || mode === 'board' || t.status !== 'Done'));
 
   const sel = (name, items, val, extra = '') => `<select ${extra} data-f="${name}">${items.map(i => `<option${i === val ? ' selected' : ''}>${esc(i)}</option>`).join('')}</select>`;
@@ -111,13 +117,17 @@
       <div class="tk-head"><div><div class="tk-h1">Tasks</div><div class="tk-muted">${open} open${overdue ? ` · <span class="tk-late">${overdue} overdue</span>` : ''}</div></div>
         <div class="tk-toggle"><button class="${mode === 'list' ? 'on' : ''}" data-mode="list">☰ List</button><button class="${mode === 'board' ? 'on' : ''}" data-mode="board">▥ Board</button></div></div>
       <div class="tk-filters">
+        <input class="tk-search" data-search placeholder="🔍 Search tasks or clients…" value="${esc(filter.q)}">
         <select data-filter="client"><option value="">All clients</option>${clients.map(c => `<option value="${c.id}"${String(c.id) === filter.client ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select>
         <select data-filter="assignee"><option value="">Everyone</option>${people().map(p => `<option${p === filter.assignee ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>
         <button class="tk-chip${filter.assignee === me ? ' on' : ''}" data-filter-me>Me</button>
         ${mode === 'list' ? `<label class="tk-muted"><input type="checkbox" data-filter-done ${filter.showDone ? 'checked' : ''}> Show done</label>` : ''}</div>
       <form class="tk-add" id="tk-add">
-        <input name="title" placeholder="＋ Add task — type a name and press Enter" autocomplete="off">
-        <select name="client"><option value="">Client…</option>${clients.map(c => `<option value="${c.id}"${String(c.id) === filter.client ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select>
+        <input name="title" list="tk-presets" placeholder="＋ Add task — type a name or pick a template" autocomplete="off">
+        <select data-template title="Predefined titles"><option value="">Templates…</option>${PRESETS.map(p => `<option>${esc(p)}</option>`).join('')}</select>
+        <datalist id="tk-presets">${PRESETS.map(p => `<option value="${esc(p)}">`).join('')}</datalist>
+        <input name="client" list="tk-clients" placeholder="Search client…" value="${esc(filter.client ? clientName(Number(filter.client)) : '')}" autocomplete="off">
+        <datalist id="tk-clients">${clients.map(c => `<option value="${esc(c.name)}">`).join('')}</datalist>
         <select name="assignee"><option value="">Unassigned</option>${people().map(p => `<option${p === me ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>
         <input type="date" name="due"><select name="priority">${PRIORITIES.map(p => `<option${p === 'Normal' ? ' selected' : ''}>${p}</option>`).join('')}</select>
         <button class="tk-btn">Add</button></form>
@@ -137,8 +147,14 @@
     else if (a === 'delete') remove(id);
     else if (a === 'toggle') { const t = tasks.find(x => x.id === id); patch(id, { status: t.status === 'Done' ? 'To do' : 'Done' }); }
   }
+  function onInput(e) {
+    if (!e.target.hasAttribute('data-search')) return;
+    filter.q = e.target.value; const pos = e.target.selectionStart; render();
+    const n = root().querySelector('[data-search]'); n.focus(); n.setSelectionRange(pos, pos);
+  }
   function onChange(e) {
     const t = e.target;
+    if (t.hasAttribute('data-template')) { const f = document.getElementById('tk-add'); if (t.value) { f.title.value = t.value; f.title.focus(); } t.value = ''; return; }
     if (t.dataset.filter) { filter[t.dataset.filter] = t.value; return render(); }
     if (t.hasAttribute('data-filter-done')) { filter.showDone = t.checked; return render(); }
     const row = t.closest('.tk-row'); if (!row || !t.dataset.act) return;
@@ -195,6 +211,7 @@
     const el = root(); if (!el) return;
     el.addEventListener('click', onClick);
     el.addEventListener('change', onChange);
+    el.addEventListener('input', onInput);
     el.addEventListener('submit', e => { if (e.target.id === 'tk-add') add(e); });
     bindDnD(el);
   });
