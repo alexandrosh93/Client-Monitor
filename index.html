@@ -855,6 +855,38 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 .pw-eye:hover{color:var(--text);background:var(--surface2)}
 .pw-eye .eye-off{display:none}
 .pw-eye.on .eye-on{display:none}.pw-eye.on .eye-off{display:block}
+
+/* ── Phone layout fixes ── */
+#sidemenu .sidemenu-brand-text>div{display:block!important}
+body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!important;align-items:flex-start!important}
+.fab{z-index:150}
+@media screen and (max-width:600px){
+  .hdr-brand .logo{font-size:15px!important}
+  .view-btn .vb-lbl{display:none!important}
+  .view-btn{padding:6px 8px!important}
+  #search{width:38px!important;padding:5px 9px!important;transition:width .2s ease}
+  #search:focus{width:150px!important}
+  header:has(#search:focus) .hdr-brand{display:none}
+  .stats-group{grid-template-columns:repeat(3,1fr)!important;gap:5px!important}
+  .stat{padding:.45rem .2rem!important}
+  .stat-l{display:block!important;font-size:10px!important}
+  .chevron{display:none!important}
+  .row-header{grid-template-columns:1fr auto auto!important}
+  .hv-banner-sub{display:block!important}
+  .hv-banner{padding:1.2rem 1.1rem!important;gap:.9rem!important}
+  .hv-avatar{width:44px!important;height:44px!important;font-size:15px!important}
+  .hv-greeting{font-size:19px!important}
+  .fab{width:56px;height:56px;padding:0!important;border-radius:50%!important;font-size:0!important;gap:0!important;justify-content:center;bottom:1.1rem!important;right:1.1rem!important}
+  .fab svg{width:22px;height:22px}
+  .dash-status-grid{display:grid!important;grid-template-columns:repeat(3,1fr);gap:6px}
+  .dash-status-pill{min-width:0!important}
+  #dashboard .dash-grid{grid-template-columns:1fr!important}
+  #dashboard .dash-card{grid-column:auto!important;min-width:0;overflow:hidden}
+  #dashboard .dash-grid{grid-template-columns:minmax(0,1fr)!important}
+  .dates-row{grid-template-columns:1fr 1fr!important}
+  .dates-row .mods-card{grid-column:1/-1}
+  .expand-panel>div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+}
 </style>
 </head>
 <body>
