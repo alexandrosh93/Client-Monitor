@@ -18,6 +18,8 @@ let saveQueued = false;
 let changeVersion = 0;
 let expandedNavGroup = 'workspace';
 let moduleViewFilter = '';
+let discoveryFilter = 'all';
+let discoverySearch = '';
 let workspaceActivityDate = '';
 let workspaceStatusFilter = '';
 let jobReportDate = '';
@@ -272,12 +274,7 @@ function hideStandardViews() {
 }
 
 function sectionGroups() {
-  const discovery = [];
-  for (const section of catalog.sections) {
-    if (section.id === 'training') discovery.push({ id: 'training-roles', title: section.title });
-    else discovery.push({ id: section.id, title: section.title });
-    if (section.id === 'scenarios') discovery.push({ id: 'requirements', title: '11. Requirements / Decisions Log' });
-  }
+  const discovery = [{ id: 'discovery', title: 'Browse topics' }, { id: 'training-roles', title: 'Training & roles' }, { id: 'requirements', title: 'Decisions & requirements' }];
   return [
     { id: 'workspace', title: 'Workspace', items: [{ id: 'overview', title: 'Overview' }, { id: 'job-report', title: 'Client Job Report' }, { id: 'users', title: 'Client Users' }] },
     { id: 'discovery', title: 'Discovery & Readiness', items: discovery },
@@ -291,7 +288,7 @@ function renderShell() {
   const moduleBadges = (client.modules || []).map(item => `<span class="erp-badge">${esc(item)}</span>`).join('');
   const nav = sectionGroups().map(group => {
     const open = expandedNavGroup === group.id;
-    const hasActive = group.items.some(item => item.id === activeSection);
+    const hasActive = group.items.some(item => item.id === activeSection) || (group.id === 'discovery' && catalog.sections.some(item => item.id === activeSection));
     return `<section class="erp-nav-section${hasActive ? ' has-active' : ''}">
       <button class="erp-nav-group" data-erp-group="${attr(group.id)}" aria-expanded="${open}">
         <span>${esc(group.title)}</span><span class="erp-nav-count">${group.items.length}</span><span class="erp-nav-chevron">›</span>
@@ -374,15 +371,46 @@ function renderOverview() {
   <div class="erp-card" style="margin-top:12px"><h3>Project history</h3>${documentState.changeHistory.length ? documentState.changeHistory.slice().reverse().slice(0, 12).map(item => `<div class="erp-question"><strong>${esc(item.date || item.savedAt || '')}</strong> · ${esc(item.phase || '')}<div class="erp-muted">${esc(item.consultant || '')}${item.progress !== undefined ? ` · ${esc(item.progress)}%` : ''}</div></div>`).join('') : '<div class="erp-muted">No saved history yet.</div>'}</div>`;
 }
 
+const discoveryTitle = section => section.title.replace(/^\d+(?:\.\d+)*\.?\s*/, '');
+const discoveryDone = (section, item) => section.checklist ? !!documentState.checks[item.id] : !!String(documentState.answers[item.id] || '').trim();
+const discoveryGroups = [
+  { title: 'Company & workflows', ids: ['company', 'current', 'sales', 'purchases', 'stock', 'items', 'customers', 'suppliers', 'accounting'] },
+  { title: 'Setup & preparation', ids: ['reports', 'integrations', 'migration', 'training', 'scenarios'] },
+  { title: 'Ready to launch', ids: ['golive', 'summary'] },
+];
+
+function discoveryTools(search = false) {
+  return `<div class="erp-discovery-tools">${search ? `<label class="erp-discovery-search">Search topics<input type="search" class="erp-input" data-discovery-search value="${attr(discoverySearch)}" placeholder="Find a topic or question…"></label>` : ''}<div class="erp-status-filters" aria-label="Completion filter">${[['all', 'All'], ['pending', 'To do'], ['done', 'Completed']].map(([value, label]) => `<button type="button" data-discovery-filter="${value}" aria-pressed="${discoveryFilter === value}" class="${discoveryFilter === value ? 'active' : ''}">${label}</button>`).join('')}</div></div>`;
+}
+
+function renderDiscovery() {
+  return `<div class="erp-card erp-discovery"><h2>Discovery & Readiness</h2><p class="erp-muted">Choose a topic. Work through it at your own pace.</p>${discoveryTools(true)}${discoveryGroups.map(group => `<section data-discovery-group><h3>${group.title}</h3><div class="erp-discovery-grid">${group.ids.map(id => {
+    const section = catalog.sections.find(item => item.id === id);
+    const done = section.questions.filter(item => discoveryDone(section, item)).length;
+    return `<button type="button" class="erp-topic" data-discovery-open="${id}" data-discovery-row data-done="${done === section.questions.length}" data-search="${attr([section.title, ...section.questions.map(item => item.text)].join(' ').toLocaleLowerCase())}"><span class="erp-topic-title">${esc(discoveryTitle(section))}</span><span class="erp-muted">${done} / ${section.questions.length} ${section.checklist ? 'completed' : 'answered'} <span aria-hidden="true">→</span></span><span class="erp-progress"><span style="width:${100 * done / section.questions.length}%"></span></span></button>`;
+  }).join('')}</div></section>`).join('')}<div class="erp-empty" data-discovery-empty hidden>No topics match. Try another search or show all.</div><div class="erp-discovery-links"><button class="erp-btn" data-discovery-open="training-roles">Training & roles →</button><button class="erp-btn" data-discovery-open="requirements">Decisions & requirements →</button></div></div>`;
+}
+
 function renderQuestions(section) {
-  const items = section.questions.map((item, index) => {
-    if (section.checklist) {
-      return `<div class="erp-question"><label class="erp-checkline"><input type="checkbox" data-check="${attr(item.id)}" ${documentState.checks[item.id] ? 'checked' : ''}><span class="erp-qtext">${index + 1}. ${esc(item.text)}</span></label><textarea class="erp-textarea" data-note="${attr(item.id)}" placeholder="Notes / special requirements…">${esc(documentState.notes[item.id] || '')}</textarea></div>`;
-    }
-    return `<div class="erp-question"><div class="erp-qtext">${index + 1}. ${esc(item.text)}</div><textarea class="erp-textarea" data-answer="${attr(item.id)}" placeholder="Answer / discovery notes…">${esc(documentState.answers[item.id] || '')}</textarea></div>`;
+  const items = section.questions.map(item => {
+    const done = discoveryDone(section, item);
+    const field = section.checklist ? 'note' : 'answer';
+    const value = section.checklist ? documentState.notes[item.id] : documentState.answers[item.id];
+    return `<details class="erp-discovery-question" data-discovery-row data-question-id="${attr(item.id)}" data-done="${done}"><summary><span class="erp-discovery-state" aria-label="${done ? 'Completed' : 'To do'}">${done ? '✓' : '○'}</span><span>${esc(item.text)}</span><span class="erp-discovery-chevron" aria-hidden="true">⌄</span></summary><div class="erp-discovery-answer">${section.checklist ? `<label class="erp-checkline"><input type="checkbox" data-check="${attr(item.id)}" ${done ? 'checked' : ''}> Completed</label>` : ''}<label>${section.checklist ? 'Notes (optional)' : 'Your answer'}<textarea class="erp-textarea" data-${field}="${attr(item.id)}" placeholder="${section.checklist ? 'Add a note…' : 'Write your answer…'}">${esc(value || '')}</textarea></label></div></details>`;
   }).join('');
-  const migration = section.id === 'migration' ? `<div class="erp-card"><h3>Migration details</h3><div class="erp-fields"><div class="erp-field"><label>Historical data decision</label><input class="erp-input" data-migration="history" value="${attr(documentState.migrationExtra.history)}"></div><div class="erp-field"><label>Freeze / final migration date</label><input type="date" class="erp-input" data-migration="freeze" value="${attr(documentState.migrationExtra.freeze)}"></div><div class="erp-field"><label>Data source / owner</label><textarea class="erp-textarea" data-migration="source">${esc(documentState.migrationExtra.source)}</textarea></div></div></div>` : '';
-  return `<div class="erp-card"><h2>${esc(section.title)}</h2><div class="erp-muted">${section.checklist ? 'Mark completed items and keep specific notes for each item.' : 'Record the discovery answer for each topic.'}</div>${items}</div>${migration}`;
+  const migration = section.id === 'migration' ? `<details class="erp-card"><summary>Migration details</summary><div class="erp-fields"><label class="erp-field">Historical data decision<input class="erp-input" data-migration="history" value="${attr(documentState.migrationExtra.history)}"></label><label class="erp-field">Freeze / final migration date<input type="date" class="erp-input" data-migration="freeze" value="${attr(documentState.migrationExtra.freeze)}"></label><label class="erp-field">Data source / owner<textarea class="erp-textarea" data-migration="source">${esc(documentState.migrationExtra.source)}</textarea></label></div></details>` : '';
+  return `<div class="erp-card erp-discovery"><button class="erp-back" data-discovery-open="discovery">← All topics</button><h2>${esc(discoveryTitle(section))}</h2><p class="erp-muted">${section.checklist ? 'Open an item to mark it complete or add a note.' : 'Open a question to view or add your answer.'} Changes save automatically.</p>${discoveryTools()}${items}<div class="erp-empty" data-discovery-empty hidden>No items in this view. Choose another filter.</div></div>${migration}`;
+}
+
+function filterDiscovery() {
+  const container = root.querySelector('.erp-discovery');
+  if (!container) return;
+  container.querySelectorAll('[data-discovery-row]').forEach(row => {
+    const done = row.dataset.done === 'true';
+    row.hidden = (discoveryFilter === 'pending' && done) || (discoveryFilter === 'done' && !done) || (row.dataset.search !== undefined && !row.dataset.search.includes(discoverySearch.trim().toLocaleLowerCase()));
+  });
+  container.querySelectorAll('[data-discovery-group]').forEach(group => { group.hidden = !group.querySelector('[data-discovery-row]:not([hidden])'); });
+  container.querySelector('[data-discovery-empty]').hidden = !!container.querySelector('[data-discovery-row]:not([hidden])');
 }
 
 function renderUsers() {
@@ -488,7 +516,8 @@ function renderMain() {
     bindContent();
     return;
   }
-  if (activeSection === 'overview') container.innerHTML = renderOverview();
+  if (activeSection === 'discovery') container.innerHTML = renderDiscovery();
+  else if (activeSection === 'overview') container.innerHTML = renderOverview();
   else if (activeSection === 'job-report') container.innerHTML = renderJobReport();
   else if (activeSection === 'users') container.innerHTML = renderUsers();
   else if (activeSection === 'training-roles') container.innerHTML = renderTrainingRoles();
@@ -520,6 +549,24 @@ function bindInputs(selector, callback) {
 
 function bindContent() {
   const container = root.querySelector('.erp-main') || root;
+  filterDiscovery();
+  container.querySelectorAll('[data-discovery-open]').forEach(button => button.addEventListener('click', () => {
+    activeSection = button.dataset.discoveryOpen; expandedNavGroup = 'discovery'; discoveryFilter = 'all'; renderShell();
+    root.querySelector('.erp-main').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
+  container.querySelector('[data-discovery-search]')?.addEventListener('input', event => { discoverySearch = event.target.value; filterDiscovery(); });
+  container.querySelectorAll('[data-discovery-filter]').forEach(button => button.addEventListener('click', () => {
+    discoveryFilter = button.dataset.discoveryFilter;
+    container.querySelectorAll('[data-discovery-filter]').forEach(item => { const active = item === button; item.classList.toggle('active', active); item.setAttribute('aria-pressed', String(active)); });
+    filterDiscovery();
+  }));
+  container.querySelectorAll('[data-discovery-row] textarea, [data-discovery-row] input').forEach(input => input.addEventListener('input', () => {
+    const row = input.closest('[data-discovery-row]');
+    const section = catalog.sections.find(item => item.id === activeSection);
+    const done = section.checklist ? row.querySelector('[data-check]').checked : !!row.querySelector('[data-answer]').value.trim();
+    row.dataset.done = String(done);
+    const state = row.querySelector('.erp-discovery-state'); state.textContent = done ? '✓' : '○'; state.setAttribute('aria-label', done ? 'Completed' : 'To do');
+  }));
   container.querySelector('[data-workspace-activity-date]')?.addEventListener('change', event => { workspaceActivityDate = event.currentTarget.value || localDate(); renderMain(); });
   container.querySelector('[data-job-report-date]')?.addEventListener('change', event => { jobReportDate = event.currentTarget.value || localDate(); });
   container.querySelectorAll('[data-job-report-item]').forEach(element => element.addEventListener('change', () => {
@@ -628,6 +675,7 @@ function bindShell() {
   });
   root.querySelector('[data-erp-back]')?.addEventListener('click', backToClients);
   root.querySelectorAll('[data-erp-group]').forEach(button => button.addEventListener('click', () => {
+    if (button.dataset.erpGroup === 'discovery') { activeSection = 'discovery'; expandedNavGroup = 'discovery'; discoveryFilter = 'all'; renderShell(); return; }
     expandedNavGroup = expandedNavGroup === button.dataset.erpGroup ? '' : button.dataset.erpGroup;
     root.querySelectorAll('[data-erp-group]').forEach(groupButton => groupButton.setAttribute('aria-expanded', String(groupButton.dataset.erpGroup === expandedNavGroup)));
     root.querySelectorAll('[data-erp-group-items]').forEach(items => { items.hidden = items.dataset.erpGroupItems !== expandedNavGroup; });
@@ -657,7 +705,7 @@ async function loadProject() {
     return;
   }
   documentState = normalizeProjectDocument(project.document);
-  activeSection = 'overview'; dirty = false; changeVersion = 0; renderShell();
+  activeSection = 'overview'; discoveryFilter = 'all'; discoverySearch = ''; dirty = false; changeVersion = 0; renderShell();
 }
 
 async function createProject() {
