@@ -23,7 +23,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="erp-discovery.css?v=merge-20261019">
 <link rel="stylesheet" href="tasks.css?v=12">
-<link rel="stylesheet" href="theme.css?v=1">
+<link rel="stylesheet" href="theme.css?v=3">
 <style>
 :root{
   --bg:#f4f6fb;
@@ -950,6 +950,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
     </div>
     <button id="refresh-btn" class="refresh-btn no-print" onclick="manualRefresh()" title="Refresh data from GitHub" style="display:none">↻</button>
     <input type="text" id="search" placeholder="Search…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--border-md);border-radius:99px;background:var(--surface2);color:var(--text);outline:none;width:190px;transition:border-color .2s,background .2s,box-shadow .2s" onfocus="this.style.borderColor='var(--accent)';this.style.background='var(--surface)'" onblur="this.style.borderColor='';this.style.background='var(--surface2)'">
+    <div id="hdr-avatar" aria-hidden="true"></div>
   </div>
 </header>
 <span id="hdr-user-badge" style="display:none"></span>
@@ -3243,9 +3244,9 @@ function renderHomeDashboard(){
   const mgrSet=[...new Set(clients.map(c=>c.mgr).filter(Boolean))].sort();
 
   // workload bars — non-completed statuses per implementor
-  const avPal=['#3b6cc7','#8b5cf6','#f59e0b','#10b981','#ec4899','#06b6d4','#ef4444','#6366f1','#0ea5e9','#84cc16'];
+  const avPal=['#0f6cbd','#8764b8','#ca5010','#107c10','#c239b3','#038387','#c50f1f','#4f6bed','#0078d4','#498205'];
   const wlOrder=['Active','Pending Follow-Up','Dormant','Not started'];
-  const wlColors={'Active':'#3b6cc7','Pending Follow-Up':'#8b5cf6','Dormant':'#f59e0b','Not started':'#9ca3af'};
+  const wlColors={'Active':'#0f6cbd','Pending Follow-Up':'#8764b8','Dormant':'#ca5010','Not started':'#a19f9d'};
   const implWl=implData.map((im,i)=>{
     const color=avPal[i%avPal.length];
     const mine=clients.filter(c=>c.implementor===im.name&&c.status!=='Completed');
@@ -3921,6 +3922,7 @@ async function onAuthed(user){
   document.getElementById('login-screen').classList.add('hidden');
   const sm=document.getElementById('sidemenu-user');
   document.getElementById('sidemenu-user-label').textContent=currentUser;
+  {const av=document.getElementById('hdr-avatar');if(av){const n=(currentFullName||currentUser||'').trim();av.textContent=n.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();av.title=n;}}
   sm.style.display='flex';
   if(isAdminUser){
     const btu=document.getElementById('btn-users');if(btu)btu.style.display='flex';
@@ -4049,7 +4051,7 @@ const _isRecoveryLink=/type=recovery/.test(location.hash)||/[?&]code=/.test(loca
 <script src="ai-suggestions.js?v=theme-20261019" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
 <script src="email-suggestions.js?v=pdf-client-name-20261013" defer></script>
-<script src="tasks.js?v=17" defer></script>
+<script src="tasks.js?v=18" defer></script>
 <script type="module" src="erp-discovery.js?v=merge-20261019"></script>
 </body>
 </html>
