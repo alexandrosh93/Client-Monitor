@@ -20,12 +20,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Client Monitor — A.V.PremierSoft</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script>try{var t=localStorage.getItem('cm-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
-<link rel="stylesheet" href="erp-discovery.css?v=merge-20261019">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="erp-discovery.css?v=restore-20261019">
 <link rel="stylesheet" href="tasks.css?v=12">
-<link rel="stylesheet" href="theme-mono.css?v=1">
-<!-- Alternative looks: theme-ledger.css, theme-google.css, theme-m365.css -->
 <style>
 :root{
   --bg:#f4f6fb;
@@ -798,6 +795,18 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 .client-row[data-status="Completed"]         { border-left: 3px solid #059669 }
 .client-row[data-status="Not started"]       { border-left: 3px solid #94a3b8 }
 .client-row[data-status="Pending Follow-Up"] { border-left: 3px solid #7c3aed }
+
+/* Side menu: black, monochrome icons */
+#sidemenu{background:#0f0f10!important;border-right:1px solid #1f1f22!important}
+#sidemenu .sidemenu-brand{background:#0f0f10!important;border-bottom:1px solid #1f1f22!important}
+#sidemenu #sidemenu-toggle{background:#26262a!important}
+#sidemenu .smenu-item{color:#c9c9cf}
+#sidemenu .smenu-item svg{stroke:currentColor!important}
+#sidemenu .smenu-item:hover{background:#1c1c1f!important;color:#fff!important;border-left-color:#fff!important}
+#sidemenu.minimized .smenu-item:hover{background:#1c1c1f!important}
+#sidemenu .smenu-section{color:#7c7c84!important}
+#sidemenu #sidemenu-user,#sidemenu .sidemenu-sync,#sidemenu .sidemenu-footer{border-color:#1f1f22!important;color:#a1a1aa!important}
+#sidemenu #sidemenu-user-label,#sidemenu #sync-label-side{color:#c9c9cf!important}
 </style>
 </head>
 <body>
@@ -951,9 +960,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
       <button class="view-btn" id="vbtn-tasks" onclick="openTasksView({client:''})" title="Tasks" aria-label="Tasks"><span class="vb-ico">✓</span><span class="vb-lbl">Tasks</span></button>
     </div>
     <button id="refresh-btn" class="refresh-btn no-print" onclick="manualRefresh()" title="Refresh data from GitHub" style="display:none">↻</button>
-    <input type="text" id="search" placeholder="Search…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--border-md);border-radius:99px;background:var(--surface2);color:var(--text);outline:none;width:190px;transition:border-color .2s,background .2s,box-shadow .2s" onfocus="this.style.borderColor='var(--accent)';this.style.background='var(--surface)'" onblur="this.style.borderColor='';this.style.background='var(--surface2)'">
-    <button id="theme-toggle" type="button" title="Light / dark" aria-label="Toggle light or dark theme" onclick="toggleTheme()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
-    <div id="hdr-avatar" aria-hidden="true"></div>
+    <input type="text" id="search" placeholder="🔍 Search…" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--border-md);border-radius:99px;background:var(--surface2);color:var(--text);outline:none;width:190px;transition:border-color .2s,background .2s,box-shadow .2s" onfocus="this.style.borderColor='var(--accent)';this.style.background='var(--surface)'" onblur="this.style.borderColor='';this.style.background='var(--surface2)'">
   </div>
 </header>
 <span id="hdr-user-badge" style="display:none"></span>
@@ -1009,7 +1016,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 <!-- Users Modal -->
 <div class="modal-bg" id="users-modal" onclick="bgClick(event,'users-modal')">
   <div class="modal" style="width:600px;max-width:96vw">
-    <h3>User management</h3>
+    <h3>👥 User Management</h3>
     <!-- List view -->
     <div id="um-list-view">
       <div id="um-user-table" style="min-height:60px;margin-bottom:1rem"></div>
@@ -1055,7 +1062,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 <!-- Change Password Modal -->
 <div class="modal-bg" id="chpwd-modal" onclick="bgClick(event,'chpwd-modal')">
   <div class="modal" style="width:340px">
-    <h3>Change password</h3>
+    <h3>🔑 Change Password</h3>
     <div id="chpwd-target-info" style="font-size:12px;color:var(--text-2);margin-bottom:.85rem">Change your password</div>
     <div class="mf"><label class="lbl">New password</label><input id="chpwd-new" type="password" placeholder="New password"></div>
     <div class="mf"><label class="lbl">Confirm password</label><input id="chpwd-confirm" type="password" placeholder="Confirm password"></div>
@@ -1070,7 +1077,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 <!-- Audit Trail Modal -->
 <div class="modal-bg" id="audit-modal" onclick="bgClick(event,'audit-modal')">
   <div class="modal modal-wide" style="max-width:760px">
-    <h3>Audit trail</h3>
+    <h3>📋 Audit Trail</h3>
     <div style="display:flex;gap:8px;margin-bottom:.85rem;flex-wrap:wrap;align-items:center">
       <select id="audit-f-user" onchange="renderAuditTable()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none">
         <option value="">All users</option>
@@ -1087,8 +1094,8 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
         <option>Restore</option>
       </select>
       <input id="audit-f-search" type="text" placeholder="Search…" oninput="renderAuditTable()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;flex:1;min-width:120px">
-      <button class="btn-outline" style="font-size:11px;padding:4px 10px" onclick="exportAuditCSV()">Export CSV</button>
-      <button class="btn-outline" style="font-size:11px;padding:4px 10px;color:#a32d2d;border-color:#f7c1c1" onclick="resetAuditTrail()">Reset</button>
+      <button class="btn-outline" style="font-size:11px;padding:4px 10px" onclick="exportAuditCSV()">⬇ CSV</button>
+      <button class="btn-outline" style="font-size:11px;padding:4px 10px;color:#a32d2d;border-color:#f7c1c1" onclick="resetAuditTrail()">🗑 Reset</button>
     </div>
     <div id="audit-table" style="max-height:420px;overflow-y:auto"></div>
     <div class="modal-btns"><button class="btn-cancel" onclick="closeModal('audit-modal')">Close</button></div>
@@ -1098,7 +1105,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 <!-- Manage Modules Modal -->
 <div class="modal-bg" id="mods-modal" onclick="bgClick(event,'mods-modal')">
   <div class="modal" style="width:340px">
-    <h3>Modules</h3>
+    <h3>⚙ Manage Modules</h3>
     <div id="mods-list" style="margin-bottom:.85rem"></div>
     <div style="display:flex;gap:8px">
       <input id="mod-input" type="text" placeholder="Module name" style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none" onkeydown="if(event.key==='Enter')addMod()">
@@ -1282,7 +1289,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 <!-- Implementors Modal -->
 <div class="modal-bg" id="impl-modal" onclick="bgClick(event,'impl-modal')">
   <div class="modal" style="width:480px;max-width:95vw">
-    <h3>Implementors</h3>
+    <h3>👤 Manage Implementors</h3>
     <div id="impl-list" style="margin-bottom:.85rem"></div>
     <div style="border-top:1px solid var(--border-md);padding-top:.85rem">
       <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.65rem">Add Implementor</div>
@@ -1302,7 +1309,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 <!-- VAT Report Modal -->
 <div class="modal-bg" id="vat-modal" onclick="bgClick(event,'vat-modal')">
   <div class="modal modal-wide">
-    <h3>VAT report</h3>
+    <h3>⚑ VAT Training Report</h3>
     <div id="vat-report-body"></div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal('vat-modal')">Close</button>
@@ -1314,7 +1321,7 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 <!-- Stock Take Report Modal -->
 <div class="modal-bg" id="stk-modal" onclick="bgClick(event,'stk-modal')">
   <div class="modal modal-wide">
-    <h3 id="stk-modal-title">Stock take report</h3>
+    <h3 id="stk-modal-title">📦 Stock Take Report</h3>
     <div id="stk-report-body"></div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal('stk-modal')">Close</button>
@@ -1629,7 +1636,7 @@ function updateBackupStatus(){
     const full=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
     el.textContent=full+' ('+ago+')';
     el.style.color=diffDays>=7?'#a32d2d':diffDays>=3?'#8a5a1a':'#1e3a6e';
-    if(gistEl)gistEl.textContent=type==='file'?'Manual file backup':'';
+    if(gistEl)gistEl.textContent=type==='file'?'📁 Manual file backup':'';
   }catch(e){el.textContent='Unknown';}
 }
 
@@ -2126,7 +2133,7 @@ function clientProgress(c){
 function buildRow(c){
   const sc='s-'+c.status.replace(/ /g,'-');
   const mods=ALL_MODS.filter(m=>c.modules.includes(m)).map(m=>`<span class="mod on">${m}</span>`).join('');
-  const contactLine=c.contact?`<span class="rh-contact">${c.contact}</span>`:'';
+  const contactLine=c.contact?`<span class="rh-contact">👤 ${c.contact}</span>`:'';
   const gradeOnRow=`<div class="rh-grade">${starsHtml(c.grade||0,12)}</div>`;
 
   // progress
@@ -2182,7 +2189,7 @@ function buildRow(c){
   return `<div class="client-row" data-id="${c.id}" data-status="${c.status}">
     <div class="row-header" onclick="toggle(${c.id})">
       <div class="rh-left">
-        <div class="rh-name" title="${c.comment||''}">${c.name}${contactLine?`<span class="rh-contact" style="font-size:11px;font-weight:400;color:var(--text-3);margin-left:8px">${c.contact}</span>`:''}${c.comment?`<span class="rh-note">· ${c.comment}</span>`:''}</div>
+        <div class="rh-name" title="${c.comment||''}">${c.name}${contactLine?`<span class="rh-contact" style="font-size:11px;font-weight:400;color:var(--text-3);margin-left:8px">👤 ${c.contact}</span>`:''}${c.comment?`<span class="rh-note">· ${c.comment}</span>`:''}</div>
         <div class="rh-sub-bar">${gradeOnRow}${progressBar}</div>
       </div>
       ${gradeOnRow}
@@ -2410,7 +2417,7 @@ function renderClogHtml(c){
       return`<div class="clog-entry"><input class="clog-edit-input" id="cedit-${c.id}-${idx}" value="${esc(e.text)}" onkeydown="if(event.key==='Enter')saveCommentEdit(${c.id},${idx});if(event.key==='Escape')cancelCommentEdit(${c.id},${idx})"><div class="clog-edit-acts"><button class="btn-save" onclick="saveCommentEdit(${c.id},${idx})">Save</button><button class="btn-cancel" onclick="cancelCommentEdit(${c.id},${idx})">Cancel</button></div></div>`;
     }
     if(isSystem){
-      return`<div class="clog-entry clog-system"><div class="clog-meta">${esc(who)}${who&&when?' · ':''}${when}</div><div class="clog-text">${esc(e.text)}</div></div>`;
+      return`<div class="clog-entry clog-system"><div class="clog-meta">⚙ ${esc(who)}${who&&when?' · ':''}${when}</div><div class="clog-text">${esc(e.text)}</div></div>`;
     }
     return`<div class="clog-entry"><div class="clog-meta"><span class="clog-actions"><button onclick="editComment(${c.id},${idx})" title="Edit">✎</button><button onclick="deleteComment(${c.id},${idx})" title="Delete">×</button></span>${esc(who)}${who&&when?' · ':''}${when}</div><div class="clog-text">${esc(e.text)}</div></div>`;
   }).join('');
@@ -2615,7 +2622,7 @@ function openVatReport(){
 
   // update modal title
   document.querySelector('#vat-modal h3').textContent=
-    implFilter?`VAT report — ${implFilter.join(', ')}`:'VAT report';
+    implFilter?`⚑ VAT Report — ${implFilter.join(', ')}`:'⚑ VAT Training Report';
 
   function nameCell(c){
     return `<td><input type="text" value="${c.name.replace(/"/g,'&quot;')}"
@@ -2954,7 +2961,7 @@ function openStkReport(){
   const showImpl=!implFilter;
 
   document.getElementById('stk-modal-title').textContent=
-    implFilter?`Stock take report — ${implFilter.join(', ')}`:'Stock take report';
+    implFilter?`📦 Stock Take Report — ${implFilter.join(', ')}`:'📦 Stock Take Report';
 
   function nameCell(c){
     return `<td><input type="text" value="${c.name.replace(/"/g,'&quot;')}"
@@ -3148,7 +3155,6 @@ function setView(v){
 }
 
 /* ── HOME VIEW ── */
-function toggleTheme(){const d=document.documentElement;const next=d.dataset.theme==='dark'?'light':'dark';d.dataset.theme=next;try{localStorage.setItem('cm-theme',next);}catch(e){}}
 function toggleSmenuGroup(id){const g=document.getElementById(id),b=document.getElementById(id+'-btn');if(!g)return;g.hidden=!g.hidden;if(b)b.setAttribute('aria-expanded',String(!g.hidden));}
 function goHome(){
   if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();if(window.closeTasksView)window.closeTasksView();
@@ -3248,9 +3254,9 @@ function renderHomeDashboard(){
   const mgrSet=[...new Set(clients.map(c=>c.mgr).filter(Boolean))].sort();
 
   // workload bars — non-completed statuses per implementor
-  const avPal=['#0072f5','#8e4ec6','#f5a524','#17a34a','#e5484d','#12a594','#d6409f','#6e56cf','#0090ff','#71717a'];
+  const avPal=['#3b6cc7','#8b5cf6','#f59e0b','#10b981','#ec4899','#06b6d4','#ef4444','#6366f1','#0ea5e9','#84cc16'];
   const wlOrder=['Active','Pending Follow-Up','Dormant','Not started'];
-  const wlColors={'Active':'#0072f5','Pending Follow-Up':'#8e4ec6','Dormant':'#f5a524','Not started':'#a1a1aa'};
+  const wlColors={'Active':'#3b6cc7','Pending Follow-Up':'#8b5cf6','Dormant':'#f59e0b','Not started':'#9ca3af'};
   const implWl=implData.map((im,i)=>{
     const color=avPal[i%avPal.length];
     const mine=clients.filter(c=>c.implementor===im.name&&c.status!=='Completed');
@@ -3281,8 +3287,8 @@ function renderHomeDashboard(){
   const myStatus=wlOrder.map(st=>({st,n:scope.filter(c=>c.status===st).length})).filter(x=>x.n);
   const myDone=scope.filter(c=>c.status==='Completed').length;
   const myCard=`<div class="hv-card" style="margin-bottom:1.25rem">
-    <div class="hv-card-hdr"><div><div class="hv-card-title">My clients</div>
-      <div style="font-size:10px;color:var(--text-3);margin-top:2px">${myImpl?'':'No implementor is linked to your account yet.'}</div></div>
+    <div class="hv-card-hdr"><div><div class="hv-card-title">My Clients</div>
+      <div style="font-size:10px;color:var(--text-3);margin-top:2px">${myImpl?'Click a status to see those clients':'No implementor is linked to your account yet.'}</div></div>
       ${myImpl?`<button class="hv-card-link" onclick="goMyClients()">View all →</button>`:''}</div>
     ${myStatus.length?myStatus.map(x=>`<div class="hv-wl-row" onclick="goClients({impl:'${esc(myImpl)}',status:'${x.st}'})">
       <div class="hv-wl-av" style="background:${wlColors[x.st]}">${x.n}</div><div class="hv-wl-name" style="min-width:130px">${x.st}</div>
@@ -3301,15 +3307,15 @@ function renderHomeDashboard(){
   });
   events.sort((a,b)=>a.date.localeCompare(b.date));
 
-  const evBadge={VAT:{bg:'#fff3cd',color:'#856404',lbl:'VAT'},STK:{bg:'#fef9c3',color:'#7a6500',lbl:'Stock take'},LIVE:{bg:'#d1fae5',color:'#065f46',lbl:'Go-live'}};
+  const evBadge={VAT:{bg:'#fff3cd',color:'#856404',lbl:'⚑ VAT'},STK:{bg:'#fef9c3',color:'#7a6500',lbl:'📦 STK'},LIVE:{bg:'#d1fae5',color:'#065f46',lbl:'🚀 Live'}};
 
   // smart banner subline
   const attention=vatOverdue+stkOverdue;
   const dueToday=scope.filter(c=>(c.vatDate&&!c.vatDone&&c.vatDate===todayISO)||(c.stkDate&&!c.stkDone&&c.stkDate===todayISO)||(c.liveDate&&c.liveDate===todayISO)).length;
   let subline;
-  if(attention) subline=`<b>${attention}</b> item${attention!==1?'s':''} need${attention===1?'s':''} attention${dueToday?` · <b>${dueToday}</b> due today`:''}`;
-  else if(dueToday) subline=`<b>${dueToday}</b> task${dueToday!==1?'s':''} due today`;
-  else if(events.length) subline=`<b>${events.length}</b> event${events.length!==1?'s':''} coming up in 14 days`;
+  if(attention) subline=`⚠️ <b>${attention}</b> item${attention!==1?'s':''} need${attention===1?'s':''} attention${dueToday?` · <b>${dueToday}</b> due today`:''}`;
+  else if(dueToday) subline=`<b>${dueToday}</b> task${dueToday!==1?'s':''} due today — you're on track ✓`;
+  else if(events.length) subline=`All caught up ✓ · <b>${events.length}</b> event${events.length!==1?'s':''} coming up in 14 days`;
   else subline='';
 
   function fmtD(iso){
@@ -3323,13 +3329,13 @@ function renderHomeDashboard(){
   <div class="hv-banner">
     <div class="hv-avatar">${initials||'?'}</div>
     <div class="hv-banner-text">
-      <div class="hv-greeting">${esc(currentFullName||currentUser)}</div>
+      <div class="hv-greeting">${greeting}, ${esc(currentFullName)}</div>
       <div class="hv-date">${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}</div>
       ${subline?`<div class="hv-banner-sub">${subline}</div>`:''}
     </div>
     <div class="hv-banner-actions">
-      <button class="hv-qbtn hv-qbtn-primary" onclick="openAdd()">Add client</button>
-      <button class="hv-qbtn" onclick="goClients({})">All clients</button>
+      <button class="hv-qbtn hv-qbtn-primary" onclick="openAdd()">＋ Add Client</button>
+      <button class="hv-qbtn" onclick="goClients({})">All Clients →</button>
     </div>
   </div>
 
@@ -3338,8 +3344,8 @@ function renderHomeDashboard(){
   <div class="hv-card" style="margin-bottom:1.25rem;border-left:3px solid #a32d2d">
     <div class="hv-card-hdr">
       <div>
-        <div class="hv-card-title">Follow-ups due</div>
-        
+        <div class="hv-card-title">📞 Follow-ups Due</div>
+        <div style="font-size:10px;color:var(--text-3);margin-top:2px">Click a client to open it</div>
       </div>
       <span style="font-size:11px;font-weight:700;color:#a32d2d">${followupsDue.length} client${followupsDue.length!==1?'s':''}</span>
     </div>
@@ -3348,7 +3354,7 @@ function renderHomeDashboard(){
         const isOverdue=c.nextFollowupDate<todayISO;
         return `<div class="hv-event" onclick="goToClient(${c.id})">
           <div class="hv-event-date" style="color:${isOverdue?'#a32d2d':'#856404'};font-weight:800">${isOverdue?'Overdue':'Today'}</div>
-          <div class="hv-event-badge" style="background:${isOverdue?'#fde2e2':'#fff3cd'};color:${isOverdue?'#a32d2d':'#856404'}">Follow-up</div>
+          <div class="hv-event-badge" style="background:${isOverdue?'#fde2e2':'#fff3cd'};color:${isOverdue?'#a32d2d':'#856404'}">📞 Follow-up</div>
           <div class="hv-event-client">${esc(c.name)}</div>
           <div class="hv-event-impl">${esc(c.implementor||'—')}</div>
         </div>`;
@@ -3360,8 +3366,8 @@ function renderHomeDashboard(){
   <div class="hv-card" style="margin-bottom:1.25rem">
     <div class="hv-card-hdr">
       <div>
-        <div class="hv-card-title">Implementor workload</div>
-        
+        <div class="hv-card-title">Implementor Workload</div>
+        <div style="font-size:10px;color:var(--text-3);margin-top:2px">Click a row to see all clients of that implementor</div>
       </div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         ${wlOrder.map(s=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:var(--text-3)"><span style="width:8px;height:8px;border-radius:2px;background:${wlColors[s]};display:inline-block"></span>${s}</span>`).join('')}
@@ -3383,7 +3389,7 @@ function renderHomeDashboard(){
           <div class="hv-wl-name">${esc(displayName)}${im.isMe?'<span class="hv-pc-you" style="margin-left:4px">you</span>':''}</div>
           <div class="hv-wl-track" style="animation-delay:${idx*0.07}s">${segs}</div>
           <div class="hv-wl-count">${im.active}</div>
-          ${im.overdue?`<div class="hv-wl-od">${im.overdue} overdue</div>`:''}
+          ${im.overdue?`<div class="hv-wl-od">⚠ ${im.overdue}</div>`:''}
           ${im.completed?`<div class="hv-wl-done">✓ ${im.completed}</div>`:''}
           <div class="hv-wl-arrow">→</div>
         </div>`;
@@ -3402,8 +3408,8 @@ function renderHomeDashboard(){
   <div class="hv-card" style="margin-bottom:1.25rem">
     <div class="hv-card-hdr">
       <div>
-        <div class="hv-card-title">Manager workload</div>
-        
+        <div class="hv-card-title">Manager Workload</div>
+        <div style="font-size:10px;color:var(--text-3);margin-top:2px">Click a row to see all clients of that manager</div>
       </div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         ${wlOrder.map(s=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:var(--text-3)"><span style="width:8px;height:8px;border-radius:2px;background:${wlColors[s]};display:inline-block"></span>${s}</span>`).join('')}
@@ -3424,7 +3430,7 @@ function renderHomeDashboard(){
           <div class="hv-wl-name">${esc(mg.m)}</div>
           <div class="hv-wl-track" style="animation-delay:${idx*0.07}s">${segs}</div>
           <div class="hv-wl-count">${mg.active}</div>
-          ${mg.overdue?`<div class="hv-wl-od">${mg.overdue} overdue</div>`:''}
+          ${mg.overdue?`<div class="hv-wl-od">⚠ ${mg.overdue}</div>`:''}
           ${mg.completed?`<div class="hv-wl-done">✓ ${mg.completed}</div>`:''}
           <div class="hv-wl-arrow">→</div>
         </div>`;
@@ -3435,7 +3441,7 @@ function renderHomeDashboard(){
 
   <div class="hv-card">
     <div class="hv-card-hdr">
-      <div class="hv-card-title">Upcoming (next 14 days)</div>
+      <div class="hv-card-title">Upcoming — next 14 days</div>
       ${events.length?`<button class="hv-card-link" onclick="openVatReport()">${events.length} event${events.length!==1?'s':''} →</button>`:''}
     </div>
     <div class="hv-upcoming-list">
@@ -3446,7 +3452,7 @@ function renderHomeDashboard(){
           <div class="hv-event-client">${esc(ev.client)}</div>
           <div class="hv-event-impl">${esc(ev.impl||'—')}</div>
         </div>`).join('')+(events.length>10?`<div style="font-size:12px;color:var(--text-3);padding:.4rem .5rem">+${events.length-10} more…</div>`:'')
-      :'<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No upcoming events in the next 14 days.</div>'}
+      :'<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No upcoming events in the next 14 days. ✓</div>'}
     </div>
   </div>`;
   if(window.renderMyTasksCard)window.renderMyTasksCard();
@@ -3525,8 +3531,8 @@ function renderDashboard(){
   // KPI CARD
   html+='<div class="dash-card"><div class="dash-card-title">Key numbers</div>'
     +'<div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap">'
-    +'<div><div class="dash-kpi" style="color:#1d4ed8">'+vatOverdue+'</div><div class="dash-kpi-sub">VAT overdue</div></div>'
-    +'<div><div class="dash-kpi" style="color:#7a6500">'+stkOverdue+'</div><div class="dash-kpi-sub">Stock take overdue</div></div>'
+    +'<div><div class="dash-kpi" style="color:#1d4ed8">'+vatOverdue+'</div><div class="dash-kpi-sub">⚑ VAT overdue</div></div>'
+    +'<div><div class="dash-kpi" style="color:#7a6500">'+stkOverdue+'</div><div class="dash-kpi-sub">📦 Stock Take overdue</div></div>'
     +'<div><div class="dash-kpi" style="color:#e8a020">'+avgGrade+'</div><div class="dash-kpi-sub">★ Avg grade</div></div>'
     +'<div><div class="dash-kpi">'+total+'</div><div class="dash-kpi-sub">Total clients</div></div>'
     +'</div></div>';
@@ -3568,7 +3574,7 @@ function renderDashboard(){
         +'<td style="padding:6px 8px;font-weight:500">'+c.name+'</td>'
         +'<td style="padding:6px 8px"><span class="rh-status s-'+c.status.replace(/ /g,'-')+'">'+c.status+'</span></td>'
         +'<td style="padding:6px 8px;color:var(--text-2)">'+(c.implementor||'—')+'</td>'
-        +'<td style="padding:6px 8px;font-weight:500;color:#1d4ed8">'+fmt(c.liveDate)+'</td>'
+        +'<td style="padding:6px 8px;font-weight:500;color:#1d4ed8">📅 '+fmt(c.liveDate)+'</td>'
         +'</tr>';
     });
     html+='</tbody></table>';
@@ -3925,8 +3931,7 @@ async function onAuthed(user){
   isAdminUser=role==='admin';
   document.getElementById('login-screen').classList.add('hidden');
   const sm=document.getElementById('sidemenu-user');
-  document.getElementById('sidemenu-user-label').textContent=currentUser;
-  {const av=document.getElementById('hdr-avatar');if(av){const n=(currentFullName||currentUser||'').trim();av.textContent=n.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();av.title=n;}}
+  document.getElementById('sidemenu-user-label').textContent='👤 '+currentUser;
   sm.style.display='flex';
   if(isAdminUser){
     const btu=document.getElementById('btn-users');if(btu)btu.style.display='flex';
@@ -4052,10 +4057,10 @@ const _isRecoveryLink=/type=recovery/.test(location.hash)||/[?&]code=/.test(loca
   document.getElementById('login-user').focus();
 })();
 </script>
-<script src="ai-suggestions.js?v=theme-20261019" defer></script>
+<script src="ai-suggestions.js?v=restore-20261019" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
 <script src="email-suggestions.js?v=pdf-client-name-20261013" defer></script>
-<script src="tasks.js?v=21" defer></script>
-<script type="module" src="erp-discovery.js?v=merge-20261019"></script>
+<script src="tasks.js?v=22" defer></script>
+<script type="module" src="erp-discovery.js?v=restore-20261019"></script>
 </body>
 </html>

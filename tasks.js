@@ -2,7 +2,7 @@
 (function () {
   const STATUSES = ['To do', 'In progress', 'Blocked', 'Done'];
   const PRIORITIES = ['Low', 'Normal', 'High', 'Urgent'];
-  const PRIO_COLOR = { Low: '#a1a1aa', Normal: '#71717a', High: '#f5a524', Urgent: '#e5484d' };
+  const PRIO_COLOR = { Low: '#9ca3af', Normal: '#3b6cc7', High: '#f59e0b', Urgent: '#dc2626' };
   const api = () => window.clientMonitorApi;
   const sb = () => api().getSupabase();
   const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -74,11 +74,11 @@
     if (!t.due_date) return '<span class="tk-muted">No date</span>';
     const late = t.status !== 'Done' && t.due_date < today();
     const dt = new Date(t.due_date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-    return `<span class="${late ? 'tk-late' : t.due_date === today() ? 'tk-today' : ''}">${dt}</span>`;
+    return `<span class="${late ? 'tk-late' : t.due_date === today() ? 'tk-today' : ''}">${late ? '⚠ ' : ''}${dt}</span>`;
   }
 
-  const STATUS_COLOR = { 'To do': '#a1a1aa', 'In progress': '#0072f5', 'Blocked': '#e5484d', 'Done': '#17a34a' };
-  const AV = ['#0072f5', '#8e4ec6', '#f5a524', '#17a34a', '#e5484d', '#12a594', '#d6409f', '#6e56cf'];
+  const STATUS_COLOR = { 'To do': '#9ca3af', 'In progress': '#3b6cc7', 'Blocked': '#dc2626', 'Done': '#10b981' };
+  const AV = ['#3b6cc7', '#8b5cf6', '#f59e0b', '#10b981', '#ec4899', '#06b6d4', '#ef4444', '#6366f1'];
   const collapsed = new Set();
   const initials = n => (n || '').split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
   const avColor = n => AV[[...(n || '')].reduce((a, c) => a + c.charCodeAt(0), 0) % AV.length];
@@ -159,13 +159,13 @@
       <div class="tk-head"><div><div class="tk-h1">Tasks</div><div class="tk-muted">${open} open${overdue ? ` · <span class="tk-late">${overdue} overdue</span>` : ''}</div></div>
         <div class="tk-toggle"><button class="${mode === 'list' ? 'on' : ''}" data-mode="list">☰ List</button><button class="${mode === 'board' ? 'on' : ''}" data-mode="board">▥ Board</button><button class="${mode === 'calendar' ? 'on' : ''}" data-mode="calendar">▦ Calendar</button></div></div>
       <div class="tk-filters">
-        <input class="tk-search" data-search placeholder="Search tasks or clients…" value="${esc(filter.q)}">
-        <input data-filter-client list="tk-clients" placeholder="Filter by client…" value="${esc(filter.client ? (filter.client === 'none' ? GENERAL : clientName(Number(filter.client))) : '')}" autocomplete="off">
+        <input class="tk-search" data-search placeholder="🔍 Search tasks or clients…" value="${esc(filter.q)}">
+        <input data-filter-client list="tk-clients" placeholder="🔍 Filter by client…" value="${esc(filter.client ? (filter.client === 'none' ? GENERAL : clientName(Number(filter.client))) : '')}" autocomplete="off">
         <select data-filter="assignee"><option value="">Everyone</option>${people().map(p => `<option${p === filter.assignee ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>
         <button class="tk-chip${filter.assignee === me ? ' on' : ''}" data-filter-me>Me</button>
         ${mode === 'list' ? `<label class="tk-muted"><input type="checkbox" data-filter-done ${filter.showDone ? 'checked' : ''}> Show done</label>` : ''}</div>
       <form class="tk-add" id="tk-add">
-        <input name="title" list="tk-presets" placeholder="New task" autocomplete="off">
+        <input name="title" list="tk-presets" placeholder="＋ Add task — type a name or pick a template" autocomplete="off">
         <select data-template title="Predefined titles"><option value="">Templates…</option>${PRESETS.map(p => `<option>${esc(p)}</option>`).join('')}</select>
         <datalist id="tk-presets">${PRESETS.map(p => `<option value="${esc(p)}">`).join('')}</datalist>
         <input name="client" list="tk-clients" placeholder="Client (empty = General task)" value="${esc(filter.client ? (filter.client === 'none' ? GENERAL : clientName(Number(filter.client))) : '')}" autocomplete="off">
@@ -260,7 +260,7 @@
     const rows = all.slice(0, 3).map(t => `<div class="ctk-row${t.status === 'Done' ? ' done' : ''}" data-ctk-id="${t.id}">
       <span class="ctk-title" title="${esc(t.title)}">${esc(t.title)}</span><span class="ctk-meta">${dueLabel(t)}</span>
       <span class="tk-pick"><span class="tk-pill" style="background:${STATUS_COLOR[t.status]}">${t.status}</span><select data-ctk-status>${STATUSES.map(s => `<option${s === t.status ? ' selected' : ''}>${s}</option>`).join('')}</select></span></div>`).join('');
-    return `<div class="ctk-head"><span class="xlbl" style="margin:0">Tasks · ${open} open</span>
+    return `<div class="ctk-head"><span class="xlbl" style="margin:0">✓ Tasks · ${open} open</span>
       <a data-ctk-open="${id}">${all.length > 3 ? `All ${all.length}` : 'Open'} →</a></div>
       ${rows || '<div class="tk-muted">No tasks yet.</div>'}`;
   }
@@ -296,11 +296,11 @@
       <span class="ctk-title" title="${esc(t.title)}">${esc(t.title)}</span>
       ${t.client_id ? `<a class="tk-client" onclick="goToClient(${t.client_id})">${esc(clientName(t.client_id))}</a>` : '<span class="tk-client general">General</span>'}
       <span class="tk-pick"><span class="tk-pill" style="background:${STATUS_COLOR[t.status]}">${t.status}</span><select data-ctk-status>${STATUSES.map(s => `<option${s === t.status ? ' selected' : ''}>${s}</option>`).join('')}</select></span></div>`).join('');
-    host.innerHTML = `<div class="hv-card" style="margin-bottom:1.25rem;">
-      <div class="hv-card-hdr"><div><div class="hv-card-title">My tasks</div>
+    host.innerHTML = `<div class="hv-card" style="margin-bottom:1.25rem;border-left:3px solid #3b6cc7">
+      <div class="hv-card-hdr"><div><div class="hv-card-title">✓ My Tasks</div>
         <div style="font-size:10px;color:var(--text-3);margin-top:2px">${mine.length} open${overdue ? ` · <span class="tk-late">${overdue} overdue</span>` : ''}</div></div>
         <button class="hv-card-link" onclick="openTasksView({})">All tasks →</button></div>
-      ${rows || '<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No open tasks assigned to you.</div>'}
+      ${rows || '<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No open tasks assigned to you. ✓</div>'}
       ${mine.length > 6 ? `<div class="tk-muted" style="padding:.35rem 0 0">+${mine.length - 6} more…</div>` : ''}</div>`;
   };
 
