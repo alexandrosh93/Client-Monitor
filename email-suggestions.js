@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var helpers = import('./email-leads.mjs?v=pdf-client-name-20261013');
+  var helpers = import('./email-leads.mjs?v=grouped-20261019');
   var outlook;
   var rows = [], ignored = new Set(), owner = '', mailbox = '', busy = false, abort;
   var root = document.getElementById('ai-email-workspace');
@@ -68,32 +68,47 @@
     '<div class="ai-actions"><button class="ai-btn" id="email-import">Import reviewed findings</button><button class="ai-btn" id="email-export">Export findings</button></div></details></div>' +
     '<div id="email-candidates"></div>';
   var style = document.createElement('style');
-  style.textContent = '.email-label{display:block;font-size:12px;font-weight:600;margin-top:12px}.email-input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid var(--border-md);border-radius:7px;background:var(--surface);color:var(--text)}#ai-email-workspace code{overflow-wrap:anywhere}#ai-email-workspace button:disabled{opacity:.5;cursor:default}.email-source{font-size:12px;overflow-wrap:anywhere;margin:8px 0}.email-review-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(140px,.7fr) minmax(190px,1fr);gap:10px;align-items:end}.email-candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}.email-candidate{padding:0!important;overflow:hidden;margin:0!important}.email-candidate[open]{grid-column:1/-1}.email-candidate-summary{list-style:none;display:grid;grid-template-columns:minmax(150px,1fr) auto 20px;gap:9px;align-items:center;padding:12px 13px;cursor:pointer}.email-candidate-summary::-webkit-details-marker{display:none}.email-candidate-summary:hover{background:var(--surface2)}.email-candidate-title{min-width:0}.email-candidate-title b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-title small{display:block;margin-top:3px;color:var(--text-3);font-size:10px;font-weight:500}.email-candidate-contact{grid-column:1/3;font-size:10px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-chevron{grid-column:3;grid-row:1/3;font-size:21px;color:var(--text-3);transform:rotate(90deg);transition:transform .15s ease}.email-candidate[open] .email-candidate-chevron{transform:rotate(-90deg)}.email-candidate-details{border-top:1px solid var(--border-md);padding:13px 15px 15px;background:linear-gradient(180deg,var(--surface2),var(--surface))}.email-order{border-top:1px solid var(--border-md);padding-top:12px;margin-top:12px;font-size:13px;overflow-wrap:anywhere}.email-order-table{width:100%;font-size:12px;border-collapse:collapse}.email-order-table th,.email-order-table td{padding:6px;text-align:left;border-bottom:1px solid var(--border-md)}.email-evidence{white-space:pre-wrap;font-size:12px}.email-pdf-input{display:block;margin:8px 0;max-width:100%}@media(max-width:1050px){.email-candidate-grid{grid-template-columns:1fr}.email-candidate[open]{grid-column:auto}}@media(max-width:720px){.email-review-fields{grid-template-columns:1fr}.email-candidate-summary{grid-template-columns:minmax(0,1fr) 20px}.email-candidate-summary>.ai-pill,.email-candidate-contact{grid-column:1;justify-self:start}.email-candidate-chevron{grid-column:2;grid-row:1/4}}';
+  style.textContent = '.email-label{display:block;font-size:12px;font-weight:600;margin-top:12px}.email-input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid var(--border-md);border-radius:7px;background:var(--surface);color:var(--text)}#ai-email-workspace code{overflow-wrap:anywhere}#ai-email-workspace button:disabled{opacity:.5;cursor:default}.email-source{font-size:12px;overflow-wrap:anywhere;margin:8px 0}.email-review-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(140px,.7fr) minmax(190px,1fr);gap:10px;align-items:end}.email-candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}.email-candidate{padding:0!important;overflow:hidden;margin:0!important}.email-candidate[open]{grid-column:1/-1}.email-candidate-summary{list-style:none;display:grid;grid-template-columns:minmax(150px,1fr) auto 20px;gap:9px;align-items:center;padding:12px 13px;cursor:pointer}.email-candidate-summary::-webkit-details-marker{display:none}.email-candidate-summary:hover{background:var(--surface2)}.email-candidate-title{min-width:0}.email-candidate-title b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-title small{display:block;margin-top:3px;color:var(--text-3);font-size:10px;font-weight:500}.email-candidate-contact{grid-column:1/3;font-size:10px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-chevron{grid-column:3;grid-row:1/3;font-size:21px;color:var(--text-3);transform:rotate(90deg);transition:transform .15s ease}.email-candidate[open] .email-candidate-chevron{transform:rotate(-90deg)}.email-candidate-details{border-top:1px solid var(--border-md);padding:13px 15px 15px;background:linear-gradient(180deg,var(--surface2),var(--surface))}.email-order{border-top:1px solid var(--border-md);padding-top:12px;margin-top:12px;font-size:13px;overflow-wrap:anywhere}.email-order-table{width:100%;font-size:12px;border-collapse:collapse}.email-order-table th,.email-order-table td{padding:6px;text-align:left;border-bottom:1px solid var(--border-md)}.email-evidence{white-space:pre-wrap;font-size:12px}.email-pdf-input{display:block;margin:8px 0;max-width:100%}.email-group-title{font-size:14px;font-weight:700;margin:18px 0 6px}.email-mods{font-size:13px;margin:0 0 10px;padding:8px 10px;background:var(--surface2);border-radius:8px}.email-sources{margin:0 0 8px;padding-left:18px;font-size:12px}.email-sources li{margin:3px 0}.email-count{background:#fff3cd;color:#856404;justify-self:start;grid-column:2;grid-row:2}@media(max-width:1050px){.email-candidate-grid{grid-template-columns:1fr}.email-candidate[open]{grid-column:auto}}@media(max-width:720px){.email-review-fields{grid-template-columns:1fr}.email-candidate-summary{grid-template-columns:minmax(0,1fr) 20px}.email-candidate-summary>.ai-pill,.email-candidate-contact{grid-column:1;justify-self:start}.email-candidate-chevron{grid-column:2;grid-row:1/4}}';
   document.head.appendChild(style);
   var date = new Date(); date.setDate(date.getDate() - 90);
   document.getElementById('email-since').value = date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
   document.getElementById('email-redirect').textContent = new URL('./outlook-redirect.html', location.href).href;
   connectionText(); setBusy(false);
 
+  var groupsByKey = new Map();
+  function groupCard(g, h) {
+    var row = g.rows[0], i = rows.indexOf(row);
+    var order = softwareOrders(row)[0] || g.orders.find(o => o.kind === 'software_order') || {};
+    var contact = [order.client_number ? 'ID ' + order.client_number : '', order.email || ''].filter(Boolean).join(' · ');
+    var emails = g.rows.length > 1 ? '<span class="ai-pill email-count">' + g.rows.length + ' emails</span>' : '';
+    var modulesLine = g.existing
+      ? '<p class="email-mods"><b>Already a client.</b> Current modules: ' + esc((g.existing.modules || []).join(', ') || 'none') + '. ' +
+        (g.newModules.length ? 'This order adds: <b>' + esc(g.newModules.join(', ')) + '</b>.' : 'No new modules detected in the order — check the products below.') + '</p>'
+      : (g.modules.length ? '<p class="email-mods">Modules on the order: <b>' + esc(g.modules.join(', ')) + '</b></p>' : '');
+    var sources = g.rows.map(r => '<li><a href="' + esc(r.source_url) + '" target="_blank" rel="noopener noreferrer">' + esc(r.source_subject) + ' ↗</a> <span class="ai-muted">· ' + esc(r.source_sender) + ' · ' + esc(new Date(r.source_date).toLocaleDateString('en-GB')) + '</span></li>').join('');
+    return '<details class="ai-card email-candidate"><summary class="email-candidate-summary"><span class="email-candidate-title"><b>' + esc(g.name) + '</b><small>' + esc(row.source_sender) + ' · ' + esc(new Date(row.source_date).toLocaleDateString('en-GB')) + '</small></span><span class="ai-pill">' + (g.existing ? 'Existing client' : 'New client') + '</span>' + emails + '<span class="email-candidate-contact">' + esc(g.existing && g.newModules.length ? '+ ' + g.newModules.join(', ') : (contact || 'Open for details')) + '</span><span class="email-candidate-chevron">›</span></summary><div class="email-candidate-details">' +
+      modulesLine +
+      '<p class="ai-muted">' + esc(row.reason) + '</p><p style="font-size:13px;margin:10px 0">' + esc(row.next_action) + '</p>' +
+      '<p class="ai-muted">' + esc(row.evidence_scope) + '</p>' +
+      '<p class="email-label" style="margin-bottom:4px">Source email' + (g.rows.length > 1 ? 's' : '') + '</p><ul class="email-sources">' + sources + '</ul>' +
+      g.orders.map(orderHtml).join('') +
+      (g.existing ? '' : '<div class="email-review-fields"><label class="email-label">Confirm company name<input class="email-input" id="email-name-' + i + '" maxlength="200" value="' + esc(row.client_name) + '"></label><label class="email-label">Client ID<input class="email-input" id="email-client-code-' + i + '" maxlength="100" value="' + esc(order.client_number || '') + '"></label><label class="email-label">Client email<input class="email-input" type="email" id="email-client-email-' + i + '" value="' + esc(order.email || '') + '" placeholder="client@company.com"></label></div>') +
+      '<div class="ai-actions">' +
+      (g.existing && g.newModules.length ? '<button class="ai-btn ai-btn-primary" data-email-add-mods="' + esc(g.key) + '">Add ' + esc(g.newModules.join(', ')) + ' to client</button>' : '') +
+      '<button class="ai-btn' + (g.existing && g.newModules.length ? '' : ' ai-btn-primary') + '" data-email-open="' + i + '">' + (g.existing ? 'View existing client' : 'Review new client form') + '</button>' +
+      '<button class="ai-btn" data-email-dismiss-group="' + esc(g.key) + '">Dismiss</button></div>' +
+      '<label class="email-label">Read a Software Order PDF saved from this email<input class="email-pdf-input" type="file" data-email-pdf="' + i + '" accept=".pdf,application/pdf"></label></div></details>';
+  }
   async function render() {
     var h = await helpers;
     var visible = rows.filter(row => !ignored.has(h.leadKey(row)) && !onlyAdditionalOrders(row) && softwareOrders(row).some(order => order.company_name && !h.isOwnCompanyName(order.company_name)));
-    document.getElementById('email-candidates').innerHTML = '<p class="ai-muted" style="margin:12px 0">' + visible.length + ' email candidate(s) to review</p><div class="email-candidate-grid">' + visible.map(row => {
-      var i = rows.indexOf(row);
-      var existing = clients.find(c => h.normalName(c.name) === h.normalName(row.client_name));
-      var order = softwareOrders(row)[0] || {};
-      var contact = [order.client_number ? 'ID ' + order.client_number : '', order.email || ''].filter(Boolean).join(' · ');
-      return '<details class="ai-card email-candidate"><summary class="email-candidate-summary"><span class="email-candidate-title"><b>' + esc(row.client_name) + '</b><small>' + esc(row.source_sender) + ' · ' + esc(new Date(row.source_date).toLocaleDateString('en-GB')) + '</small></span><span class="ai-pill">' + esc(row.classification) + '</span><span class="email-candidate-contact">' + esc(contact || 'Open for details') + '</span><span class="email-candidate-chevron">›</span></summary><div class="email-candidate-details">' +
-        '<p class="email-source">' + esc(row.source_subject) + '</p>' +
-        '<p class="ai-muted">' + esc(row.reason) + '</p><p style="font-size:13px;margin:10px 0">' + esc(row.next_action) + '</p>' +
-        '<p class="ai-muted">' + esc(row.evidence_scope) + '</p>' +
-        (row.orders || []).map(orderHtml).join('') +
-        (existing ? '<p class="ai-muted">An exact matching client already exists. Review that record.</p>' : '<div class="email-review-fields"><label class="email-label">Confirm company name<input class="email-input" id="email-name-' + i + '" maxlength="200" value="' + esc(row.client_name) + '"></label><label class="email-label">Client ID<input class="email-input" id="email-client-code-' + i + '" maxlength="100" value="' + esc(order.client_number || '') + '"></label><label class="email-label">Client email<input class="email-input" type="email" id="email-client-email-' + i + '" value="' + esc(order.email || '') + '" placeholder="client@company.com"></label></div>') +
-        '<div class="ai-actions"><a class="ai-btn" href="' + esc(row.source_url) + '" target="_blank" rel="noopener noreferrer">Open source email ↗</a>' +
-        '<button class="ai-btn ai-btn-primary" data-email-open="' + i + '">' + (existing ? 'View existing client' : 'Review new client form') + '</button>' +
-        '<button class="ai-btn" data-email-dismiss="' + i + '">Dismiss</button></div>' +
-        '<label class="email-label">Read a Software Order PDF saved from this email<input class="email-pdf-input" type="file" data-email-pdf="' + i + '" accept=".pdf,application/pdf"></label></div></details>';
-    }).join('') + '</div>';
+    var groups = h.groupLeads(visible, clients);
+    groupsByKey = new Map(groups.map(g => [g.key, g]));
+    var existing = groups.filter(g => g.existing), fresh = groups.filter(g => !g.existing);
+    var section = (title, note, list) => list.length ? '<h3 class="email-group-title">' + title + ' <span class="ai-muted">(' + list.length + ')</span></h3><p class="ai-muted" style="margin:-4px 0 10px">' + note + '</p><div class="email-candidate-grid">' + list.map(g => groupCard(g, h)).join('') + '</div>' : '';
+    document.getElementById('email-candidates').innerHTML = '<p class="ai-muted" style="margin:12px 0">' + groups.length + ' compan' + (groups.length === 1 ? 'y' : 'ies') + ' to review' + (visible.length > groups.length ? ' (' + visible.length + ' emails combined)' : '') + '</p>' +
+      section('New clients', 'Companies that are not in Client Monitor yet.', fresh) +
+      section('Existing clients — new order', 'Already in Client Monitor; the order may add modules.', existing);
     setBusy(busy);
   }
   window.addEventListener('cm-ai-open', async function () {
@@ -203,12 +218,20 @@
     finally { abort = null; setBusy(false); }
   });
   root.addEventListener('click', async function (event) {
-    var btn = event.target.closest('button[data-email-open],button[data-email-dismiss]');
+    var btn = event.target.closest('button[data-email-open],button[data-email-dismiss-group],button[data-email-add-mods]');
     if (!btn || busy || !signedIn()) return;
     var h = await helpers;
-    if (btn.hasAttribute('data-email-dismiss')) {
-      var dismissed = rows[Number(btn.dataset.emailDismiss)]; if (!dismissed) return;
-      ignored.add(h.leadKey(dismissed)); save(); await render(); return;
+    if (btn.hasAttribute('data-email-dismiss-group')) {
+      var group = groupsByKey.get(btn.dataset.emailDismissGroup); if (!group) return;
+      group.rows.forEach(r => ignored.add(h.leadKey(r))); save(); await render(); return;
+    }
+    if (btn.hasAttribute('data-email-add-mods')) {
+      var g = groupsByKey.get(btn.dataset.emailAddMods); if (!g || !g.existing) return;
+      var live = clients.find(c => c.id === g.existing.id); if (!live) return;
+      var added = g.newModules.filter(m => !(live.modules || []).includes(m));
+      added.forEach(m => tModFld(live.id, m, true));
+      message(added.length ? 'Added ' + added.join(', ') + ' to ' + live.name + '.' : 'Those modules are already on the client.');
+      await render(); return;
     }
     var index = Number(btn.dataset.emailOpen), row = rows[index]; if (!row) return;
     var name = (document.getElementById('email-name-' + index)?.value || row.client_name).trim();

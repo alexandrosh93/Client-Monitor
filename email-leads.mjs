@@ -107,3 +107,37 @@ export function candidateFromMessage(message, allowedSenders) {
     evidence_scope: 'Rule-based match using subject and preview. No AI analysis or attachment review.',
   });
 }
+
+// Module names suggested by the products on Software Orders (same rules as the new-client form).
+export function modulesFromOrders(orders) {
+  const text = (orders || []).flatMap(o => o.products || []).map(p => p.description || '').join(' ').toLowerCase();
+  const found = [];
+  if (/payroll/.test(text)) found.push('Payroll');
+  if (/accounting/.test(text)) found.push('Accounting');
+  if (/stock|inventory/.test(text)) found.push('Stock');
+  if (/mobile/.test(text)) found.push('Mobile Application');
+  return found;
+}
+
+// One review card per company: emails about the same client are combined, and each group says
+// whether the company is already a client (matched by exact name or by the order's client number).
+export function groupLeads(rows, clients) {
+  const groups = new Map();
+  for (const row of rows) {
+    const orders = (row.orders || []).filter(o => o.kind === 'software_order');
+    const number = orders.map(o => cleanText(o.client_number, 100)).find(Boolean) || '';
+    const byName = (clients || []).find(c => normalName(c.name) === normalName(row.client_name));
+    const byNumber = number ? (clients || []).find(c => cleanText(c.clientCode, 100) && cleanText(c.clientCode, 100) === number) : null;
+    const existing = byName || byNumber || null;
+    const key = existing ? 'client:' + existing.id : 'name:' + normalName(row.client_name);
+    if (!groups.has(key)) groups.set(key, { key, name: existing ? existing.name : row.client_name, existing, rows: [] });
+    groups.get(key).rows.push(row);
+  }
+  return [...groups.values()].map(g => {
+    g.rows.sort((a, b) => Date.parse(b.source_date) - Date.parse(a.source_date));
+    g.orders = mergeOrders([], g.rows.flatMap(r => r.orders || []));
+    g.modules = modulesFromOrders(g.orders.filter(o => o.kind === 'software_order'));
+    g.newModules = g.existing ? g.modules.filter(m => !(g.existing.modules || []).includes(m)) : g.modules;
+    return g;
+  }).sort((a, b) => Date.parse(b.rows[0].source_date) - Date.parse(a.rows[0].source_date));
+}

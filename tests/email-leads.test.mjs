@@ -51,3 +51,22 @@ test('known sales senders map to the correct client manager', () => {
   assert.equal(managerFromSender('vakis@premiersoft.com.cy'),'VT');
   assert.equal(managerFromSender('someone@example.com'),'');
 });
+
+test('leads for the same company are combined into one group', async () => {
+  const { groupLeads } = await import('../email-leads.mjs');
+  const row = (name, date, subject) => ({ client_name: name, source_date: date, source_subject: subject, source_sender: 'vakis@premiersoft.com.cy', orders: [] });
+  const groups = groupLeads([row('Acme Ltd', '2026-10-01T10:00:00Z', 'Order 1'), row('ACME LTD.', '2026-10-05T10:00:00Z', 'Order 2'), row('Beta Ltd', '2026-10-03T10:00:00Z', 'Order 3')], []);
+  assert.equal(groups.length, 2);
+  assert.equal(groups[0].rows.length, 2);
+  assert.equal(groups[0].rows[0].source_subject, 'Order 2');
+  assert.equal(groups[0].existing, null);
+});
+
+test('existing clients are recognised by name or client number and only new modules are proposed', async () => {
+  const { groupLeads } = await import('../email-leads.mjs');
+  const clients = [{ id: 7, name: 'Kyprou Pharma Ltd', clientCode: 'C123', modules: ['Accounting'] }];
+  const order = { kind: 'software_order', client_number: 'C123', company_name: 'Kyprou Pharma', order_number: 'SO-1', products: [{ description: 'Stock Control' }, { description: 'Accounting' }] };
+  const groups = groupLeads([{ client_name: 'Kyprou Pharma', source_date: '2026-10-05T10:00:00Z', source_subject: 'Order', source_sender: 'a@b.com', orders: [order] }], clients);
+  assert.equal(groups[0].existing.id, 7);
+  assert.deepEqual(groups[0].newModules, ['Stock']);
+});

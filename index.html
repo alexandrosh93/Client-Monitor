@@ -879,6 +879,9 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
   .fab{width:56px;height:56px;padding:0!important;border-radius:50%!important;font-size:0!important;gap:0!important;justify-content:center;bottom:1.1rem!important;right:1.1rem!important}
   .fab svg{width:22px;height:22px}
   main{padding-bottom:88px!important}
+  .expand-panel .xactions{flex-direction:column!important;align-items:stretch!important;gap:12px}
+  .expand-panel .xactions>div:first-child input[type=range]{max-width:none!important}
+  .expand-panel .xactions>div:last-child{justify-content:space-between}
   .dash-status-grid{display:grid!important;grid-template-columns:repeat(3,1fr);gap:6px}
   .dash-status-pill{min-width:0!important}
   #dashboard .dash-grid{grid-template-columns:1fr!important}
@@ -4167,7 +4170,7 @@ const _isRecoveryLink=/type=recovery/.test(location.hash)||/[?&]code=/.test(loca
 </script>
 <script src="ai-suggestions.js?v=restore-20261019" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
-<script src="email-suggestions.js?v=pdf-client-name-20261013" defer></script>
+<script src="email-suggestions.js?v=grouped-20261019" defer></script>
 <script src="tasks.js?v=23" defer></script>
 <script type="module" src="erp-discovery.js?v=mobile-20261019"></script>
 </body>
