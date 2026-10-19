@@ -20,10 +20,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Client Monitor — A.V.PremierSoft</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="erp-discovery.css?v=merge-20261019">
 <link rel="stylesheet" href="tasks.css?v=12">
-<link rel="stylesheet" href="theme.css?v=3">
+<link rel="stylesheet" href="theme-google.css?v=1">
+<!-- Alternative look: theme-m365.css -->
 <style>
 :root{
   --bg:#f4f6fb;
@@ -3244,9 +3245,9 @@ function renderHomeDashboard(){
   const mgrSet=[...new Set(clients.map(c=>c.mgr).filter(Boolean))].sort();
 
   // workload bars — non-completed statuses per implementor
-  const avPal=['#0f6cbd','#8764b8','#ca5010','#107c10','#c239b3','#038387','#c50f1f','#4f6bed','#0078d4','#498205'];
+  const avPal=['#0b57d0','#8430ce','#e37400','#146c2e','#b80672','#00796b','#b3261e','#5e5ce6','#0277bd','#558b2f'];
   const wlOrder=['Active','Pending Follow-Up','Dormant','Not started'];
-  const wlColors={'Active':'#0f6cbd','Pending Follow-Up':'#8764b8','Dormant':'#ca5010','Not started':'#a19f9d'};
+  const wlColors={'Active':'#0b57d0','Pending Follow-Up':'#8430ce','Dormant':'#e37400','Not started':'#c4c7c5'};
   const implWl=implData.map((im,i)=>{
     const color=avPal[i%avPal.length];
     const mine=clients.filter(c=>c.implementor===im.name&&c.status!=='Completed');
@@ -4051,7 +4052,7 @@ const _isRecoveryLink=/type=recovery/.test(location.hash)||/[?&]code=/.test(loca
 <script src="ai-suggestions.js?v=theme-20261019" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
 <script src="email-suggestions.js?v=pdf-client-name-20261013" defer></script>
-<script src="tasks.js?v=18" defer></script>
+<script src="tasks.js?v=19" defer></script>
 <script type="module" src="erp-discovery.js?v=merge-20261019"></script>
 </body>
 </html>
