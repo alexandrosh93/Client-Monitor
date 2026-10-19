@@ -47,7 +47,7 @@ header .logo span,.hdr-brand .logo span{-webkit-text-fill-color:var(--text-3)!im
 /* ── Buttons: pills ── */
 .btn-primary,.login-btn,.tk-btn,.hv-qbtn.hv-qbtn-primary,.clog-add button{background:var(--primary)!important;background-image:none!important;color:#fff!important;border:none!important;border-radius:20px!important;box-shadow:none!important;font-weight:500!important;padding-left:20px!important;padding-right:20px!important}
 .btn-primary:hover,.login-btn:hover,.tk-btn:hover,.hv-qbtn.hv-qbtn-primary:hover,.clog-add button:hover{background:var(--primary-hover)!important;box-shadow:var(--shadow-md)!important;opacity:1!important;transform:none!important}
-.btn-outline,.btn-cancel,.btn-expand,.hv-qbtn,.dd-btn,.tk-chip,.tk-toggle button{background:transparent!important;border:1px solid var(--outline)!important;color:var(--primary)!important;border-radius:20px!important;font-weight:500}
+.btn-outline,.btn-cancel,.btn-expand,.hv-qbtn,.dd-btn,.tk-chip{background:transparent!important;border:1px solid var(--outline)!important;color:var(--primary)!important;border-radius:20px!important;font-weight:500}
 .dd-btn{color:var(--text-2)!important;border-radius:8px!important;border-color:var(--outline)!important}
 .btn-outline:hover,.btn-cancel:hover,.btn-expand:hover,.hv-qbtn:hover,.dd-btn:hover,.tk-chip:hover{background:rgba(11,87,208,.08)!important}
 .tk-chip.on,.tk-toggle button.on{background:var(--sec-container)!important;border-color:var(--sec-container)!important;color:var(--on-sec-container)!important}
@@ -128,4 +128,25 @@ a,.hv-card-link,.erp-link{color:var(--primary)!important}
 .cal-grid{border-radius:16px!important}
 .cal-cell.today .cal-num{background:var(--primary);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;margin-left:auto}
 .cal-cell.today{outline:none!important}
+}
+
+/* small screens: keep the app bar compact (search shrinks, avatar hidden) */
+@media screen and (max-width:768px){
+  #search{width:110px!important;height:34px!important;font-size:12px!important;padding:0 10px!important}
+  #hdr-avatar{display:none!important}
+  header{min-height:0!important}
+  .view-btn{height:30px!important;padding:4px 7px!important}
+  header .logo,.hdr-brand .logo,header .logo span,.hdr-brand .logo span{font-size:15px!important}
+  .hv-greeting{font-size:22px!important}
+}
+/* Tasks view switcher: one outlined group, not separate bordered buttons */
+.tk-toggle{border:1px solid var(--border-md)!important;border-radius:20px!important;overflow:hidden}
+.tk-toggle button{border:none!important;border-radius:0!important}
+.tk-toggle button+button{border-left:1px solid var(--border-md)!important}
+@media screen and (max-width:480px){
+  header .logo,.hdr-brand .logo{font-size:14px!important}
+  .view-btn{padding:4px 6px!important}
+  .view-btn .vb-ico{width:14px!important;font-size:13px!important}
+  #search{width:70px!important;padding:0 8px!important}
+  .hdr-menu-btn{width:36px!important;height:36px!important}
 }
