@@ -3206,6 +3206,7 @@ function setView(v){
 
 /* ── HOME VIEW ── */
 function toggleSmenuGroup(id){const g=document.getElementById(id),b=document.getElementById(id+'-btn');if(!g)return;g.hidden=!g.hidden;if(b)b.setAttribute('aria-expanded',String(!g.hidden));}
+function localISO(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function goHome(){
   if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();if(window.closeTasksView)window.closeTasksView();
   document.getElementById('home-view').classList.add('active');
@@ -3264,7 +3265,7 @@ function renderHomeDashboard(){
   const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
   const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const todayISO=now.toISOString().slice(0,10);
+  const todayISO=localISO(now);
   const initials=currentUser.split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);
 
   // who is looking: managers/admin see the whole picture, everyone else only their own clients
@@ -3348,7 +3349,7 @@ function renderHomeDashboard(){
 
   // upcoming events
   const f14=new Date(now);f14.setDate(f14.getDate()+14);
-  const f14ISO=f14.toISOString().slice(0,10);
+  const f14ISO=localISO(f14);
   const events=[];
   scope.forEach(c=>{
     if(c.vatDate&&!c.vatDone&&c.vatDate>=todayISO&&c.vatDate<=f14ISO) events.push({date:c.vatDate,type:'VAT',client:c.name,impl:c.implementor||''});
@@ -3369,7 +3370,7 @@ function renderHomeDashboard(){
   else subline='';
 
   function fmtD(iso){
-    const d=new Date(iso+'T00:00:00'),diff=Math.round((d-now)/86400000);
+    const d=new Date(iso+'T00:00:00'),t0=new Date(now.getFullYear(),now.getMonth(),now.getDate()),diff=Math.round((d-t0)/86400000);
     if(diff===0)return'<span style="color:#a32d2d;font-weight:800">Today</span>';
     if(diff===1)return'<span style="color:#856404;font-weight:700">Tomorrow</span>';
     return `${days[d.getDay()].slice(0,3)} ${d.getDate()} ${months[d.getMonth()].slice(0,3)}`;
@@ -3517,7 +3518,7 @@ function renderDashboard(){
   const byStatus=function(s){return filtered.filter(function(c){return c.status===s;}).length;};
   const graded=filtered.filter(function(c){return c.grade>0;});
   const avgGrade=graded.length?(graded.reduce(function(a,c){return a+c.grade;},0)/graded.length).toFixed(1):'-';
-  const today=new Date().toISOString().slice(0,10);
+  const today=localISO();
   const vatOverdue=filtered.filter(function(c){return !c.vatDone&&c.vatDate&&c.vatDate<today;}).length;
   const stkOverdue=filtered.filter(function(c){return !c.stkDone&&c.stkDate&&c.stkDate<today;}).length;
 
@@ -3539,7 +3540,7 @@ function renderDashboard(){
   const maxGrade=Math.max.apply(null,gradeDist.map(function(x){return x.n;}).concat([1]));
 
   const soon=new Date();soon.setDate(soon.getDate()+60);
-  const soonStr=soon.toISOString().slice(0,10);
+  const soonStr=localISO(soon);
   const goingLive=filtered.filter(function(c){return c.liveDate&&c.liveDate>=today&&c.liveDate<=soonStr;})
     .sort(function(a,b){return a.liveDate.localeCompare(b.liveDate);}).slice(0,6);
 
