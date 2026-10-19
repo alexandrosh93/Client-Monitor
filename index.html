@@ -82,11 +82,11 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .stat.af .stat-n,.stat.af .stat-l{color:#1e3a6e}
 .stat-n{font-size:20px;font-weight:800;line-height:1;letter-spacing:-.5px}
 .stat-l{font-size:11px;color:var(--text-3);font-weight:500;letter-spacing:.02em}
-.stat-c-active{border-top:3px solid #3b6cc7}
-.stat-c-ns{border-top:3px solid #9ca3af}
-.stat-c-dormant{border-top:3px solid #f59e0b}
-.stat-c-pfu{border-top:3px solid #8b5cf6}
-.stat-c-completed{border-top:3px solid #6b7280}
+/* status tiles: a small coloured dot before the label instead of a coloured top line */
+.stat-c-active .stat-l::before,.stat-c-ns .stat-l::before,.stat-c-dormant .stat-l::before,.stat-c-pfu .stat-l::before,.stat-c-completed .stat-l::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.stat-c-active .stat-l::before{background:#3b6cc7}.stat-c-ns .stat-l::before{background:#9ca3af}
+.stat-c-dormant .stat-l::before{background:#f59e0b}.stat-c-pfu .stat-l::before{background:#8b5cf6}
+.stat-c-completed .stat-l::before{background:#059669}
 .sn-active{color:#1e3a6e}.sn-dormant{color:#8a5a1a}.sn-completed{color:#555}.sn-ns{color:#888}.sn-pfu{color:#5b21b6}
 /* TOOLBAR (inside filters-group) */
 .toolbar{display:contents}
@@ -115,6 +115,16 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 /* GROUPS */
 .group-label{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);padding:.5rem 1rem .3rem;margin-top:.7rem;border-bottom:2px solid var(--accent-bg);margin-bottom:.35rem}
 .group-label:first-child{margin-top:0}
+/* group headers in the client list carry the status colour */
+@media screen{
+.group-label[data-status]{font-size:11.5px;color:var(--gc,var(--text-2));display:flex;align-items:center;gap:7px;border-bottom:2px solid color-mix(in srgb,var(--gc,#94a3b8) 22%,transparent)}
+.group-label[data-status]::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--gc,#94a3b8);flex-shrink:0}
+.group-label[data-status="Active"]{--gc:#2f5fb3}
+.group-label[data-status="Dormant"]{--gc:#c46a05}
+.group-label[data-status="Completed"]{--gc:#047857}
+.group-label[data-status="Not started"]{--gc:#64748b}
+.group-label[data-status="Pending Follow-Up"]{--gc:#7c3aed}
+}
 /* CLIENT ROW */
 .client-row{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:6px;overflow:hidden;transition:all .2s;box-shadow:var(--shadow-sm);position:relative}
 .client-row:hover{border-color:rgba(30,58,110,.2);box-shadow:var(--shadow-md);transform:translateY(-1px)}
@@ -790,11 +800,6 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 .btn-sync:hover{opacity:.85}
 
 /* ── STATUS LEFT BORDER on client cards ── */
-.client-row[data-status="Active"]            { border-left: 3px solid #1e3a6e }
-.client-row[data-status="Dormant"]           { border-left: 3px solid #d97706 }
-.client-row[data-status="Completed"]         { border-left: 3px solid #059669 }
-.client-row[data-status="Not started"]       { border-left: 3px solid #94a3b8 }
-.client-row[data-status="Pending Follow-Up"] { border-left: 3px solid #7c3aed }
 
 /* Side menu: deep navy (brand colour), monochrome icons */
 #sidemenu{background:#152a52!important;border-right:1px solid #1e3a6e!important}
@@ -3341,7 +3346,7 @@ function renderHomeDashboard(){
 
   <div id="hv-mytasks"></div>
   ${followupsDue.length?`
-  <div class="hv-card" style="margin-bottom:1.25rem;border-left:3px solid #a32d2d">
+  <div class="hv-card" style="margin-bottom:1.25rem">
     <div class="hv-card-hdr">
       <div>
         <div class="hv-card-title">📞 Follow-ups Due</div>
@@ -4060,7 +4065,7 @@ const _isRecoveryLink=/type=recovery/.test(location.hash)||/[?&]code=/.test(loca
 <script src="ai-suggestions.js?v=restore-20261019" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
 <script src="email-suggestions.js?v=pdf-client-name-20261013" defer></script>
-<script src="tasks.js?v=22" defer></script>
+<script src="tasks.js?v=23" defer></script>
 <script type="module" src="erp-discovery.js?v=restore-20261019"></script>
 </body>
 </html>

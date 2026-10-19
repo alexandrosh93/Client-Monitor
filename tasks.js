@@ -99,7 +99,7 @@
   }
 
   function cardHtml(t) {
-    return `<div class="tk-card" draggable="true" data-id="${t.id}" style="border-left:3px solid ${PRIO_COLOR[t.priority]}">
+    return `<div class="tk-card" draggable="true" data-id="${t.id}">
       <div class="tk-card-title">${esc(t.title)}</div>
       <div class="tk-card-meta">${t.client_id ? `<a data-act="client">${esc(clientName(t.client_id))}</a>` : '<span class="tk-client general">General</span>'}</div>
       <div class="tk-card-foot">${flag(t.priority)}${dueLabel(t)}<span style="margin-left:auto">${avatar(t.assignee)}</span></div></div>`;
@@ -296,7 +296,7 @@
       <span class="ctk-title" title="${esc(t.title)}">${esc(t.title)}</span>
       ${t.client_id ? `<a class="tk-client" onclick="goToClient(${t.client_id})">${esc(clientName(t.client_id))}</a>` : '<span class="tk-client general">General</span>'}
       <span class="tk-pick"><span class="tk-pill" style="background:${STATUS_COLOR[t.status]}">${t.status}</span><select data-ctk-status>${STATUSES.map(s => `<option${s === t.status ? ' selected' : ''}>${s}</option>`).join('')}</select></span></div>`).join('');
-    host.innerHTML = `<div class="hv-card" style="margin-bottom:1.25rem;border-left:3px solid #3b6cc7">
+    host.innerHTML = `<div class="hv-card" style="margin-bottom:1.25rem">
       <div class="hv-card-hdr"><div><div class="hv-card-title">✓ My Tasks</div>
         <div style="font-size:10px;color:var(--text-3);margin-top:2px">${mine.length} open${overdue ? ` · <span class="tk-late">${overdue} overdue</span>` : ''}</div></div>
         <button class="hv-card-link" onclick="openTasksView({})">All tasks →</button></div>
