@@ -42,8 +42,17 @@
 .tk-card-title{font-size:13px;font-weight:600;margin-bottom:3px;word-break:break-word}
 .tk-card-foot{display:flex;gap:8px;align-items:center;justify-content:space-between;font-size:11px;margin-top:6px}
 @media(max-width:768px){
-  .tk-row{grid-template-columns:22px 1fr 24px}.tk-row>:not(:nth-child(-n+2)):not(.tk-x){display:none}.tk-x{opacity:1}
-  .tk-board{grid-template-columns:1fr}
+  /* two-line task rows: title on top, client · assignee · due · priority · status underneath */
+  .tk-row{grid-template-columns:22px minmax(0,1fr) auto auto auto auto;grid-template-areas:"c t t t t x" ". cl av d p s";row-gap:4px;column-gap:8px;padding:8px 6px}
+  .tk-row>:nth-child(1){grid-area:c}.tk-row>:nth-child(2){grid-area:t}.tk-row>:nth-child(3){grid-area:cl;max-width:120px}
+  .tk-row>:nth-child(4){grid-area:av}.tk-row>:nth-child(5){grid-area:d}.tk-row>:nth-child(6){grid-area:p}
+  .tk-row>:nth-child(7){grid-area:s;justify-self:end}.tk-row>:nth-child(8){grid-area:x}
+  .tk-row .tk-title{font-size:14px;padding:2px 4px}
+  .tk-x{opacity:1}
+  /* board: swipe between columns */
+  .tk-board{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+  .tk-col{flex:0 0 82%;scroll-snap-align:start}
+  .tk-add input[name=title]{min-width:100%}
 }
 .tk-search{min-width:220px}.tk-add select[data-template]{max-width:150px}
 .ctk{margin-top:.6rem;padding:.55rem .7rem;border:1px solid var(--border-md);border-radius:10px;background:var(--surface)}

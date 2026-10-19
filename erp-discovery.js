@@ -666,21 +666,28 @@ function bindContent() {
   container.querySelectorAll('[data-remove-requirement]').forEach(button => button.addEventListener('click', () => { const removed = documentState.requirements.splice(Number(button.dataset.removeRequirement), 1)[0]; recordChange(`requirement.${removed?.id || button.dataset.removeRequirement}`, `Requirement ${removed?.id || ''}`, 'Removed'); setDirty(); renderMain(); }));
 }
 
+// On phones the section menu sits above the content, so jump to the content after choosing a section.
+function scrollToSection() {
+  if (window.innerWidth > 800) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  const main = root.querySelector('.erp-main');
+  if (main) window.scrollTo({ top: main.getBoundingClientRect().top + window.scrollY - 64, behavior: 'smooth' });
+}
+
 function bindShell() {
   root.querySelector('[data-open-job-report]')?.addEventListener('click', () => {
     activeSection = 'job-report';
     expandedNavGroup = 'workspace';
     renderShell();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToSection();
   });
   root.querySelector('[data-erp-back]')?.addEventListener('click', backToClients);
   root.querySelectorAll('[data-erp-group]').forEach(button => button.addEventListener('click', () => {
-    if (button.dataset.erpGroup === 'discovery') { activeSection = 'discovery'; expandedNavGroup = 'discovery'; discoveryFilter = 'all'; renderShell(); return; }
+    if (button.dataset.erpGroup === 'discovery') { activeSection = 'discovery'; expandedNavGroup = 'discovery'; discoveryFilter = 'all'; renderShell(); scrollToSection(); return; }
     expandedNavGroup = expandedNavGroup === button.dataset.erpGroup ? '' : button.dataset.erpGroup;
     root.querySelectorAll('[data-erp-group]').forEach(groupButton => groupButton.setAttribute('aria-expanded', String(groupButton.dataset.erpGroup === expandedNavGroup)));
     root.querySelectorAll('[data-erp-group-items]').forEach(items => { items.hidden = items.dataset.erpGroupItems !== expandedNavGroup; });
   }));
-  root.querySelectorAll('[data-erp-nav]').forEach(button => button.addEventListener('click', () => { activeSection = button.dataset.erpNav; expandedNavGroup = button.dataset.erpNavGroup; moduleViewFilter = ''; renderShell(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+  root.querySelectorAll('[data-erp-nav]').forEach(button => button.addEventListener('click', () => { activeSection = button.dataset.erpNav; expandedNavGroup = button.dataset.erpNavGroup; moduleViewFilter = ''; renderShell(); scrollToSection(); }));
   root.querySelector('[data-email-report]')?.addEventListener('click', prepareEmailReport);
   root.querySelector('[data-project-print]')?.addEventListener('click', printSelectedReport);
   ['email', 'print'].forEach(kind => root.querySelector(`[data-${kind}-scope]`)?.addEventListener('change', event => {
