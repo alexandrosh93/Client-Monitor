@@ -847,6 +847,14 @@ body.sidemenu-expanded #sidemenu-overlay{display:none!important}
 .expand-panel .xactions{margin-top:1rem!important;padding-top:.85rem;border-top:1px solid var(--border)}
 .expand-panel input[type=range]{accent-color:var(--accent)!important;height:4px}
 }
+
+/* show / hide password */
+.pw-wrap{position:relative;display:block;width:100%}
+.pw-wrap>input{padding-right:38px!important;width:100%}
+.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:6px;color:var(--text-3);cursor:pointer;padding:0}
+.pw-eye:hover{color:var(--text);background:var(--surface2)}
+.pw-eye .eye-off{display:none}
+.pw-eye.on .eye-on{display:none}.pw-eye.on .eye-off{display:block}
 </style>
 </head>
 <body>
@@ -2872,7 +2880,7 @@ async function saveNew(){
   if(error){console.error('Insert error:',error);toast('Warning: save to Supabase failed.');}
   else setSyncStatus('ok','Supabase ✓');
 }
-function closeModal(id){document.getElementById(id).classList.remove('open');}
+function closeModal(id){hidePasswords(document.getElementById(id));document.getElementById(id).classList.remove('open');}
 let _bgDown=null;
 document.addEventListener('mousedown',e=>{_bgDown=e.target;},true);
 /* close only when the press AND the release both happen on the backdrop,
@@ -3954,7 +3962,7 @@ async function doLogin(){
     const {data,error}=await sb.auth.signInWithPassword({email,password:p});
     if(error||!data||!data.session){
       err.textContent='Incorrect username or password.';
-      document.getElementById('login-pass').value='';
+      document.getElementById('login-pass').value='';hidePasswords(document.getElementById('login-screen'));
       document.getElementById('login-pass').focus();
       return;
     }
@@ -4070,6 +4078,30 @@ document.addEventListener('keydown',e=>{
 updateSFUI();updateFIUI();updateFMUI();
 
 buildVatBanner();buildStkBanner();
+
+/* ── Show / hide password (eye button on every password field) ── */
+function enhancePasswordFields(){
+  document.querySelectorAll('input[type=password]:not([data-pw])').forEach(inp=>{
+    inp.dataset.pw='1';
+    const wrap=document.createElement('span');wrap.className='pw-wrap';
+    inp.parentNode.insertBefore(wrap,inp);wrap.appendChild(inp);
+    const b=document.createElement('button');b.type='button';b.className='pw-eye';b.tabIndex=-1;
+    b.title='Show password';b.setAttribute('aria-label','Show password');
+    b.innerHTML='<svg class="eye-on" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+      +'<svg class="eye-off" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+    b.addEventListener('mousedown',e=>e.preventDefault());
+    b.addEventListener('click',()=>{
+      const show=inp.type==='password';
+      inp.type=show?'text':'password';
+      b.classList.toggle('on',show);
+      b.title=show?'Hide password':'Show password';b.setAttribute('aria-label',b.title);
+      inp.focus();
+    });
+    wrap.appendChild(b);
+  });
+}
+enhancePasswordFields();
+function hidePasswords(root){(root||document).querySelectorAll('input[data-pw]').forEach(i=>{i.type='password';const b=i.parentNode.querySelector('.pw-eye');if(b){b.classList.remove('on');b.title='Show password';}});}
 window.clientMonitorApi={
   getSupabase:()=>sb,
   getClients:()=>clients,
