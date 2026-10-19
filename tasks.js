@@ -2,7 +2,7 @@
 (function () {
   const STATUSES = ['To do', 'In progress', 'Blocked', 'Done'];
   const PRIORITIES = ['Low', 'Normal', 'High', 'Urgent'];
-  const PRIO_COLOR = { Low: '#747775', Normal: '#0b57d0', High: '#e37400', Urgent: '#b3261e' };
+  const PRIO_COLOR = { Low: '#9a9384', Normal: '#46433d', High: '#a8741a', Urgent: '#8c2f2b' };
   const api = () => window.clientMonitorApi;
   const sb = () => api().getSupabase();
   const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -77,8 +77,8 @@
     return `<span class="${late ? 'tk-late' : t.due_date === today() ? 'tk-today' : ''}">${dt}</span>`;
   }
 
-  const STATUS_COLOR = { 'To do': '#747775', 'In progress': '#0b57d0', 'Blocked': '#b3261e', 'Done': '#146c2e' };
-  const AV = ['#0b57d0', '#8430ce', '#e37400', '#146c2e', '#b80672', '#00796b', '#b3261e', '#5e5ce6'];
+  const STATUS_COLOR = { 'To do': '#7a756b', 'In progress': '#1f4d3a', 'Blocked': '#8c2f2b', 'Done': '#3e6b45' };
+  const AV = ['#1f4d3a', '#6a4b6e', '#a8741a', '#3e6b45', '#8c2f2b', '#4d6a7a', '#7a5a3a', '#3b4f6b'];
   const collapsed = new Set();
   const initials = n => (n || '').split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
   const avColor = n => AV[[...(n || '')].reduce((a, c) => a + c.charCodeAt(0), 0) % AV.length];
