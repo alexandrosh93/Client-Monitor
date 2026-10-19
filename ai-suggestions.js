@@ -172,13 +172,13 @@
     if(ref){
       var link=document.createElement('button');
       link.className='smenu-item';link.type='button';
-      link.innerHTML='<span aria-hidden="true" style="font-size:16px;width:16px">✦</span><span class="smenu-label">AI Suggestions</span>';
+      link.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H5.17L4 17.17V4z"/><path d="M8 9h8M8 12h5"/></svg><span class="smenu-label">Suggestions</span>';
       link.addEventListener('click',function(){openWorkspace();closeSideMenuAfterAction();});
       ref.parentNode.insertBefore(link,ref.nextSibling);
     }
     var headerButton=document.createElement('button');
     headerButton.type='button';headerButton.className='view-btn';
-    headerButton.id='vbtn-ai';headerButton.title='AI Suggestions';headerButton.setAttribute('aria-label','AI Suggestions');headerButton.innerHTML='<span class="vb-ico">✦</span><span class="vb-lbl">Suggestions</span>';
+    headerButton.id='vbtn-ai';headerButton.title='AI Suggestions';headerButton.setAttribute('aria-label','AI Suggestions');headerButton.innerHTML='<span class="vb-ico">✉</span><span class="vb-lbl">Suggestions</span>';
     headerButton.addEventListener('click',openWorkspace);
     var toggle=document.querySelector('.view-toggle');
     if(toggle)toggle.appendChild(headerButton);

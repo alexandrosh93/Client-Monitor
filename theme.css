@@ -1,0 +1,88 @@
+/* Restrained, utilitarian look: native fonts, neutral greys, one accent colour,
+   small radii, flat surfaces, colour used only where it carries meaning. Screen only. */
+@media screen{
+:root{
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --bg:#f6f7f9;--surface:#fff;--surface2:#f2f3f5;
+  --border:#e3e5e8;--border-sm:#eceef1;--border-md:#d6d9de;
+  --text:#1f2328;--text-2:#4b5361;--text-3:#7a8290;
+  --accent:#1f3b70;--accent-light:#1f3b70;--accent-bg:#eef1f6;
+  --radius:6px;--radius-lg:8px;
+  --shadow-sm:none;--shadow-md:0 1px 2px rgba(16,24,40,.06);--shadow-lg:0 8px 24px rgba(16,24,40,.12);
+}
+body,body *:not(svg):not(path):not(code){font-family:var(--font)!important}
+body{background:var(--bg)!important;background-image:none!important;font-size:13px}
+
+/* buttons: flat, no gradients */
+.btn-primary,.login-btn,.fab,.view-btn.active,.tk-btn,.tk-toggle button.on{background:var(--accent)!important;background-image:none!important;box-shadow:none!important}
+.btn-primary:hover,.fab:hover{opacity:1;filter:brightness(1.12);transform:none!important;box-shadow:none!important}
+.fab{border-radius:6px!important;padding:.6rem 1rem!important;font-size:13px!important}
+
+/* header + view toggle */
+header{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:#fff!important}
+.view-toggle{box-shadow:none;border-radius:6px}
+#search{border-radius:6px!important;background:#fff!important}
+
+/* side menu: one colour for every icon */
+#sidemenu{box-shadow:none!important}
+#sidemenu .smenu-item svg{stroke:currentColor!important}
+#sidemenu .smenu-item{color:var(--text-2)}
+#sidemenu .smenu-item:hover{background:var(--surface2)!important;color:var(--text)!important;border-left-color:transparent!important}
+#sidemenu .smenu-item:hover svg{transform:none}
+.sidemenu-brand{background:var(--accent)!important}
+
+/* labels: sentence case, no tracking */
+.xlbl,.hv-card-title,.group-label,.smenu-section,.tk-col-h,.cal-dow,.erp-job-group-title{text-transform:none!important;letter-spacing:0!important}
+.xlbl{font-size:11px!important;font-weight:600!important;color:var(--text-3)!important}
+.hv-card-title{font-size:14px!important;font-weight:600!important;color:var(--text)!important}
+.group-label{font-size:12px!important;font-weight:600!important;color:var(--text-2)!important;border-bottom:1px solid var(--border)!important}
+.hv-banner-sub b{color:var(--text)!important}
+.stat-n,.stat-l{color:var(--text)!important}.stat-l{color:var(--text-3)!important}
+.stat.af .stat-n{color:var(--accent)!important}
+/* reminder boxes: neutral, colour kept only on the label */
+.vat-cell,.stk-cell,.followup-cell{background:#fff!important;border:1px solid var(--border)!important}
+.vat-cell .xdate,.stk-cell .xdate,.followup-cell .xdate{border-color:var(--border-md)!important;color:var(--text)!important}
+.vat-cell .inline-check,.stk-cell .inline-check{color:var(--text-2)!important}
+.vat-cell .reminder-clear,.stk-cell .reminder-clear,.followup-cell .reminder-clear{color:var(--text-3)!important}
+
+/* cards and rows: flat, thin borders, no colour stripes */
+.hv-card,.dash-card,.client-row,.stat,.modal,.tk-card,.ctk,.dd-panel{border-radius:8px!important;box-shadow:none!important}
+.hv-card{border:1px solid var(--border)!important;border-left-width:1px!important}
+.client-row,.client-row[data-status]{border-left:1px solid var(--border)!important}
+.client-row:hover{transform:none!important;border-color:var(--border-md)!important}
+.stat{border-top-width:1px!important;border-top-color:var(--border)!important}
+.stat:hover{transform:none!important;background:var(--surface2)!important}
+.stat.af{background:var(--accent-bg)!important;box-shadow:none!important}
+.stat-n{font-weight:600!important}
+.modal{border-radius:10px!important}
+
+/* status shown as a small dot + text, not a coloured pill */
+.rh-status{background:transparent!important;border:none!important;color:var(--text-2)!important;font-weight:500!important;padding:0!important;display:inline-flex;align-items:center;gap:6px}
+.rh-status::before{content:"";width:7px;height:7px;border-radius:50%;background:#9aa1ab}
+.rh-status.s-Active::before{background:#2f6fd0}.rh-status.s-Dormant::before{background:#d08a18}
+.rh-status.s-Pending-Follow-Up::before{background:#7a5bd1}.rh-status.s-Completed::before{background:#2f9a63}
+
+/* chips: neutral, regular font */
+.mod,.mod.on{background:var(--surface2)!important;background-image:none!important;border:1px solid var(--border)!important;color:var(--text-2)!important;border-radius:4px!important;font-size:11px!important}
+.rh-mgr,.rh-impl{background:transparent!important;background-image:none!important;border:1px solid var(--border)!important;color:var(--text-2)!important;font-weight:500!important}
+
+/* home header (replaces the big gradient banner) */
+.hv-banner{background:none!important;box-shadow:none!important;color:var(--text)!important;padding:0 0 .25rem!important;border-radius:0!important}
+.hv-avatar{display:none!important}
+.hv-greeting{color:var(--text)!important;font-size:20px!important;font-weight:600!important;letter-spacing:0!important}
+.hv-date,.hv-banner-sub{color:var(--text-3)!important}
+.hv-qbtn{border-radius:6px!important;background:#fff!important;color:var(--text)!important;border:1px solid var(--border-md)!important}
+.hv-qbtn-primary{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important}
+.hv-event{background:#fff!important;border-radius:6px!important}
+.hv-wl-av{border-radius:4px!important;background:var(--surface2)!important;color:var(--text-2)!important}
+.hv-wl-track{height:12px!important;border-radius:3px!important}
+.hv-wl-od,.hv-wl-done{background:transparent!important;padding:0!important}
+
+/* inputs */
+.xsel,.xdate,.xinput,.xtarea,.mf input,.mf select,.mf textarea,.dd-btn,.toolbar input,.toolbar select{border-radius:4px!important}
+.vat-cell,.stk-cell,.followup-cell{border-radius:6px!important}
+
+/* tasks */
+.tk-av{border-radius:4px!important}
+.tk-pill{text-transform:none!important;letter-spacing:0!important;font-weight:600!important}
+}
