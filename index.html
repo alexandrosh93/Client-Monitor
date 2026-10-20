@@ -895,25 +895,46 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
 /* ── Mobile bottom navigation ── */
 #mnav,#msheet,#msheet-bg{display:none}
 @media screen and (max-width:600px){
-  #mnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:160;background:#fff;border-top:1px solid var(--border-md);padding:4px 4px calc(4px + env(safe-area-inset-bottom));justify-content:space-around}
-  #mnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;padding:6px 0;color:var(--text-3);font:500 10.5px 'DM Sans',sans-serif;cursor:pointer;border-radius:10px}
-  #mnav button.on{color:var(--accent)}
-  #mnav button.on svg{background:var(--accent-bg);border-radius:12px;padding:2px 12px;box-sizing:content-box}
+  #mnav{display:flex;position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:160;
+    background:rgba(255,255,255,.82);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);
+    border:1px solid rgba(30,58,110,.08);border-radius:22px;padding:6px;box-shadow:0 10px 30px rgba(20,40,80,.18),0 2px 6px rgba(20,40,80,.08)}
+  .mnav-ind{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/5);border-radius:16px;
+    background:linear-gradient(135deg,#1e3a6e,#2d52a0);box-shadow:0 4px 12px rgba(30,58,110,.35);
+    transform:translateX(calc(var(--i,0) * 100%));transition:transform .38s cubic-bezier(.34,1.56,.64,1),opacity .2s;opacity:var(--o,1)}
+  #mnav button{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;padding:7px 0 6px;
+    color:var(--text-3);font:600 10px 'DM Sans',sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .25s}
+  #mnav button svg{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+  #mnav button.on{color:#fff}
+  #mnav button.on svg{transform:translateY(-1px) scale(1.08)}
+  #mnav button:active svg{transform:scale(.86)}
+  #mnav button span{white-space:nowrap}
   header .view-toggle,header .hdr-menu-btn,#sidemenu,#sidemenu-overlay{display:none!important}
   body.sidemenu-pinned main,body main{margin-left:0!important}
   header{padding-left:.8rem!important}
-  .fab{bottom:calc(76px + env(safe-area-inset-bottom))!important}
-  main{padding-bottom:150px!important}
-  #msheet-bg.open{display:block;position:fixed;inset:0;background:rgba(10,15,40,.35);z-index:170}
-  #msheet{display:block;position:fixed;left:0;right:0;bottom:0;z-index:171;background:#fff;border-radius:18px 18px 0 0;padding:6px 14px calc(14px + env(safe-area-inset-bottom));max-height:80vh;overflow-y:auto;transform:translateY(105%);transition:transform .25s cubic-bezier(.22,1,.36,1)}
+  .fab{bottom:calc(92px + env(safe-area-inset-bottom))!important}
+  main{padding-bottom:170px!important}
+  #msheet-bg{display:block;position:fixed;inset:0;background:rgba(10,15,40,.4);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:170;opacity:0;pointer-events:none;transition:opacity .25s}
+  #msheet-bg.open{opacity:1;pointer-events:auto}
+  #msheet{display:block;position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:171;background:#fff;border-radius:24px;
+    padding:6px 14px 14px;max-height:82vh;overflow-y:auto;box-shadow:0 20px 50px rgba(10,20,50,.3);
+    transform:translateY(calc(100% + 20px));transition:transform .4s cubic-bezier(.22,1,.36,1)}
   #msheet.open{transform:none}
-  .msheet-grip{width:38px;height:4px;border-radius:2px;background:var(--border-md);margin:6px auto 10px}
-  .msheet-user{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 10px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600}
-  .msheet-user button{background:none;border:1px solid var(--border-md);border-radius:8px;padding:5px 10px;font:500 12px 'DM Sans',sans-serif;color:var(--text-2)}
-  .msheet-h{font-size:11px;font-weight:700;color:var(--text-3);margin:12px 4px 4px;text-transform:uppercase;letter-spacing:.06em}
-  #msheet>button{display:block;width:100%;text-align:left;background:none;border:none;padding:11px 6px;font:500 15px 'DM Sans',sans-serif;color:var(--text);border-radius:8px}
-  #msheet>button:active{background:var(--surface2)}
-  #msheet .msheet-out{color:#a32d2d;margin-top:8px;border-top:1px solid var(--border);border-radius:0}
+  .msheet-grip{width:38px;height:4px;border-radius:2px;background:var(--border-md);margin:6px auto 12px}
+  .msheet-user{display:flex;align-items:center;gap:10px;padding:2px 2px 14px;border-bottom:1px solid var(--border);font-size:15px;font-weight:700}
+  .msheet-user>span:nth-child(2){flex:1}
+  .msheet-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1e3a6e,#2d52a0);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+  .msheet-user button{background:none;border:1px solid var(--border-md);border-radius:10px;padding:6px 10px;font:500 12px 'DM Sans',sans-serif;color:var(--text-2)}
+  .mtiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 0 6px}
+  .mtile{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 4px 12px;border:1px solid var(--border);border-radius:16px;background:var(--surface2);
+    color:var(--accent);font:600 11.5px 'DM Sans',sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent;
+    opacity:0;transform:translateY(14px) scale(.96);transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .25s,background .15s}
+  .mtile span{color:var(--text)}
+  #msheet.open .mtile{opacity:1;transform:none}
+  #msheet.open .mtile:nth-child(2){transition-delay:.03s}#msheet.open .mtile:nth-child(3){transition-delay:.06s}
+  #msheet.open .mtile:nth-child(4){transition-delay:.09s}#msheet.open .mtile:nth-child(5){transition-delay:.12s}
+  #msheet.open .mtile:nth-child(6){transition-delay:.15s}#msheet.open .mtile:nth-child(n+7){transition-delay:.18s}
+  .mtile:active{transform:scale(.94)!important;background:var(--accent-bg)}
+  .msheet-out{display:block;width:100%;margin-top:10px;padding:12px;border:none;border-radius:14px;background:#fdecec;color:#a32d2d;font:600 14px 'DM Sans',sans-serif}
   #search:not(:focus){width:42px!important;padding:0!important;background:var(--surface2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%234c5e75' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='20' y1='20' x2='16.5' y2='16.5'/%3E%3C/svg%3E") center/18px no-repeat!important}
   #search:not(:focus)::placeholder{color:transparent!important}
 }
@@ -924,13 +945,32 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
 
 <!-- MOBILE BOTTOM NAVIGATION (phones only) -->
 <nav id="mnav" class="no-print" aria-label="Main">
-  <button data-mnav="home" onclick="goHome()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
-  <button data-mnav="list" onclick="goClients({})"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Clients</span></button>
-  <button data-mnav="tasks" onclick="openTasksView({})"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Tasks</span></button>
-  <button data-mnav="ai" onclick="document.getElementById('vbtn-ai')&&document.getElementById('vbtn-ai').click()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg><span>Suggestions</span></button>
-  <button data-mnav="more" onclick="openMoreSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>More</span></button>
+  <span class="mnav-ind" aria-hidden="true"></span>
+  <button data-mnav="home" onclick="mnavGo('home',()=>goHome())"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+  <button data-mnav="mine" onclick="mnavGo('mine',()=>goMyClients())"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>My Clients</span></button>
+  <button data-mnav="list" onclick="mnavGo('list',()=>goClients({}))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>All Clients</span></button>
+  <button data-mnav="tasks" onclick="mnavGo('tasks',()=>openTasksView({}))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Tasks</span></button>
+  <button data-mnav="more" onclick="openMoreSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>More</span></button>
 </nav>
 <div id="msheet-bg" class="no-print" onclick="closeMoreSheet()"></div>
+<div id="msheet" class="no-print" role="dialog" aria-label="More">
+  <div class="msheet-grip"></div>
+  <div class="msheet-user"><span class="msheet-av" id="msheet-av"></span><span id="msheet-user"></span><button onclick="closeMoreSheet();openChangePassword()">Change password</button></div>
+  <div class="mtiles">
+  <button class="mtile" onclick="closeMoreSheet();document.getElementById('vbtn-ai')&&document.getElementById('vbtn-ai').click()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg><span>Suggestions</span></button>
+  <button class="mtile" onclick="closeMoreSheet();setView('dash')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard</span></button>
+  <button class="mtile" onclick="closeMoreSheet();openVatReport()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg><span>VAT</span></button>
+  <button class="mtile" onclick="closeMoreSheet();openStkReport()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><span>Stock take</span></button>
+  <button class="mtile" onclick="closeMoreSheet();openImplMgr()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg><span>Implementors</span></button>
+  <button class="mtile" onclick="closeMoreSheet();openModsMgr()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Modules</span></button>
+  <button class="mtile" onclick="closeMoreSheet();exportPDF()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Export PDF</span></button>
+  <button class="mtile" onclick="closeMoreSheet();exportExcel()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Export Excel</span></button>
+  <button class="mtile" id="msheet-users" style="display:none" onclick="closeMoreSheet();openUsersPanel()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/><path d="M19 8v6M22 11h-6"/></svg><span>Users</span></button>
+  <button class="mtile" onclick="closeMoreSheet();openAuditTrail()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg><span>Audit trail</span></button>
+  <button class="mtile" onclick="closeMoreSheet();openSettings()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg><span>Sync &amp; backup</span></button>
+  </div>
+  <button class="msheet-out" onclick="closeMoreSheet();doLogout()">Log out</button>
+</div>
 <div id="msheet" class="no-print" role="dialog" aria-label="More">
   <div class="msheet-grip"></div>
   <div class="msheet-user"><span id="msheet-user"></span><button onclick="closeMoreSheet();openChangePassword()">Change password</button></div>
@@ -4197,23 +4237,32 @@ enhancePasswordFields();
 function hidePasswords(root){(root||document).querySelectorAll('input[data-pw]').forEach(i=>{i.type='password';const b=i.parentNode.querySelector('.pw-eye');if(b){b.classList.remove('on');b.title='Show password';}});}
 
 /* ── Mobile bottom navigation ── */
+let mnavPick='';
+function mnavGo(key,fn){mnavPick=key;fn();mnavSync();}
 function openMoreSheet(){
-  const u=document.getElementById('msheet-user');if(u)u.textContent=currentFullName||currentUser||'';
+  const n=(currentFullName||currentUser||'').trim();
+  const u=document.getElementById('msheet-user');if(u)u.textContent=n;
+  const av=document.getElementById('msheet-av');if(av)av.textContent=n.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
   const adm=document.getElementById('btn-users-side');const mu=document.getElementById('msheet-users');
-  if(mu)mu.style.display=adm&&adm.style.display!=='none'?'block':'none';
+  if(mu)mu.style.display=adm&&adm.style.display!=='none'?'flex':'none';
   document.getElementById('msheet').classList.add('open');document.getElementById('msheet-bg').classList.add('open');
 }
 function closeMoreSheet(){document.getElementById('msheet').classList.remove('open');document.getElementById('msheet-bg').classList.remove('open');}
+function mnavSync(){
+  const map={'vbtn-home':'home','vbtn-list':'list','vbtn-dash':'','vbtn-tasks':'tasks','vbtn-ai':''};
+  let on='';
+  for(const id in map){const b=document.getElementById(id);if(b&&b.classList.contains('active')){on=map[id];break;}}
+  if(on==='list'&&mnavPick==='mine')on='mine';
+  if(on!=='mine'&&mnavPick==='mine'&&on)mnavPick='';
+  const btns=[...document.querySelectorAll('#mnav [data-mnav]')];
+  btns.forEach(b=>b.classList.toggle('on',b.dataset.mnav===on));
+  const i=btns.findIndex(b=>b.dataset.mnav===on);const ind=document.querySelector('#mnav .mnav-ind');
+  if(ind){ind.style.setProperty('--i',Math.max(i,0));ind.style.setProperty('--o',i<0?0:1);}
+}
 (function(){
-  const map={'vbtn-home':'home','vbtn-list':'list','vbtn-dash':'list','vbtn-tasks':'tasks','vbtn-ai':'ai'};
-  function sync(){
-    let on='';
-    for(const id in map){const b=document.getElementById(id);if(b&&b.classList.contains('active')){on=map[id];break;}}
-    document.querySelectorAll('#mnav [data-mnav]').forEach(b=>b.classList.toggle('on',b.dataset.mnav===on));
-  }
   const hdr=document.querySelector('header .view-toggle');
-  if(hdr)new MutationObserver(sync).observe(hdr,{subtree:true,attributes:true,attributeFilter:['class'],childList:true});
-  sync();
+  if(hdr)new MutationObserver(mnavSync).observe(hdr,{subtree:true,attributes:true,attributeFilter:['class'],childList:true});
+  mnavSync();
 })();
 window.clientMonitorApi={
   getSupabase:()=>sb,
