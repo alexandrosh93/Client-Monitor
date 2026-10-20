@@ -1,0 +1,108 @@
+/* Shared screen theme. Print reports retain their own document styles. */
+@media screen {
+  :root {
+    --bg:#f3f5f8;
+    --surface:#fff;
+    --surface2:#edf1f6;
+    --border:#e0e5ed;
+    --border-sm:#e0e5ed;
+    --border-md:#bac6d6;
+    --text:#1d293b;
+    --text-2:#4c5e75;
+    --text-3:#62738a;
+    --accent:#245a91;
+    --accent-light:#194772;
+    --accent-bg:#e8f0f9;
+    --action-hover:#194772;
+    --action-soft:#e8f0f9;
+    --action-border:#b6cce3;
+    --radius:7px;
+    --radius-lg:12px;
+    --shadow-sm:0 2px 6px rgba(20,40,65,.055),0 1px 2px rgba(20,40,65,.035);
+    --shadow-md:0 4px 16px rgba(20,40,65,.08);
+    --shadow-lg:0 12px 36px rgba(20,40,65,.14);
+  }
+  body {background:var(--bg);background-image:none}
+  body>header {background:#fff;box-shadow:none;border-bottom:1px solid var(--border-md)}
+  /* Primary, secondary, and destructive actions use the same hierarchy. */
+  body :is(.btn-primary,.login-btn,.fab,.hv-qbtn-primary,.tk-btn,.ai-btn-primary,.erp-btn.primary,.clog-add button,.clog-edit-acts .btn-save) {
+    background:var(--accent);background-image:none;color:#fff;border:1px solid var(--accent);
+    border-radius:7px;font-weight:600;box-shadow:inset 0 1px rgba(255,255,255,.15),0 2px 3px rgba(22,55,92,.16);transition:background .15s,border-color .15s,box-shadow .15s;
+  }
+  body :is(.btn-primary,.login-btn,.fab,.hv-qbtn-primary,.tk-btn,.ai-btn-primary,.erp-btn.primary,.clog-add button,.clog-edit-acts .btn-save):hover:not(:disabled) {
+    background:var(--action-hover);border-color:var(--action-hover);color:#fff;box-shadow:0 3px 7px rgba(22,55,92,.2);transform:none;
+  }
+  body :is(.btn-outline,.btn-expand,.erp-btn,.ai-btn):not(.primary):not(.ai-btn-primary):not(.danger) {
+    background:var(--action-soft);color:#204f80;border:1px solid var(--action-border);border-radius:7px;font-weight:600;box-shadow:none;
+  }
+  body :is(.btn-outline,.btn-expand,.erp-btn,.ai-btn):not(.primary):not(.ai-btn-primary):not(.danger):hover:not(:disabled) {
+    background:#d8e7f6;border-color:#7d9fc3;color:#173c64;
+  }
+  body :is(.btn-cancel,.clog-edit-acts .btn-cancel) {background:#edf1f6;color:#40516a;border:1px solid var(--border-md);border-radius:7px}
+  body .btn-cancel:hover {background:#e0e6ee}
+  body :is(.btn-del-sm,.erp-btn.danger) {background:#fff0ef;color:#a52b27;border:1px solid #e7b6b3;border-radius:7px}
+  body :is(.btn-del-sm,.erp-btn.danger):hover:not(:disabled) {background:#ffe0de;border-color:#cb817a}
+  body :is(.btn-primary,.btn-outline,.btn-cancel,.btn-expand,.erp-btn,.ai-btn,.tk-btn) {min-height:34px;line-height:1.35;padding:8px 12px}
+  body button:disabled,body input:disabled,body select:disabled {opacity:.5;cursor:not-allowed}
+  body :is(button,a,input,select,textarea,summary,[role=button]):focus-visible {outline:3px solid #6195c7;outline-offset:3px}
+  body :is(input,select,textarea) {accent-color:var(--accent)}
+  body :is(.mf input,.mf select,.mf textarea,.erp-input,.erp-select,.erp-textarea,.tk-wrap input,.tk-wrap select,.toolbar input,.toolbar select,.login-input) {
+    border-color:var(--border-md);border-radius:6px;box-shadow:none;color:var(--text);background:var(--surface);
+  }
+  body :is(.mf input,.mf select,.mf textarea,.erp-input,.erp-select,.erp-textarea,.tk-wrap input,.tk-wrap select):focus {
+    border-color:var(--accent);outline:2px solid #bfd4ea;outline-offset:1px;
+  }
+  body :is(.view-btn.active,.tk-toggle button.on,.tk-chip.on) {background:var(--accent);color:#fff;box-shadow:none}
+  .view-toggle,.tk-toggle {background:#edf1f6;border:1px solid var(--border-md);border-radius:7px}
+  body .view-btn:not(.active):hover {background:#dce7f3;color:#204f80}
+  /* Useful colour, without turning every surface into an accent. */
+  body :is(.client-row,.stat,.hv-card,.dash-card,.erp-card,.ai-card,.tk-card) {border-color:var(--border);border-radius:9px;box-shadow:var(--shadow-sm)}
+  body :is(.client-row,.stat,.hv-pcard):hover {transform:none;box-shadow:0 3px 9px rgba(25,53,87,.08);border-color:#a7bad0}
+  body .stat.af {background:var(--accent-bg);border-color:var(--accent);box-shadow:inset 0 -2px var(--accent)}
+  body :is(.stat-l,.hv-card-title,.dash-card-title,.lbl,.xlbl) {color:var(--text-2)}
+  body :is(.hv-card-title,.dash-card-title) {font-size:12px;letter-spacing:0;text-transform:none;font-weight:600}
+  body .hv-banner {background:linear-gradient(115deg,#203e62,#2d587f);box-shadow:0 5px 14px rgba(25,53,87,.13);border-radius:12px}
+  body .hv-qbtn {border-radius:7px;min-height:36px;border:1px solid #7994b2;background:#304f72;color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+  body .hv-qbtn:hover {background:#3b618b;border-color:#a5bdd6}
+  body .hv-qbtn-primary {background:#28649e;color:#fff;border-color:#7ea8d2;box-shadow:inset 0 1px rgba(255,255,255,.15),0 2px 5px rgba(0,0,0,.15)}
+  body .hv-qbtn-primary:hover {background:#1f5489;color:#fff}
+  body .hv-view-all {background:#e8f0f9;color:#203e62;border:1px solid #b6cce3;border-radius:7px;backdrop-filter:none}
+  body .hv-view-all:hover {background:#d8e7f6;color:#173c64;border-color:#b6cce3}
+  body .hv-pcard {border:1px solid var(--border);box-shadow:none;border-radius:7px}
+  body .hv-pcard::after {display:none}
+  body :is(.rh-mgr,.rh-impl,.mod.on,.rh-status) {background-image:none}
+  body .mod.on {background:#e8f0f9;color:#204f80}
+  body .rh-mgr {background:#f0edf7;color:#655181}
+  body .rh-impl {background:#f8efe5;color:#87582c}
+  body .s-Active {background:#e8f0f9;color:#204f80}
+  body .s-Dormant {background:#fff1d8;color:#835315}
+  body .s-Pending-Follow-Up {background:#f0eafa;color:#67428f}
+  body .s-Completed {background:#e4f2eb;color:#246447}
+  body .modal {border-radius:12px;box-shadow:var(--shadow-lg)}
+  body .login-box {border-radius:12px;box-shadow:var(--shadow-md)}
+  /* Workspace actions must remain legible on both header and content surfaces. */
+  body .erp-top {background:linear-gradient(110deg,#fff,#edf3fa);border:1px solid #cbd7e5;box-shadow:inset 0 3px #245a91,0 3px 9px rgba(25,53,87,.06)}
+  body .erp-back {color:#245a91;background:#e8f0f9;border:1px solid #b6cce3;padding:7px 10px;border-radius:6px}
+  body .erp-projectbar {border-top-color:#d6e0eb}
+  body .erp-nav.active {background:#dae8f6;color:#1b4976;border-left:3px solid #245a91}
+  body .erp-topic {border-radius:0;box-shadow:none}
+  body .erp-topic:hover {background:#edf4fb}
+  body .erp-discovery .erp-status-filters button.active {background:#e8f0f9;color:#204f80;border-bottom-color:#245a91}
+  body .erp-module-metric,body .erp-module-total {box-shadow:none}
+  body .erp-module-metric:hover,body .erp-module-total:hover {transform:none;box-shadow:none}
+  body .erp-module-accordion.open {box-shadow:none}
+  body .erp-progress>span {background:var(--accent)}
+  /* Preserve the established dark navigation and mobile layouts. */
+  #sidemenu .sidemenu-sync:hover {background:#243e62!important}
+  #sidemenu #sidemenu-user button {background:#243e62!important;color:#e8eff9!important;border-color:#657b98!important}
+  #sidemenu #sidemenu-user button:hover {background:#34527b!important}
+  #sidemenu #sidemenu-user button[onclick="doLogout()"] {color:#ffd6d2!important}
+  @media (max-width:600px) {
+    body :is(.btn-primary,.btn-outline,.btn-cancel,.btn-expand,.erp-btn,.ai-btn,.tk-btn) {min-height:40px}
+    body .erp-report-control .erp-btn {padding:8px;font-size:12px}
+    body .tk-toggle button {min-height:38px}
+  }
+  @media (prefers-reduced-motion:reduce) {
+    body *,body *::before,body *::after {animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  }
+}

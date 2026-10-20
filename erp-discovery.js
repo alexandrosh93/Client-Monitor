@@ -310,7 +310,7 @@ function renderShell() {
         </div>
       </div>
       <div class="erp-projectbar">
-        <button type="button" class="erp-btn on-dark" data-open-job-report ${project ? '' : 'disabled'}>Client Job Report</button>
+        <button type="button" class="erp-btn primary" data-open-job-report ${project ? '' : 'disabled'}>Client Job Report</button>
         <div class="erp-report-control"><span>Email client</span><select data-email-scope><option value="whole">Client project summary</option><option value="changes">Updates on date</option></select><input type="date" data-email-date value="${localDate()}" disabled><a class="erp-btn on-dark erp-email-report" data-email-report href="#" role="button" title="${client.email ? `Prepare this client report for ${attr(client.email)} in your default email app` : 'Add an email on the client card first'}">${client.email ? 'Prepare email' : 'Add client email'}</a></div>
         <div class="erp-report-control"><span>Client PDF</span><select data-print-scope><option value="whole">Client project summary</option><option value="changes">Updates on date</option></select><input type="date" data-print-date value="${localDate()}" disabled><button class="erp-btn on-dark" data-project-print ${project ? '' : 'disabled'}>Print / Save PDF</button></div>
         <span class="erp-save-state">${dirty ? '<span class="erp-dirty-dot"></span>Autosave pending…' : `Saved automatically${project?.updated_at ? ` · ${esc(new Date(project.updated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))}` : ''}`}</span>
