@@ -1,0 +1,151 @@
+/* Google Workspace / Material 3 style. Screen only (print styles are untouched). */
+@media screen{
+:root{
+  --font:Roboto,"Segoe UI",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  --primary:#0b57d0;--on-primary:#fff;--primary-hover:#0a4fbd;
+  --sec-container:#d3e3fd;--on-sec-container:#041e49;--tertiary-container:#c2e7ff;
+  --bg:#f8fafd;--surface:#fff;--surface2:#f0f4f9;--surface3:#e9eef6;
+  --border:#e1e3e1;--border-sm:#eceef0;--border-md:#c4c7c5;--outline:#747775;
+  --text:#1f1f1f;--text-2:#444746;--text-3:#5e5e5e;
+  --accent:#0b57d0;--accent-light:#0b57d0;--accent-bg:#d3e3fd;
+  --radius:8px;--radius-lg:16px;
+  --shadow-sm:none;--shadow-md:0 1px 2px rgba(60,64,67,.3),0 1px 3px 1px rgba(60,64,67,.15);--shadow-lg:0 2px 6px 2px rgba(60,64,67,.15),0 1px 2px rgba(60,64,67,.3);
+}
+body,body *:not(svg):not(path):not(code){font-family:var(--font)!important}
+body{background:var(--bg)!important;background-image:none!important;font-size:14px;color:var(--text)}
+
+/* ── Top bar: same colour as the page, like Gmail / Drive ── */
+header{background:var(--bg)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border-bottom:none!important;box-shadow:none!important;min-height:64px}
+header .logo,.hdr-brand .logo{background:none!important;-webkit-text-fill-color:var(--text-2)!important;color:var(--text-2)!important;font-size:20px!important;font-weight:400!important;letter-spacing:0!important}
+header .logo span,.hdr-brand .logo span{-webkit-text-fill-color:var(--text-3)!important;color:var(--text-3)!important;font-size:20px!important}
+.hdr-menu-btn{border:none!important;background:transparent!important;border-radius:50%!important;width:44px;height:44px}
+.hdr-menu-btn:hover{background:rgba(68,71,70,.08)!important}
+.hdr-menu-btn span{background:var(--text-2)!important}
+/* segmented view buttons */
+.view-toggle{border:1px solid var(--outline)!important;border-radius:20px!important;box-shadow:none!important;background:transparent!important;overflow:hidden}
+.view-btn{color:var(--text-2)!important;background:transparent!important;border-radius:0!important;height:36px}
+.view-btn+.view-btn{border-left:1px solid var(--outline)!important}
+.view-btn:not(.active):hover{background:rgba(68,71,70,.08)!important}
+.view-btn.active{background:var(--sec-container)!important;color:var(--on-sec-container)!important}
+/* search pill */
+#search{background:var(--surface3)!important;border:none!important;border-radius:24px!important;color:var(--text)!important;width:320px!important;height:44px;padding:0 18px!important;font-size:15px!important}
+#search:focus{background:#fff!important;box-shadow:var(--shadow-lg)!important}
+#hdr-avatar{width:36px;height:36px;border-radius:50%;background:#0b57d0;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;flex-shrink:0;margin-left:6px}
+
+/* ── Buttons: pills ── */
+.btn-primary,.login-btn,.tk-btn,.hv-qbtn.hv-qbtn-primary,.clog-add button{background:var(--primary)!important;background-image:none!important;color:#fff!important;border:none!important;border-radius:20px!important;box-shadow:none!important;font-weight:500!important;padding-left:20px!important;padding-right:20px!important}
+.btn-primary:hover,.login-btn:hover,.tk-btn:hover,.hv-qbtn.hv-qbtn-primary:hover,.clog-add button:hover{background:var(--primary-hover)!important;box-shadow:var(--shadow-md)!important;opacity:1!important;transform:none!important}
+.btn-outline,.btn-cancel,.btn-expand,.hv-qbtn,.dd-btn,.tk-chip{background:transparent!important;border:1px solid var(--outline)!important;color:var(--primary)!important;border-radius:20px!important;font-weight:500}
+.dd-btn{color:var(--text-2)!important;border-radius:8px!important;border-color:var(--outline)!important}
+.btn-outline:hover,.btn-cancel:hover,.btn-expand:hover,.hv-qbtn:hover,.dd-btn:hover,.tk-chip:hover{background:rgba(11,87,208,.08)!important}
+.tk-chip.on,.tk-toggle button.on{background:var(--sec-container)!important;border-color:var(--sec-container)!important;color:var(--on-sec-container)!important}
+/* "New client" like Gmail's Compose button */
+.fab{background:var(--tertiary-container)!important;background-image:none!important;color:#001d35!important;border-radius:16px!important;padding:1rem 1.4rem!important;font-size:14px!important;font-weight:500!important;box-shadow:var(--shadow-lg)!important;border:none!important}
+.fab:hover{box-shadow:0 4px 8px 3px rgba(60,64,67,.15),0 1px 3px rgba(60,64,67,.3)!important;transform:none!important;opacity:1!important}
+.btn-del-sm{border-radius:20px!important}
+a,.hv-card-link,.erp-link{color:var(--primary)!important}
+
+/* ── Inputs: outlined text fields ── */
+.xsel,.xdate,.xinput,.xtarea,.mf input,.mf select,.mf textarea,.toolbar input,.toolbar select,.clog-add input,.login-field input,.tk-wrap input:not([type=checkbox]),.tk-wrap select,.erp-input,.erp-select,.erp-textarea{
+  border:1px solid var(--outline)!important;border-radius:4px!important;background:#fff!important}
+.xsel:focus,.xdate:focus,.xinput:focus,.xtarea:focus,.mf input:focus,.mf select:focus,.mf textarea:focus,.clog-add input:focus,.login-field input:focus,.tk-wrap input:focus,.tk-wrap select:focus,.erp-input:focus,.erp-select:focus,.erp-textarea:focus{
+  border-color:var(--primary)!important;box-shadow:inset 0 0 0 1px var(--primary)!important;outline:none!important}
+.clog-add input{border-radius:20px!important;padding-left:14px!important}
+
+/* ── Type ── */
+.xlbl,.hv-card-title,.group-label,.smenu-section,.tk-col-h,.cal-dow,.erp-job-group-title{text-transform:none!important;letter-spacing:0!important}
+.xlbl{font-size:12px!important;font-weight:500!important;color:var(--text-2)!important}
+.hv-card-title{font-size:18px!important;font-weight:400!important;color:var(--text)!important}
+.group-label{font-size:14px!important;font-weight:500!important;color:var(--text-2)!important;border-bottom:none!important;padding-left:4px!important}
+
+/* ── Surfaces: large radius, flat ── */
+.hv-card,.dash-card,.stat,.tk-card,.ctk,.erp-card{border:none!important;border-radius:16px!important;box-shadow:none!important;background:#fff!important}
+.client-row,.client-row[data-status]{border:none!important;border-radius:12px!important;box-shadow:none!important;background:#fff!important;margin-bottom:4px!important}
+.client-row:hover{transform:none!important;box-shadow:var(--shadow-md)!important}
+.client-row.expanded{box-shadow:var(--shadow-md)!important}
+.modal,.dd-panel{border:none!important;border-radius:28px!important;box-shadow:var(--shadow-lg)!important;background:#f0f4f9!important}
+.dd-panel{border-radius:8px!important;background:#fff!important}
+
+/* status tiles as chips */
+.stat{border-top:none!important;background:#fff!important}
+.stat:hover{transform:none!important;background:var(--surface2)!important}
+.stat.af{background:var(--sec-container)!important;box-shadow:none!important}
+.stat-n{font-weight:400!important;font-size:24px!important;color:var(--text)!important}.stat-l{color:var(--text-2)!important}
+.stat.af .stat-n,.stat.af .stat-l{color:var(--on-sec-container)!important}
+
+/* status: dot + text */
+.rh-status{background:transparent!important;border:none!important;color:var(--text-2)!important;font-weight:400!important;padding:0!important;display:inline-flex;align-items:center;gap:6px}
+.rh-status::before{content:"";width:8px;height:8px;border-radius:50%;background:#c4c7c5}
+.rh-status.s-Active::before{background:#0b57d0}.rh-status.s-Dormant::before{background:#e37400}
+.rh-status.s-Pending-Follow-Up::before{background:#8430ce}.rh-status.s-Completed::before{background:#146c2e}
+
+/* chips */
+.mod,.mod.on{background:transparent!important;background-image:none!important;border:1px solid var(--border-md)!important;color:var(--text-2)!important;border-radius:8px!important;font-size:12px!important}
+.rh-mgr,.rh-impl{background:var(--surface2)!important;background-image:none!important;border:none!important;color:var(--text-2)!important;font-weight:500!important;border-radius:8px!important}
+
+/* keep coloured status group headers and the tinted VAT / Stock boxes */
+.group-label[data-status]{color:var(--gc)!important;font-size:13px!important}
+.vat-cell.date-card{background:#f3f7fe!important;border:1px solid #dce8fb!important}
+.stk-cell.date-card{background:#fffbf0!important;border:1px solid #f1e5bd!important}
+.followup-cell.date-card,.live-cell.date-card,.mods-card.date-card{background:#fff!important;border:1px solid var(--border)!important}
+
+/* ── Home ── */
+.hv-banner{background:none!important;box-shadow:none!important;color:var(--text)!important;padding:0 0 .25rem!important;border-radius:0!important}
+.hv-avatar{display:none!important}
+.hv-greeting{color:var(--text)!important;font-size:28px!important;font-weight:400!important;letter-spacing:0!important}
+.hv-date,.hv-banner-sub{color:var(--text-2)!important}
+.hv-banner-sub b{color:var(--text)!important}
+.hv-event{background:var(--surface2)!important;border:none!important;border-radius:12px!important}
+.hv-event:hover{background:var(--surface3)!important}
+.hv-wl-row{border-radius:12px}
+.hv-wl-row:hover{background:var(--surface2)!important}
+.hv-wl-av{border-radius:50%!important;background:var(--sec-container)!important;color:var(--on-sec-container)!important}
+.hv-wl-track{height:8px!important;border-radius:4px!important;background:var(--surface3)!important}
+.hv-wl-od{background:transparent!important;padding:0!important;color:#b3261e!important}
+.hv-wl-done{background:transparent!important;padding:0!important;color:#146c2e!important}
+
+/* reminder boxes */
+.vat-cell,.stk-cell,.followup-cell{background:var(--surface2)!important;border:none!important;border-radius:12px!important}
+.vat-cell .inline-check,.stk-cell .inline-check,.vat-cell .xlbl,.stk-cell .xlbl,.followup-cell .xlbl{color:var(--text-2)!important}
+.vat-cell .xdate,.stk-cell .xdate,.followup-cell .xdate{color:var(--text)!important}
+.reminder-clear{color:var(--text-3)!important}
+
+/* comments */
+.clog-entry{background:var(--surface2)!important;border:none!important;border-radius:12px!important}
+
+/* tasks */
+.tk-av{background:var(--sec-container)!important;color:var(--on-sec-container)!important}
+.tk-pill{text-transform:none!important;letter-spacing:0!important;font-weight:500!important;border-radius:8px!important}
+.tk-row{border-radius:8px}.tk-row:hover{background:var(--surface2)!important}
+.tk-col{background:var(--surface2)!important;border-radius:16px!important}
+.tk-card{border-radius:12px!important;box-shadow:var(--shadow-md)!important}
+.cal-grid{border-radius:16px!important}
+.cal-cell.today .cal-num{background:var(--primary);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;margin-left:auto}
+.cal-cell.today{outline:none!important}
+}
+
+/* small screens: keep the app bar compact (search shrinks, avatar hidden) */
+@media screen and (max-width:768px){
+  #search{width:110px!important;height:34px!important;font-size:12px!important;padding:0 10px!important}
+  #hdr-avatar{display:none!important}
+  header{min-height:0!important}
+  .view-btn{height:30px!important;padding:4px 7px!important}
+  header .logo,.hdr-brand .logo,header .logo span,.hdr-brand .logo span{font-size:15px!important}
+  .hv-greeting{font-size:22px!important}
+}
+/* Tasks view switcher: one outlined group, not separate bordered buttons */
+.tk-toggle{border:1px solid var(--border-md)!important;border-radius:20px!important;overflow:hidden}
+.tk-toggle button{border:none!important;border-radius:0!important}
+.tk-toggle button+button{border-left:1px solid var(--border-md)!important}
+@media screen and (max-width:480px){
+  header .logo,.hdr-brand .logo{font-size:14px!important}
+  .view-btn{padding:4px 6px!important}
+  .view-btn .vb-ico{width:14px!important;font-size:13px!important}
+  #search{width:70px!important;padding:0 8px!important}
+  .hdr-menu-btn{width:36px!important;height:36px!important}
+}
+@media screen and (max-width:600px){
+  #search{width:44px!important;padding:0 12px!important}
+  #search:not(:focus)::placeholder{color:transparent!important}
+  #search:focus{width:150px!important}
+}
