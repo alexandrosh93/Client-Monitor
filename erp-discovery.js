@@ -303,14 +303,14 @@ function renderShell() {
       <div class="erp-topline">
         <button class="erp-back" data-erp-back>← All Clients</button>
         <div style="flex:1">
-          <div class="erp-kicker">Client workspace · ERP Discovery & Training</div>
+          <div class="erp-kicker">Client workspace</div>
           <div class="erp-title">${esc(client.name)}</div>
           <div class="erp-subtitle">${esc(client.contact || 'No main contact')} · ${esc(client.city || 'No city')} · Implementor: ${esc(client.implementor || 'Unassigned')}</div>
           <div class="erp-badges"><span class="erp-badge">${esc(client.status)}</span>${moduleBadges}</div>
         </div>
       </div>
       <div class="erp-projectbar">
-        <button type="button" class="erp-btn on-dark" data-open-job-report ${project ? '' : 'disabled'}>Client Job Report</button>
+        <button type="button" class="erp-btn primary" data-open-job-report ${project ? '' : 'disabled'}>Client Job Report</button>
         <div class="erp-report-control"><span>Email client</span><select data-email-scope><option value="whole">Client project summary</option><option value="changes">Updates on date</option></select><input type="date" data-email-date value="${localDate()}" disabled><a class="erp-btn on-dark erp-email-report" data-email-report href="#" role="button" title="${client.email ? `Prepare this client report for ${attr(client.email)} in your default email app` : 'Add an email on the client card first'}">${client.email ? 'Prepare email' : 'Add client email'}</a></div>
         <div class="erp-report-control"><span>Client PDF</span><select data-print-scope><option value="whole">Client project summary</option><option value="changes">Updates on date</option></select><input type="date" data-print-date value="${localDate()}" disabled><button class="erp-btn on-dark" data-project-print ${project ? '' : 'disabled'}>Print / Save PDF</button></div>
         <span class="erp-save-state">${dirty ? '<span class="erp-dirty-dot"></span>Autosave pending…' : `Saved automatically${project?.updated_at ? ` · ${esc(new Date(project.updated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))}` : ''}`}</span>
@@ -384,10 +384,10 @@ function discoveryTools(search = false) {
 }
 
 function renderDiscovery() {
-  return `<div class="erp-card erp-discovery"><h2>Discovery & Readiness</h2><p class="erp-muted">Choose a topic. Work through it at your own pace.</p>${discoveryTools(true)}${discoveryGroups.map(group => `<section data-discovery-group><h3>${group.title}</h3><div class="erp-discovery-grid">${group.ids.map(id => {
+  return `<div class="erp-card erp-discovery"><h2>Discovery & Readiness</h2><p class="erp-muted">Project discovery, preparation and launch checks.</p>${discoveryTools(true)}${discoveryGroups.map(group => `<section data-discovery-group><h3>${group.title}</h3><div class="erp-discovery-grid">${group.ids.map(id => {
     const section = catalog.sections.find(item => item.id === id);
     const done = section.questions.filter(item => discoveryDone(section, item)).length;
-    return `<button type="button" class="erp-topic" data-discovery-open="${id}" data-discovery-row data-done="${done === section.questions.length}" data-search="${attr([section.title, ...section.questions.map(item => item.text)].join(' ').toLocaleLowerCase())}"><span class="erp-topic-title">${esc(discoveryTitle(section))}</span><span class="erp-muted">${done} / ${section.questions.length} ${section.checklist ? 'completed' : 'answered'} <span aria-hidden="true">→</span></span><span class="erp-progress"><span style="width:${100 * done / section.questions.length}%"></span></span></button>`;
+    return `<button type="button" class="erp-topic" data-discovery-open="${id}" data-discovery-row data-done="${done === section.questions.length}" data-search="${attr([section.title, ...section.questions.map(item => item.text)].join(' ').toLocaleLowerCase())}"><span class="erp-topic-title">${esc(discoveryTitle(section))}</span><span class="erp-muted">${done} / ${section.questions.length} ${section.checklist ? 'completed' : 'answered'} <span aria-hidden="true">→</span></span></button>`;
   }).join('')}</div></section>`).join('')}<div class="erp-empty" data-discovery-empty hidden>No topics match. Try another search or show all.</div><div class="erp-discovery-links"><button class="erp-btn" data-discovery-open="training-roles">Training & roles →</button><button class="erp-btn" data-discovery-open="requirements">Decisions & requirements →</button></div></div>`;
 }
 
