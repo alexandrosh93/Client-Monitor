@@ -303,7 +303,7 @@ function renderShell() {
       <div class="erp-topline">
         <button class="erp-back" data-erp-back>← All Clients</button>
         <div style="flex:1">
-          <div class="erp-kicker">Client workspace · ERP Discovery & Training</div>
+          <div class="erp-kicker">Client workspace</div>
           <div class="erp-title">${esc(client.name)}</div>
           <div class="erp-subtitle">${esc(client.contact || 'No main contact')} · ${esc(client.city || 'No city')} · Implementor: ${esc(client.implementor || 'Unassigned')}</div>
           <div class="erp-badges"><span class="erp-badge">${esc(client.status)}</span>${moduleBadges}</div>
@@ -384,10 +384,10 @@ function discoveryTools(search = false) {
 }
 
 function renderDiscovery() {
-  return `<div class="erp-card erp-discovery"><h2>Discovery & Readiness</h2><p class="erp-muted">Choose a topic. Work through it at your own pace.</p>${discoveryTools(true)}${discoveryGroups.map(group => `<section data-discovery-group><h3>${group.title}</h3><div class="erp-discovery-grid">${group.ids.map(id => {
+  return `<div class="erp-card erp-discovery"><h2>Discovery & Readiness</h2><p class="erp-muted">Project discovery, preparation and launch checks.</p>${discoveryTools(true)}${discoveryGroups.map(group => `<section data-discovery-group><h3>${group.title}</h3><div class="erp-discovery-grid">${group.ids.map(id => {
     const section = catalog.sections.find(item => item.id === id);
     const done = section.questions.filter(item => discoveryDone(section, item)).length;
-    return `<button type="button" class="erp-topic" data-discovery-open="${id}" data-discovery-row data-done="${done === section.questions.length}" data-search="${attr([section.title, ...section.questions.map(item => item.text)].join(' ').toLocaleLowerCase())}"><span class="erp-topic-title">${esc(discoveryTitle(section))}</span><span class="erp-muted">${done} / ${section.questions.length} ${section.checklist ? 'completed' : 'answered'} <span aria-hidden="true">→</span></span><span class="erp-progress"><span style="width:${100 * done / section.questions.length}%"></span></span></button>`;
+    return `<button type="button" class="erp-topic" data-discovery-open="${id}" data-discovery-row data-done="${done === section.questions.length}" data-search="${attr([section.title, ...section.questions.map(item => item.text)].join(' ').toLocaleLowerCase())}"><span class="erp-topic-title">${esc(discoveryTitle(section))}</span><span class="erp-muted">${done} / ${section.questions.length} ${section.checklist ? 'completed' : 'answered'} <span aria-hidden="true">→</span></span></button>`;
   }).join('')}</div></section>`).join('')}<div class="erp-empty" data-discovery-empty hidden>No topics match. Try another search or show all.</div><div class="erp-discovery-links"><button class="erp-btn" data-discovery-open="training-roles">Training & roles →</button><button class="erp-btn" data-discovery-open="requirements">Decisions & requirements →</button></div></div>`;
 }
 
