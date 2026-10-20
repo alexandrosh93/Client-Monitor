@@ -30,3 +30,9 @@ pnpm test
 ```
 
 The generated `vendor/` modules, OCR language models and license files are committed so GitHub Pages can serve the app without a build service. `build:pdf` pins English and Greek tessdata_fast models to a recorded Git revision. `outlook-redirect.html` must stay minimal and use the dedicated MSAL redirect bridge. Keep its registered URL in sync if the hosting address changes.
+
+## Purchases from existing clients
+
+AI Suggestions groups Software Orders by exact company name or Client ID. Conflicting matches and orders containing multiple companies require correction before they can be applied. In **Existing clients — new purchase**, review the source and select the suggested modules, then choose **Save purchase to client**. Only the selected new modules are added. Products, licenses, amounts, fees, order dates/numbers, contact details from the order, and source links are appended to the client's existing comment history. Contact fields, status, progress and project/training data are not overwritten. A purchase may also be recorded without adding modules.
+
+Saving reads the current client and conditionally updates modules and comment history together. It reports success only after the database confirms the write. Concurrent changes or access errors leave the local record unchanged. Reviewed order identifiers are stored in the comment entry to prevent duplicate application on later imports; deleting that history entry also removes its duplicate marker. Orders without an extracted number use company, attachment name and date as a fallback; verify these manually. No new database table or migration is required. Live database access is still subject to the existing authenticated client policies.

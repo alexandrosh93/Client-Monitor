@@ -1,6 +1,8 @@
 (function () {
   'use strict';
-  var helpers = import('./email-leads.mjs?v=grouped-20261019');
+  var helpers = import('./email-leads.mjs?v=client-orders-20261020');
+  var orderUpdates = import('./existing-client-orders.mjs?v=20261020');
+  var orderHelpers;
   var outlook;
   var rows = [], ignored = new Set(), owner = '', mailbox = '', busy = false, abort;
   var root = document.getElementById('ai-email-workspace');
@@ -47,8 +49,8 @@
       '<p class="ai-muted">' + esc(order.signature_status) + '. ' + esc((order.issues || []).join(' ')) + '</p>' +
       '<details><summary>PDF evidence · ' + esc(order.extraction) + '</summary>' + (order.evidence || []).map(e => '<p class="email-evidence">Page ' + e.page + ':<br>' + esc(e.text) + '</p>').join('') + '</details></div>';
   }
-  root.innerHTML = '<div class="ai-card"><div class="ai-row-top"><b>Email · New client suggestions</b><span class="ai-pill" id="email-connection"></span></div>' +
-    '<p class="ai-muted" style="margin-top:8px">Search messages from Andreas Kyriacou and Vakis Theodosiou. Only readable Software Order PDFs become new-client candidates, and the client name is taken from the Licensee field.</p>' +
+  root.innerHTML = '<div class="ai-card"><div class="ai-row-top"><b>Email · Clients & module purchases</b><span class="ai-pill" id="email-connection"></span></div>' +
+    '<p class="ai-muted" style="margin-top:8px">Search messages from Andreas Kyriacou and Vakis Theodosiou. Review Software Order PDFs to add a new client or record a new purchase for an existing client.</p>' +
     '<div class="ai-actions"><button class="ai-btn ai-btn-primary" id="email-connect">Connect Outlook</button><button class="ai-btn" id="email-disconnect">Disconnect</button></div>' +
     '<details style="margin-top:12px" id="email-settings"><summary>Connection settings</summary>' +
     '<p class="ai-muted">A Microsoft app registration is required once. Use its public IDs below. No password or client secret is needed.</p>' +
@@ -62,7 +64,7 @@
     '<p class="ai-muted" id="ai-email-message" role="status" aria-live="polite" style="margin-top:10px"></p>' +
     '<p class="ai-muted">Reviews stay in this browser tab for this signed-in user. Export to keep a copy. Disconnect clears mailbox tokens and email reviews from this tab.</p>' +
     '<details style="margin-top:12px"><summary>Import AI-reviewed email findings</summary>' +
-    '<p class="ai-muted">Choose the JSON review file provided by Codex, or paste its contents. Client records are created only after you review and save their form.</p>' +
+    '<p class="ai-muted">Choose the JSON review file provided by Codex, or paste its contents. Review each proposal before adding a client or saving a purchase to an existing client.</p>' +
     '<label class="email-label">Review file<input type="file" id="email-review-file" accept=".json,application/json"></label>' +
     '<label class="email-label">Review JSON<textarea class="ai-import" id="email-review-json" spellcheck="false"></textarea></label>' +
     '<div class="ai-actions"><button class="ai-btn" id="email-import">Import reviewed findings</button><button class="ai-btn" id="email-export">Export findings</button></div></details></div>' +
@@ -81,34 +83,41 @@
     var order = softwareOrders(row)[0] || g.orders.find(o => o.kind === 'software_order') || {};
     var contact = [order.client_number ? 'ID ' + order.client_number : '', order.email || ''].filter(Boolean).join(' · ');
     var emails = g.rows.length > 1 ? '<span class="ai-pill email-count">' + g.rows.length + ' emails</span>' : '';
+    var review = g.existing ? orderHelpers.orderReview(g, g.existing) : null;
+    if (review) g.newModules = review.newModules;
+    var purchaseReview = review ? '<div class="email-purchase-review"><b>' + (review.pending.length ? 'Review this purchase' : 'Purchase already recorded') + '</b>' +
+      (review.pending.length ? '<p class="ai-muted">Select the modules to add. Order details and the source email will be saved in the client’s history. Existing details, status and progress stay unchanged.</p><div class="email-module-options">' + review.newModules.map(module => '<label><input type="checkbox" data-email-module="' + esc(g.key) + '" value="' + esc(module) + '" checked> ' + esc(module) + '</label>').join('') + '</div>' + (!review.newModules.length ? '<p class="ai-muted">No new modules detected. You can still record this purchase.</p>' : '') : '<p class="ai-muted">This order is already in the client’s history.</p>') + '</div>' : '';
     var modulesLine = g.existing
       ? '<p class="email-mods"><b>Already a client.</b> Current modules: ' + esc((g.existing.modules || []).join(', ') || 'none') + '. ' +
-        (g.newModules.length ? 'This order adds: <b>' + esc(g.newModules.join(', ')) + '</b>.' : 'No new modules detected in the order — check the products below.') + '</p>'
+        (!review.pending.length ? 'Purchase recorded.' : g.newModules.length ? 'Suggested additions: <b>' + esc(g.newModules.join(', ')) + '</b>.' : 'No new modules detected in the order — check the products below.') + '</p>'
       : (g.modules.length ? '<p class="email-mods">Modules on the order: <b>' + esc(g.modules.join(', ')) + '</b></p>' : '');
     var sources = g.rows.map(r => '<li><a href="' + esc(r.source_url) + '" target="_blank" rel="noopener noreferrer">' + esc(r.source_subject) + ' ↗</a> <span class="ai-muted">· ' + esc(r.source_sender) + ' · ' + esc(new Date(r.source_date).toLocaleDateString('en-GB')) + '</span></li>').join('');
-    return '<details class="ai-card email-candidate"><summary class="email-candidate-summary"><span class="email-candidate-title"><b>' + esc(g.name) + '</b><small>' + esc(row.source_sender) + ' · ' + esc(new Date(row.source_date).toLocaleDateString('en-GB')) + '</small></span><span class="ai-pill">' + (g.existing ? 'Existing client' : 'New client') + '</span>' + emails + '<span class="email-candidate-contact">' + esc(g.existing && g.newModules.length ? '+ ' + g.newModules.join(', ') : (contact || 'Open for details')) + '</span><span class="email-candidate-chevron">›</span></summary><div class="email-candidate-details">' +
+    return '<details class="ai-card email-candidate"><summary class="email-candidate-summary"><span class="email-candidate-title"><b>' + esc(g.name) + '</b><small>' + esc(row.source_sender) + ' · ' + esc(new Date(row.source_date).toLocaleDateString('en-GB')) + '</small></span><span class="ai-pill">' + (g.matchConflict ? 'Check client match' : g.existing ? 'Existing client' : 'New client') + '</span>' + emails + '<span class="email-candidate-contact">' + esc(g.existing && g.newModules.length ? '+ ' + g.newModules.join(', ') : (contact || 'Open for details')) + '</span><span class="email-candidate-chevron">›</span></summary><div class="email-candidate-details">' +
       modulesLine +
       '<p class="ai-muted">' + esc(row.reason) + '</p><p style="font-size:13px;margin:10px 0">' + esc(row.next_action) + '</p>' +
       '<p class="ai-muted">' + esc(row.evidence_scope) + '</p>' +
       '<p class="email-label" style="margin-bottom:4px">Source email' + (g.rows.length > 1 ? 's' : '') + '</p><ul class="email-sources">' + sources + '</ul>' +
       g.orders.map(orderHtml).join('') +
       (g.existing ? '' : '<div class="email-review-fields"><label class="email-label">Confirm company name<input class="email-input" id="email-name-' + i + '" maxlength="200" value="' + esc(row.client_name) + '"></label><label class="email-label">Client ID<input class="email-input" id="email-client-code-' + i + '" maxlength="100" value="' + esc(order.client_number || '') + '"></label><label class="email-label">Client email<input class="email-input" type="email" id="email-client-email-' + i + '" value="' + esc(order.email || '') + '" placeholder="client@company.com"></label></div>') +
+      purchaseReview +
+      (g.matchConflict ? '<p class="ai-muted">Company name and client number match multiple clients. Correct the client details before applying this order.</p>' : '') +
       '<div class="ai-actions">' +
-      (g.existing && g.newModules.length ? '<button class="ai-btn ai-btn-primary" data-email-add-mods="' + esc(g.key) + '">Add ' + esc(g.newModules.join(', ')) + ' to client</button>' : '') +
-      '<button class="ai-btn' + (g.existing && g.newModules.length ? '' : ' ai-btn-primary') + '" data-email-open="' + i + '">' + (g.existing ? 'View existing client' : 'Review new client form') + '</button>' +
+      (g.existing && !g.matchConflict && review.pending.length ? '<button class="ai-btn ai-btn-primary" data-email-add-mods="' + esc(g.key) + '">Save purchase to client</button>' : '') +
+      (g.matchConflict ? '' : '<button class="ai-btn' + (g.existing && g.newModules.length ? '' : ' ai-btn-primary') + '" data-email-open="' + i + '">' + (g.existing ? 'View existing client' : 'Review new client form') + '</button>') +
       '<button class="ai-btn" data-email-dismiss-group="' + esc(g.key) + '">Dismiss</button></div>' +
       '<label class="email-label">Read a Software Order PDF saved from this email<input class="email-pdf-input" type="file" data-email-pdf="' + i + '" accept=".pdf,application/pdf"></label></div></details>';
   }
   async function render() {
     var h = await helpers;
+    orderHelpers = await orderUpdates;
     var visible = rows.filter(row => !ignored.has(h.leadKey(row)) && !onlyAdditionalOrders(row) && softwareOrders(row).some(order => order.company_name && !h.isOwnCompanyName(order.company_name)));
     var groups = h.groupLeads(visible, clients);
     groupsByKey = new Map(groups.map(g => [g.key, g]));
-    var existing = groups.filter(g => g.existing), fresh = groups.filter(g => !g.existing);
+    var existing = groups.filter(g => g.existing), fresh = groups.filter(g => !g.existing && !g.matchConflict), conflicts = groups.filter(g => g.matchConflict);
     var section = (title, note, list) => list.length ? '<h3 class="email-group-title">' + title + ' <span class="ai-muted">(' + list.length + ')</span></h3><p class="ai-muted" style="margin:-4px 0 10px">' + note + '</p><div class="email-candidate-grid">' + list.map(g => groupCard(g, h)).join('') + '</div>' : '';
     document.getElementById('email-candidates').innerHTML = '<p class="ai-muted" style="margin:12px 0">' + groups.length + ' compan' + (groups.length === 1 ? 'y' : 'ies') + ' to review' + (visible.length > groups.length ? ' (' + visible.length + ' emails combined)' : '') + '</p>' +
       section('New clients', 'Companies that are not in Client Monitor yet.', fresh) +
-      section('Existing clients — new order', 'Already in Client Monitor; the order may add modules.', existing);
+      section('Existing clients — new purchase', 'Review new modules and save the purchase to the client’s history.', existing) + section('Check client match', 'These orders need a clear client match before saving.', conflicts);
     setBusy(busy);
   }
   window.addEventListener('cm-ai-open', async function () {
@@ -228,15 +237,23 @@
     if (btn.hasAttribute('data-email-add-mods')) {
       var g = groupsByKey.get(btn.dataset.emailAddMods); if (!g || !g.existing) return;
       var live = clients.find(c => c.id === g.existing.id); if (!live) return;
-      var added = g.newModules.filter(m => !(live.modules || []).includes(m));
-      added.forEach(m => tModFld(live.id, m, true));
-      message(added.length ? 'Added ' + added.join(', ') + ' to ' + live.name + '.' : 'Those modules are already on the client.');
-      await render(); return;
+      var selected = [...root.querySelectorAll('[data-email-module]')].filter(input => input.dataset.emailModule === g.key && input.checked).map(input => input.value);
+      setBusy(true); message('Saving purchase…');
+      try {
+        var result = await (await orderUpdates).saveOrderUpdate(sb, g, selected, currentUser);
+        live.modules = result.modules; live.commentLog = result.commentLog; live.comment = result.commentLog[0]?.text || '';
+        if (result.count) audit('Approve purchase', live.name, 'Modules added: ' + (result.added.join(', ') || 'none') + '; orders recorded: ' + result.count);
+        save(); await render();
+        message(result.count ? 'Purchase saved to ' + live.name + (result.added.length ? ' · Added ' + result.added.join(', ') : '') + '.' : 'This purchase is already recorded.');
+      } catch (e) { message(e.message || 'Could not save the purchase. Please try again.', true); }
+      finally { setBusy(false); }
+      return;
     }
     var index = Number(btn.dataset.emailOpen), row = rows[index]; if (!row) return;
     var name = (document.getElementById('email-name-' + index)?.value || row.client_name).trim();
     if (!name) { message('Enter the company name before opening the new-client form.', true); return; }
-    var existing = clients.find(c => h.normalName(c.name) === h.normalName(name));
+    var matchedGroup = [...groupsByKey.values()].find(group => group.rows.includes(row));
+    var existing = matchedGroup?.existing || clients.find(c => h.normalName(c.name) === h.normalName(name));
     if (existing) { goToClient(existing.id); return; }
     openAdd();
     document.getElementById('m-name').value = name;
