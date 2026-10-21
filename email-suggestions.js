@@ -5,6 +5,7 @@
   var orderHelpers;
   var outlook;
   var rows = [], ignored = new Set(), owner = '', mailbox = '', busy = false, abort;
+  var skipped = []; // emails from the senders that were searched but did not become a suggestion, with the reason
   var root = document.getElementById('ai-email-workspace');
   if (!root) return;
   function esc(v) { return String(v || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -70,7 +71,7 @@
     '<div class="ai-actions"><button class="ai-btn" id="email-import">Import reviewed findings</button><button class="ai-btn" id="email-export">Export findings</button></div></details></div>' +
     '<div id="email-candidates"></div>';
   var style = document.createElement('style');
-  style.textContent = '.email-label{display:block;font-size:12px;font-weight:600;margin-top:12px}.email-input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid var(--border-md);border-radius:7px;background:var(--surface);color:var(--text)}#ai-email-workspace code{overflow-wrap:anywhere}#ai-email-workspace button:disabled{opacity:.5;cursor:default}.email-source{font-size:12px;overflow-wrap:anywhere;margin:8px 0}.email-review-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(140px,.7fr) minmax(190px,1fr);gap:10px;align-items:end}.email-candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}.email-candidate{padding:0!important;overflow:hidden;margin:0!important}.email-candidate[open]{grid-column:1/-1}.email-candidate-summary{list-style:none;display:grid;grid-template-columns:minmax(150px,1fr) auto 20px;gap:9px;align-items:center;padding:12px 13px;cursor:pointer}.email-candidate-summary::-webkit-details-marker{display:none}.email-candidate-summary:hover{background:var(--surface2)}.email-candidate-title{min-width:0}.email-candidate-title b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-title small{display:block;margin-top:3px;color:var(--text-3);font-size:10px;font-weight:500}.email-candidate-contact{grid-column:1/3;font-size:10px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-chevron{grid-column:3;grid-row:1/3;font-size:21px;color:var(--text-3);transform:rotate(90deg);transition:transform .15s ease}.email-candidate[open] .email-candidate-chevron{transform:rotate(-90deg)}.email-candidate-details{border-top:1px solid var(--border-md);padding:13px 15px 15px;background:linear-gradient(180deg,var(--surface2),var(--surface))}.email-order{border-top:1px solid var(--border-md);padding-top:12px;margin-top:12px;font-size:13px;overflow-wrap:anywhere}.email-order-table{width:100%;font-size:12px;border-collapse:collapse}.email-order-table th,.email-order-table td{padding:6px;text-align:left;border-bottom:1px solid var(--border-md)}.email-evidence{white-space:pre-wrap;font-size:12px}.email-pdf-input{display:block;margin:8px 0;max-width:100%}.email-group-title{font-size:14px;font-weight:700;margin:18px 0 6px}.email-mods{font-size:13px;margin:0 0 10px;padding:8px 10px;background:var(--surface2);border-radius:8px}.email-sources{margin:0 0 8px;padding-left:18px;font-size:12px}.email-sources li{margin:3px 0}.email-count{background:#fff3cd;color:#856404;justify-self:start;grid-column:2;grid-row:2}@media(max-width:1050px){.email-candidate-grid{grid-template-columns:1fr}.email-candidate[open]{grid-column:auto}}@media(max-width:720px){.email-review-fields{grid-template-columns:1fr}.email-candidate-summary{grid-template-columns:minmax(0,1fr) 20px}.email-candidate-summary>.ai-pill,.email-candidate-contact{grid-column:1;justify-self:start}.email-candidate-chevron{grid-column:2;grid-row:1/4}}';
+  style.textContent = '.email-label{display:block;font-size:12px;font-weight:600;margin-top:12px}.email-input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid var(--border-md);border-radius:7px;background:var(--surface);color:var(--text)}#ai-email-workspace code{overflow-wrap:anywhere}#ai-email-workspace button:disabled{opacity:.5;cursor:default}.email-source{font-size:12px;overflow-wrap:anywhere;margin:8px 0}.email-review-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(140px,.7fr) minmax(190px,1fr);gap:10px;align-items:end}.email-candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}.email-candidate{padding:0!important;overflow:hidden;margin:0!important}.email-candidate[open]{grid-column:1/-1}.email-candidate-summary{list-style:none;display:grid;grid-template-columns:minmax(150px,1fr) auto 20px;gap:9px;align-items:center;padding:12px 13px;cursor:pointer}.email-candidate-summary::-webkit-details-marker{display:none}.email-candidate-summary:hover{background:var(--surface2)}.email-candidate-title{min-width:0}.email-candidate-title b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-title small{display:block;margin-top:3px;color:var(--text-3);font-size:10px;font-weight:500}.email-candidate-contact{grid-column:1/3;font-size:10px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-chevron{grid-column:3;grid-row:1/3;font-size:21px;color:var(--text-3);transform:rotate(90deg);transition:transform .15s ease}.email-candidate[open] .email-candidate-chevron{transform:rotate(-90deg)}.email-candidate-details{border-top:1px solid var(--border-md);padding:13px 15px 15px;background:linear-gradient(180deg,var(--surface2),var(--surface))}.email-order{border-top:1px solid var(--border-md);padding-top:12px;margin-top:12px;font-size:13px;overflow-wrap:anywhere}.email-order-table{width:100%;font-size:12px;border-collapse:collapse}.email-order-table th,.email-order-table td{padding:6px;text-align:left;border-bottom:1px solid var(--border-md)}.email-evidence{white-space:pre-wrap;font-size:12px}.email-pdf-input{display:block;margin:8px 0;max-width:100%}.email-group-title{font-size:14px;font-weight:700;margin:18px 0 6px}.email-mods{font-size:13px;margin:0 0 10px;padding:8px 10px;background:var(--surface2);border-radius:8px}.email-sources{margin:0 0 8px;padding-left:18px;font-size:12px}.email-sources li{margin:3px 0}.email-skipped{margin-top:14px}.email-skipped summary{cursor:pointer}.email-skip-row{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border);font-size:13px}.email-skip-why{font-size:12px;color:#8a5a1a;margin-top:3px}.email-count{background:#fff3cd;color:#856404;justify-self:start;grid-column:2;grid-row:2}@media(max-width:1050px){.email-candidate-grid{grid-template-columns:1fr}.email-candidate[open]{grid-column:auto}}@media(max-width:720px){.email-review-fields{grid-template-columns:1fr}.email-candidate-summary{grid-template-columns:minmax(0,1fr) 20px}.email-candidate-summary>.ai-pill,.email-candidate-contact{grid-column:1;justify-self:start}.email-candidate-chevron{grid-column:2;grid-row:1/4}}';
   document.head.appendChild(style);
   var date = new Date(); date.setDate(date.getDate() - 90);
   document.getElementById('email-since').value = date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
@@ -117,7 +118,14 @@
     var section = (title, note, list) => list.length ? '<h3 class="email-group-title">' + title + ' <span class="ai-muted">(' + list.length + ')</span></h3><p class="ai-muted" style="margin:-4px 0 10px">' + note + '</p><div class="email-candidate-grid">' + list.map(g => groupCard(g, h)).join('') + '</div>' : '';
     document.getElementById('email-candidates').innerHTML = '<p class="ai-muted" style="margin:12px 0">' + groups.length + ' compan' + (groups.length === 1 ? 'y' : 'ies') + ' to review' + (visible.length > groups.length ? ' (' + visible.length + ' emails combined)' : '') + '</p>' +
       section('New clients', 'Companies that are not in Client Monitor yet.', fresh) +
-      section('Existing clients — new purchase', 'Review new modules and save the purchase to the client’s history.', existing) + section('Check client match', 'These orders need a clear client match before saving.', conflicts);
+      section('Existing clients — new purchase', 'Review new modules and save the purchase to the client’s history.', existing) + section('Check client match', 'These orders need a clear client match before saving.', conflicts) +
+      (function () {
+        var hidden = rows.filter(row => ignored.has(h.leadKey(row)));
+        var parts = [];
+        if (hidden.length) parts.push('<details class="ai-card email-skipped"><summary><b>Dismissed earlier (' + hidden.length + ')</b></summary>' + hidden.map(r => '<div class="email-skip-row"><div><b>' + esc(r.client_name) + '</b><div class="ai-muted">' + esc(r.source_subject) + ' · ' + esc(new Date(r.source_date).toLocaleDateString('en-GB')) + '</div></div><button class="ai-btn" data-email-restore="' + esc(h.leadKey(r)) + '">Restore</button></div>').join('') + '</details>');
+        if (skipped.length) parts.push('<details class="ai-card email-skipped"><summary><b>Emails not shown (' + skipped.length + ')</b> <span class="ai-muted">— why each email from these senders did not become a suggestion</span></summary>' + skipped.map(x => '<div class="email-skip-row"><div><b>' + esc(x.subject) + '</b><div class="ai-muted">' + esc(x.sender) + ' · ' + esc(new Date(x.date).toLocaleDateString('en-GB')) + '</div><div class="email-skip-why">' + esc(x.why) + '</div></div>' + (h.outlookLink(x.url) ? '<a class="ai-btn" href="' + esc(h.outlookLink(x.url)) + '" target="_blank" rel="noopener noreferrer">Open ↗</a>' : '') + '</div>').join('') + '</details>');
+        return parts.join('');
+      })();
     setBusy(busy);
   }
   window.addEventListener('cm-ai-open', async function () {
@@ -175,6 +183,22 @@
       var pdf = await import('./pdf-orders.mjs?v=pdf-client-name-20261013');
       var scan = await outlook.scanOrderAttachments(result.messages, { signal: abort.signal, readPdf: pdf.readOrderPdf, onProgress: text => message(text) });
       candidates.push(...scan.matches.map(match => onlyAdditionalOrders(match) ? null : h.candidateFromOrders(match.message, match.orders, result.senders)).filter(Boolean));
+      var byId = new Map(scan.matches.map(m => [m.message.id, m]));
+      skipped = result.messages.map(msg => {
+        var why = '', match = byId.get(msg.id), text = (msg.subject || '') + ' ' + (msg.bodyPreview || '');
+        if (h.isIgnoredProposal(msg.subject)) why = 'Subject is a Software Proposal (proposals are ignored).';
+        else if (h.isIgnoredLicenseChange(text)) why = 'Mentions additional / upgraded licences (ignored as not a new purchase).';
+        else if (!msg.hasAttachments) why = 'No attachment.';
+        else if (!match) why = scan.limited ? 'Not checked — scan limit reached. Narrow the date range.' : 'No PDF attachment.';
+        else if (onlyAdditionalOrders(match)) why = 'Order is for additional licences only.';
+        else {
+          var so = match.orders.filter(o => o.kind === 'software_order');
+          if (!so.length) why = 'PDF is not a readable Software Order Form' + (match.orders[0]?.issues?.length ? ' (' + match.orders[0].issues.join(' ') + ')' : '') + '. Use "Read a Software Order PDF" or add the client manually.';
+          else if (!so.some(o => o.company_name && !h.isOwnCompanyName(o.company_name))) why = 'Licensee (client name) not found in the PDF.';
+          else if (!h.candidateFromOrders(msg, match.orders, result.senders)) why = 'Did not pass the order checks.';
+        }
+        return why ? { subject: msg.subject || '(No subject)', date: msg.receivedDateTime, sender: msg.from?.emailAddress?.address || '', url: msg.webLink, why } : null;
+      }).filter(Boolean);
       abort.signal.throwIfAborted();
       rows = h.mergeLeads(rows, candidates); saveSettings(); save(); await render();
       message('Searched ' + result.messages.length + ' emails. ' + (scan ? 'Checked ' + scan.checkedPdfs + ' PDF attachments; ' + scan.errors.length + ' could not be read. ' : '') +
@@ -227,6 +251,8 @@
     finally { abort = null; setBusy(false); }
   });
   root.addEventListener('click', async function (event) {
+    var restore = event.target.closest('button[data-email-restore]');
+    if (restore && !busy && signedIn()) { ignored.delete(restore.dataset.emailRestore); save(); await render(); return; }
     var btn = event.target.closest('button[data-email-open],button[data-email-dismiss-group],button[data-email-add-mods]');
     if (!btn || busy || !signedIn()) return;
     var h = await helpers;
