@@ -117,11 +117,13 @@
     var groups = h.groupLeads(visible, clients);
     groupsByKey = new Map(groups.concat(proposalGroups).map(g => [g.key, g]));
     var existing = groups.filter(g => g.existing), fresh = groups.filter(g => !g.existing && !g.matchConflict), conflicts = groups.filter(g => g.matchConflict);
+    // Proposals are listed with the other suggestions (marked "Proposal"), not in a section of their own.
+    proposalGroups.forEach(g => { if (g.existing) existing.push(g); else fresh.push(g); });
     var section = (title, note, list) => list.length ? '<h3 class="email-group-title">' + title + ' <span class="ai-muted">(' + list.length + ')</span></h3><p class="ai-muted" style="margin:-4px 0 10px">' + note + '</p><div class="email-candidate-grid">' + list.map(g => groupCard(g, h)).join('') + '</div>' : '';
-    document.getElementById('email-candidates').innerHTML = '<p class="ai-muted" style="margin:12px 0">' + groups.length + ' compan' + (groups.length === 1 ? 'y' : 'ies') + ' to review' + (visible.length > groups.length ? ' (' + visible.length + ' emails combined)' : '') + '</p>' +
+    document.getElementById('email-candidates').innerHTML = '<p class="ai-muted" style="margin:12px 0">' + (groups.length + proposalGroups.length) + ' compan' + (groups.length + proposalGroups.length === 1 ? 'y' : 'ies') + ' to review' + (visible.length > groups.length ? ' (' + visible.length + ' emails combined)' : '') + '</p>' +
       section('New clients', 'Companies that are not in Client Monitor yet.', fresh) +
       section('Existing clients — new purchase', 'Review new modules and save the purchase to the client’s history.', existing) + section('Check client match', 'These orders need a clear client match before saving.', conflicts) +
-      section('Software Proposals', 'Proposals sent, no signed order yet — follow up or add the client when it is confirmed.', proposalGroups) +
+
       (function () {
         var hidden = rows.filter(row => ignored.has(h.leadKey(row)));
         var parts = [];
