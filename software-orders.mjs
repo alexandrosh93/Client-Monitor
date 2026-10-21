@@ -16,7 +16,26 @@ export function isAdditionalLicenseRequest(value) {
 }
 export function isOwnCompanyName(value) {
   const normalized = text(value, 500).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-  return /^(?:a\s*v\s+)?premiersoft(?:\s+(?:ltd|limited))?$/.test(normalized);
+  // Our own company in any form ("A.V. PremierSoft Ltd", "PremierSoft", "Premier Soft Limited") is never a client.
+  return /^(?:a\s*v\s+)?premier\s*soft(?:\s+(?:ltd|limited|software))?$/.test(normalized);
+}
+// Client name and client number from documents that are not Software Order Forms (e.g. a Software Proposal).
+export function clientFromDocument(pages) {
+  const lines = pages.join('\n').split('\n').map(l => l.replace(/\s*\|\s*/g, ' | ').trim()).filter(Boolean);
+  const labels = /^(?:licensee|client(?:\s+name)?|customer(?:\s+name)?|company(?:\s+name)?|prepared\s+for|proposal\s+for|to|attn\.?|attention|πελάτης|πελατης|εταιρεία|εταιρεια|προς)(?!\s*(?:no|id|code|number)\b)\s*[:.-]?\s*(.*)$/i;
+  const ok = v => v && v.length >= 3 && !isOwnCompanyName(v) && !/premier\s*soft/i.test(v) && !labels.test(v) &&
+    !/^(?:date|client\s+no|vat|tel|telephone|email|contact|address|ref)\b/i.test(v) && !/^\d/.test(v);
+  const clean = v => text(String(v || '').replace(/^[-:,.|\s]+|[-:,|\s]+$/g, ''), 200);
+  let name = '';
+  for (let i = 0; i < lines.length && !name; i++) {
+    const m = lines[i].match(labels);
+    if (!m) continue;
+    const inline = m[1].split(/\s*\|\s*/).map(clean).filter(Boolean);
+    const next = [lines[i + 1], lines[i + 2]].map(l => clean(String(l || '').split(/\s*\|\s*/)[0]));
+    name = [...inline, ...next].find(ok) || '';
+  }
+  const number = lines.join('\n').match(/(?:Client|Customer)\s+(?:No|ID|Code|Number)\.?[\s:|#]*([A-Z0-9][A-Z0-9-]{1,30})/i)?.[1] || '';
+  return { name, number };
 }
 function licenseeCompany(lines) {
   const at = lines.findIndex(line => /\blicensee\b/i.test(line));
@@ -56,8 +75,12 @@ export function parseSoftwareOrder(pages, meta = {}) {
   const base = { attachment_name: text(meta.name, 250), extraction: meta.ocr ? 'ocr' : 'text',
     total_pages: meta.totalPages || pages.length, pages_read: pages.length,
     signature_status: 'Review the client signature in the original PDF', issues: [] };
-  if (!selected.length) return { ...base, kind: pages.some(p => text(p).length > 40 || /\bInvoice\b|Software Proposal/i.test(p)) ? 'not_order' : 'needs_review',
-    issues: [pages.some(p => text(p).length > 40) ? 'No Software Order Form heading found. Check the document type in the original PDF.' : 'No readable Software Order Form found. Check the original PDF.'] };
+  if (!selected.length) {
+    const found = clientFromDocument(pages);
+    return { ...base, kind: pages.some(p => text(p).length > 40 || /\bInvoice\b|Software Proposal/i.test(p)) ? 'not_order' : 'needs_review',
+      company_name: found.name, client_number: found.number,
+      issues: [pages.some(p => text(p).length > 40) ? 'No Software Order Form heading found. Check the document type in the original PDF.' : 'No readable Software Order Form found. Check the original PDF.'] };
+  }
   const source = selected[0];
   // Use the commercial form, excluding supplier bank details and contract boilerplate.
   const body = source.text.split(/software\s+order\s*(?:form)?/i).slice(1).join(' ').split(/I,?\s+the\s+undersigned|Bank\s+Details|For\s+A\.?V/i)[0];
@@ -108,7 +131,7 @@ export function validateOrder(value) {
     signature_status: 'Review the client signature in the original PDF', total_pages: Math.max(0, Math.min(1000, Number(value.total_pages) || 0)),
     pages_read: Math.max(0, Math.min(20, Number(value.pages_read) || 0)), issues: (Array.isArray(value.issues) ? value.issues : []).slice(0,10).map(x => text(x,400)) };
   for (const key of ['company_name','order_number','order_date','client_number','contact','phone','email','address','payment_terms']) result[key] = text(value[key], key === 'address' ? 600 : 400);
-  if (isOwnCompanyName(result.company_name)) result.company_name = '';
+  if (isOwnCompanyName(result.company_name) || /premier\s*soft/i.test(result.company_name)) result.company_name = '';
   for (const key of ['license_cost','total_amount']) result[key] = typeof value[key] === 'number' && Number.isFinite(value[key]) && value[key] >= 0 ? value[key] : null;
   result.currency = 'EUR'; result.additional_licenses = value.additional_licenses === true;
   result.products = (Array.isArray(value.products) ? value.products : []).slice(0,30).map(p => ({ description:text(p?.description,250),license:text(p?.license,80),amount:typeof p?.amount === 'number' && Number.isFinite(p.amount) && p.amount >= 0 ? p.amount : null }));

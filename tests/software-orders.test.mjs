@@ -87,3 +87,10 @@ test('imported PDF results cannot assert a signed client or inject unbounded val
   assert.equal(isPdfAttachment({name:'order.pdf',isInline:true}),false);
   assert.equal(isPdfAttachment({name:'order.pdf',isInline:false}),true);
 });
+test('client name and number are read from a Software Proposal PDF, never our own company', async () => {
+  const { clientFromDocument, isOwnCompanyName } = await import('../software-orders.mjs');
+  const pages = ['A.V. PremierSoft Ltd\nSoftware Proposal\nPrepared for: | Kyprou Pharma Ltd\nClient No: C1234\nDate: 21/10/2026'];
+  assert.deepEqual(clientFromDocument(pages), { name: 'Kyprou Pharma Ltd', number: 'C1234' });
+  assert.equal(clientFromDocument(['To: A.V. Premiersoft Ltd\nTo: Olive Foods']).name, 'Olive Foods');
+  for (const n of ['A.V. Premiersoft Ltd', 'AV PremierSoft Limited', 'Premier Soft']) assert.equal(isOwnCompanyName(n), true);
+});

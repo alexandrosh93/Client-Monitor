@@ -86,3 +86,12 @@ test('a Software Proposal email without an order becomes a proposal suggestion n
   assert.equal(p.proposal, true);
   assert.equal(proposalFromMessage({ ...msg, subject: 'Software Order' }, ['sender@example.com']), null);
 });
+test('proposal suggestions use the PDF client name and never our own company', async () => {
+  const { proposalFromMessage } = await import('../email-leads.mjs');
+  const msg = { from: { emailAddress: { address: 'sender@example.com' } }, subject: 'Software Proposal - A.V. Premiersoft Ltd', receivedDateTime: '2026-10-21T09:00:00Z', webLink: 'https://outlook.office.com/mail/id/z', bodyPreview: '' };
+  assert.equal(proposalFromMessage(msg, ['sender@example.com']), null);
+  const pdf = [{ kind: 'not_order', attachment_name: 'proposal.pdf', company_name: 'Kyprou Pharma Ltd', client_number: 'C1234', issues: [] }];
+  const p = proposalFromMessage(msg, ['sender@example.com'], pdf);
+  assert.equal(p.client_name, 'Kyprou Pharma Ltd');
+  assert.equal(p.orders[0].client_number, 'C1234');
+});

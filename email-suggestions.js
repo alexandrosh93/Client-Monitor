@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var helpers = import('./email-leads.mjs?v=proposals-20261021b');
+  var helpers = import('./email-leads.mjs?v=proposal-pdf-20261021');
   var orderUpdates = import('./existing-client-orders.mjs?v=20261020');
   var orderHelpers;
   var outlook;
@@ -81,7 +81,7 @@
   var groupsByKey = new Map();
   function groupCard(g, h) {
     var row = g.rows[0], i = rows.indexOf(row);
-    var order = softwareOrders(row)[0] || g.orders.find(o => o.kind === 'software_order') || {};
+    var order = softwareOrders(row)[0] || g.orders.find(o => o.kind === 'software_order') || (g.isProposal ? (g.orders.find(o => o.company_name || o.client_number) || {}) : {});
     var contact = [order.client_number ? 'ID ' + order.client_number : '', order.email || ''].filter(Boolean).join(' · ');
     var emails = g.rows.length > 1 ? '<span class="ai-pill email-count">' + g.rows.length + ' emails</span>' : '';
     var review = g.existing && !g.isProposal ? orderHelpers.orderReview(g, g.existing) : null;
@@ -157,7 +157,7 @@
     setBusy(true); message('Opening Microsoft sign-in…');
     mailbox = ''; connectionText();
     try {
-      outlook = await import('./outlook-client.mjs?v=pdf-client-name-20261013');
+      outlook = await import('./outlook-client.mjs?v=proposal-pdf-20261021');
       await outlook.initialize(config());
       mailbox = await outlook.connect();
       saveSettings(); connectionText(); message('Connected. Choose the senders and date, then search Outlook.');
@@ -185,11 +185,12 @@
       if (abort.signal.aborted) return;
       var h = await helpers;
       var candidates = [];
-      var pdf = await import('./pdf-orders.mjs?v=pdf-client-name-20261013');
+      var pdf = await import('./pdf-orders.mjs?v=proposal-pdf-20261021');
       var scan = await outlook.scanOrderAttachments(result.messages, { signal: abort.signal, readPdf: pdf.readOrderPdf, onProgress: text => message(text) });
       candidates.push(...scan.matches.map(match => onlyAdditionalOrders(match) ? null : h.candidateFromOrders(match.message, match.orders, result.senders)).filter(Boolean));
       var orderIds = new Set(candidates.map(c => c.source_url));
-      candidates.push(...result.messages.filter(m => !orderIds.has(h.outlookLink(m.webLink))).map(m => h.proposalFromMessage(m, result.senders)).filter(Boolean));
+      var pdfById = new Map(scan.matches.map(m => [m.message.id, m.orders]));
+      candidates.push(...result.messages.filter(m => !orderIds.has(h.outlookLink(m.webLink))).map(m => h.proposalFromMessage(m, result.senders, pdfById.get(m.id) || [])).filter(Boolean));
       var byId = new Map(scan.matches.map(m => [m.message.id, m]));
       skipped = result.messages.map(msg => {
         var why = '', match = byId.get(msg.id), text = (msg.subject || '') + ' ' + (msg.bodyPreview || '');
@@ -245,10 +246,10 @@
     if (file.size > 20 * 1024 * 1024) { message('Choose a PDF no larger than 20 MB.', true); return; }
     setBusy(true); abort = new AbortController();
     try {
-      var pdf = await import('./pdf-orders.mjs?v=pdf-client-name-20261013'), h = await helpers;
+      var pdf = await import('./pdf-orders.mjs?v=proposal-pdf-20261021'), h = await helpers;
       var order = await pdf.readOrderPdf(new Uint8Array(await file.arrayBuffer()), { name: file.name, signal: abort.signal, onProgress: text => message(text) });
       abort.signal.throwIfAborted();
-      var combined = (await import('./software-orders.mjs?v=pdf-client-name-20261013')).mergeOrders(row.orders || [], [order]);
+      var combined = (await import('./software-orders.mjs?v=proposal-pdf-20261021')).mergeOrders(row.orders || [], [order]);
       if (onlyAdditionalOrders({ orders: combined })) {
         rows.splice(index, 1); save(); await render(); message('Additional Payroll Licenses order ignored.'); return;
       }

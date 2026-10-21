@@ -1,5 +1,5 @@
 // Pure validation and candidate detection. Detection is deliberately labelled as rules, not AI.
-import { validateOrder, mergeOrders, isAdditionalLicenseRequest, isOwnCompanyName } from './software-orders.mjs?v=pdf-client-name-20261013';
+import { validateOrder, mergeOrders, isAdditionalLicenseRequest, isOwnCompanyName } from './software-orders.mjs?v=proposal-pdf-20261021';
 export { isOwnCompanyName };
 export function cleanText(value, limit = 2000) {
   return typeof value === 'string' ? value.trim().slice(0, limit) : '';
@@ -148,18 +148,23 @@ export function groupLeads(rows, clients) {
 }
 
 // A Software Proposal email (no order yet): shown separately so the team can follow it up.
-export function proposalFromMessage(message, allowedSenders) {
+export function proposalFromMessage(message, allowedSenders, orders = []) {
   const sender = String(message.from?.emailAddress?.address || '').toLowerCase();
   const subject = cleanText(message.subject, 400);
   if (!allowedSenders.includes(sender) || !isIgnoredProposal(subject) || isIgnoredLicenseChange(subject + ' ' + cleanText(message.bodyPreview))) return null;
-  const name = subject.replace(/^(?:(?:re|fw|fwd)\s*:\s*)+/gi, '').replace(/software\s+proposal/i, '').replace(/^[\s\-–—:|]+|[\s\-–—:|]+$/g, '').trim() || subject;
-  if (isOwnCompanyName(name)) return null;
+  // Prefer the client name / number read from the attached PDF; fall back to the subject.
+  const fromPdf = (orders || []).find(o => o && o.company_name && !isOwnCompanyName(o.company_name) && !/premier\s*soft/i.test(o.company_name));
+  const number = (orders || []).map(o => o?.client_number).find(Boolean) || '';
+  let name = fromPdf ? fromPdf.company_name : subject.replace(/^(?:(?:re|fw|fwd)\s*:\s*)+/gi, '').replace(/software\s+proposal/i, '')
+    .replace(/a\.?\s*v\.?\s*premier\s*soft(?:\s+(?:ltd|limited))?\.?/ig, '').replace(/\b(?:for|to|from)\b\s*$/i, '').replace(/^[\s\-–—:|,]+|[\s\-–—:|,]+$/g, '').trim();
+  if (!name || isOwnCompanyName(name) || /premier\s*soft/i.test(name)) return null;
   return validateLead({
     client_name: name, classification: 'Software Proposal', proposal: true,
-    reason: 'A Software Proposal was sent. No signed Software Order was found in this email yet.',
+    reason: 'A Software Proposal was sent. No signed Software Order was found in this email yet.' + (fromPdf ? ' Client name read from ' + fromPdf.attachment_name + '.' : ' Client name taken from the email subject — check it.'),
     next_action: 'Follow up the proposal; add the client when the order is confirmed.',
     source_subject: subject || '(No subject)', source_date: message.receivedDateTime,
     source_sender: sender, source_url: message.webLink,
-    evidence_scope: 'Email subject only. The client name is taken from the subject — check it.',
+    evidence_scope: fromPdf ? 'Read from the attached PDF. Check the original.' : 'Email subject only.',
+    orders: (orders || []).map(o => ({ ...o, client_number: o.client_number || number })),
   });
 }

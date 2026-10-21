@@ -1,4 +1,4 @@
-import { cleanText, modulesFromOrders, normalName, outlookLink } from './email-leads.mjs?v=client-orders-20261020';
+import { cleanText, modulesFromOrders, normalName, outlookLink } from './email-leads.mjs?v=proposal-pdf-20261021';
 
 export function orderKey(order) {
   const number = cleanText(order.order_number, 250).toLowerCase();
