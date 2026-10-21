@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var helpers = import('./email-leads.mjs?v=client-orders-20261020');
+  var helpers = import('./email-leads.mjs?v=proposals-20261021b');
   var orderUpdates = import('./existing-client-orders.mjs?v=20261020');
   var orderHelpers;
   var outlook;
@@ -84,16 +84,16 @@
     var order = softwareOrders(row)[0] || g.orders.find(o => o.kind === 'software_order') || {};
     var contact = [order.client_number ? 'ID ' + order.client_number : '', order.email || ''].filter(Boolean).join(' · ');
     var emails = g.rows.length > 1 ? '<span class="ai-pill email-count">' + g.rows.length + ' emails</span>' : '';
-    var review = g.existing ? orderHelpers.orderReview(g, g.existing) : null;
+    var review = g.existing && !g.isProposal ? orderHelpers.orderReview(g, g.existing) : null;
     if (review) g.newModules = review.newModules;
     var purchaseReview = review ? '<div class="email-purchase-review"><b>' + (review.pending.length ? 'Review this purchase' : 'Purchase already recorded') + '</b>' +
       (review.pending.length ? '<p class="ai-muted">Select the modules to add. Order details and the source email will be saved in the client’s history. Existing details, status and progress stay unchanged.</p><div class="email-module-options">' + review.newModules.map(module => '<label><input type="checkbox" data-email-module="' + esc(g.key) + '" value="' + esc(module) + '" checked> ' + esc(module) + '</label>').join('') + '</div>' + (!review.newModules.length ? '<p class="ai-muted">No new modules detected. You can still record this purchase.</p>' : '') : '<p class="ai-muted">This order is already in the client’s history.</p>') + '</div>' : '';
-    var modulesLine = g.existing
+    var modulesLine = g.isProposal ? (g.existing ? '<p class="email-mods"><b>Already a client.</b> This is a proposal for more work — no order yet.</p>' : '') : g.existing
       ? '<p class="email-mods"><b>Already a client.</b> Current modules: ' + esc((g.existing.modules || []).join(', ') || 'none') + '. ' +
         (!review.pending.length ? 'Purchase recorded.' : g.newModules.length ? 'Suggested additions: <b>' + esc(g.newModules.join(', ')) + '</b>.' : 'No new modules detected in the order — check the products below.') + '</p>'
       : (g.modules.length ? '<p class="email-mods">Modules on the order: <b>' + esc(g.modules.join(', ')) + '</b></p>' : '');
     var sources = g.rows.map(r => '<li><a href="' + esc(r.source_url) + '" target="_blank" rel="noopener noreferrer">' + esc(r.source_subject) + ' ↗</a> <span class="ai-muted">· ' + esc(r.source_sender) + ' · ' + esc(new Date(r.source_date).toLocaleDateString('en-GB')) + '</span></li>').join('');
-    return '<details class="ai-card email-candidate"><summary class="email-candidate-summary"><span class="email-candidate-title"><b>' + esc(g.name) + '</b><small>' + esc(row.source_sender) + ' · ' + esc(new Date(row.source_date).toLocaleDateString('en-GB')) + '</small></span><span class="ai-pill">' + (g.matchConflict ? 'Check client match' : g.existing ? 'Existing client' : 'New client') + '</span>' + emails + '<span class="email-candidate-contact">' + esc(g.existing && g.newModules.length ? '+ ' + g.newModules.join(', ') : (contact || 'Open for details')) + '</span><span class="email-candidate-chevron">›</span></summary><div class="email-candidate-details">' +
+    return '<details class="ai-card email-candidate"><summary class="email-candidate-summary"><span class="email-candidate-title"><b>' + esc(g.name) + '</b><small>' + esc(row.source_sender) + ' · ' + esc(new Date(row.source_date).toLocaleDateString('en-GB')) + '</small></span><span class="ai-pill">' + (g.isProposal ? 'Proposal' : g.matchConflict ? 'Check client match' : g.existing ? 'Existing client' : 'New client') + '</span>' + emails + '<span class="email-candidate-contact">' + esc(g.existing && g.newModules.length ? '+ ' + g.newModules.join(', ') : (contact || 'Open for details')) + '</span><span class="email-candidate-chevron">›</span></summary><div class="email-candidate-details">' +
       modulesLine +
       '<p class="ai-muted">' + esc(row.reason) + '</p><p style="font-size:13px;margin:10px 0">' + esc(row.next_action) + '</p>' +
       '<p class="ai-muted">' + esc(row.evidence_scope) + '</p>' +
@@ -103,7 +103,7 @@
       purchaseReview +
       (g.matchConflict ? '<p class="ai-muted">Company name and client number match multiple clients. Correct the client details before applying this order.</p>' : '') +
       '<div class="ai-actions">' +
-      (g.existing && !g.matchConflict && review.pending.length ? '<button class="ai-btn ai-btn-primary" data-email-add-mods="' + esc(g.key) + '">Save purchase to client</button>' : '') +
+      (review && !g.matchConflict && review.pending.length ? '<button class="ai-btn ai-btn-primary" data-email-add-mods="' + esc(g.key) + '">Save purchase to client</button>' : '') +
       (g.matchConflict ? '' : '<button class="ai-btn' + (g.existing && g.newModules.length ? '' : ' ai-btn-primary') + '" data-email-open="' + i + '">' + (g.existing ? 'View existing client' : 'Review new client form') + '</button>') +
       '<button class="ai-btn" data-email-dismiss-group="' + esc(g.key) + '">Dismiss</button></div>' +
       '<label class="email-label">Read a Software Order PDF saved from this email<input class="email-pdf-input" type="file" data-email-pdf="' + i + '" accept=".pdf,application/pdf"></label></div></details>';
@@ -112,13 +112,16 @@
     var h = await helpers;
     orderHelpers = await orderUpdates;
     var visible = rows.filter(row => !ignored.has(h.leadKey(row)) && !onlyAdditionalOrders(row) && softwareOrders(row).some(order => order.company_name && !h.isOwnCompanyName(order.company_name)));
+    var proposalRows = rows.filter(row => row.proposal && !ignored.has(h.leadKey(row)) && !softwareOrders(row).length);
+    var proposalGroups = h.groupLeads(proposalRows, clients).map(g => Object.assign(g, { key: 'proposal:' + g.key, isProposal: true }));
     var groups = h.groupLeads(visible, clients);
-    groupsByKey = new Map(groups.map(g => [g.key, g]));
+    groupsByKey = new Map(groups.concat(proposalGroups).map(g => [g.key, g]));
     var existing = groups.filter(g => g.existing), fresh = groups.filter(g => !g.existing && !g.matchConflict), conflicts = groups.filter(g => g.matchConflict);
     var section = (title, note, list) => list.length ? '<h3 class="email-group-title">' + title + ' <span class="ai-muted">(' + list.length + ')</span></h3><p class="ai-muted" style="margin:-4px 0 10px">' + note + '</p><div class="email-candidate-grid">' + list.map(g => groupCard(g, h)).join('') + '</div>' : '';
     document.getElementById('email-candidates').innerHTML = '<p class="ai-muted" style="margin:12px 0">' + groups.length + ' compan' + (groups.length === 1 ? 'y' : 'ies') + ' to review' + (visible.length > groups.length ? ' (' + visible.length + ' emails combined)' : '') + '</p>' +
       section('New clients', 'Companies that are not in Client Monitor yet.', fresh) +
       section('Existing clients — new purchase', 'Review new modules and save the purchase to the client’s history.', existing) + section('Check client match', 'These orders need a clear client match before saving.', conflicts) +
+      section('Software Proposals', 'Proposals sent, no signed order yet — follow up or add the client when it is confirmed.', proposalGroups) +
       (function () {
         var hidden = rows.filter(row => ignored.has(h.leadKey(row)));
         var parts = [];
@@ -183,17 +186,20 @@
       var pdf = await import('./pdf-orders.mjs?v=pdf-client-name-20261013');
       var scan = await outlook.scanOrderAttachments(result.messages, { signal: abort.signal, readPdf: pdf.readOrderPdf, onProgress: text => message(text) });
       candidates.push(...scan.matches.map(match => onlyAdditionalOrders(match) ? null : h.candidateFromOrders(match.message, match.orders, result.senders)).filter(Boolean));
+      var orderIds = new Set(candidates.map(c => c.source_url));
+      candidates.push(...result.messages.filter(m => !orderIds.has(h.outlookLink(m.webLink))).map(m => h.proposalFromMessage(m, result.senders)).filter(Boolean));
       var byId = new Map(scan.matches.map(m => [m.message.id, m]));
       skipped = result.messages.map(msg => {
         var why = '', match = byId.get(msg.id), text = (msg.subject || '') + ' ' + (msg.bodyPreview || '');
-        if (h.isIgnoredProposal(msg.subject)) why = 'Subject is a Software Proposal (proposals are ignored).';
+        if (h.isIgnoredProposal(msg.subject)) why = '';
         else if (h.isIgnoredLicenseChange(text)) why = 'Mentions additional / upgraded licences (ignored as not a new purchase).';
-        else if (!msg.hasAttachments) why = 'No attachment.';
-        else if (!match) why = scan.limited ? 'Not checked — scan limit reached. Narrow the date range.' : 'No PDF attachment.';
+        else if (!msg.hasAttachments) why = h.isIgnoredProposal(msg.subject) ? 'Software Proposal without attachment (ignored until the order arrives).' : 'No attachment.';
+        else if (!match) why = scan.limited ? 'Not checked — scan limit reached. Narrow the date range.' : h.isIgnoredProposal(msg.subject) ? 'Software Proposal without a PDF (ignored until the order arrives).' : 'No PDF attachment.';
         else if (onlyAdditionalOrders(match)) why = 'Order is for additional licences only.';
         else {
           var so = match.orders.filter(o => o.kind === 'software_order');
-          if (!so.length) why = 'PDF is not a readable Software Order Form' + (match.orders[0]?.issues?.length ? ' (' + match.orders[0].issues.join(' ') + ')' : '') + '. Use "Read a Software Order PDF" or add the client manually.';
+          if (!so.length && h.isIgnoredProposal(msg.subject)) why = 'Software Proposal without a Software Order PDF (proposals are ignored until the order arrives).';
+          else if (!so.length) why = 'PDF is not a readable Software Order Form' + (match.orders[0]?.issues?.length ? ' (' + match.orders[0].issues.join(' ') + ')' : '') + '. Use "Read a Software Order PDF" or add the client manually.';
           else if (!so.some(o => o.company_name && !h.isOwnCompanyName(o.company_name))) why = 'Licensee (client name) not found in the PDF.';
           else if (!h.candidateFromOrders(msg, match.orders, result.senders)) why = 'Did not pass the order checks.';
         }

@@ -70,10 +70,10 @@ test('additional licenses are removed when an email also contains a new order',(
   assert.equal(candidate.orders.length,1);
   assert.equal(candidate.orders[0].attachment_name,'new-order.pdf');
 });
-test('Software Proposal emails are ignored even when they contain an order-like PDF',()=>{
+test('Software Proposal emails with an order PDF become normal order suggestions',()=>{
   const order=parseSoftwareOrder([form],{name:'proposal.pdf'});
   const message={from:{emailAddress:{address:'sender@example.com'}},subject:'Software Proposal - Example Ltd',receivedDateTime:'2026-10-12T00:00:00Z',webLink:'https://outlook.office.com/mail/id/example'};
-  assert.equal(candidateFromOrders(message,[order],['sender@example.com']),null);
+  assert.ok(candidateFromOrders(message,[order],['sender@example.com']));
 });
 test('PDF enrichment updates a preview candidate and retains multiple source orders',()=>{
   const first={source_sender:'sender@example.com',source_date:'2026-10-12T00:00:00Z',source_subject:'Software Order',client_name:'Unknown'};

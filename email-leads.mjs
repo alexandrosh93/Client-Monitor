@@ -37,7 +37,7 @@ export function leadKey(row) {
 }
 export function validateLead(row) {
   if (!row || typeof row !== 'object' || Array.isArray(row)) return null;
-  if (isIgnoredProposal(row.source_subject) || isIgnoredLicenseChange([row.source_subject, row.classification, row.reason].join(' ')) || isOwnCompanyName(row.client_name)) return null;
+  if (isIgnoredLicenseChange([row.source_subject, row.classification, row.reason].join(' ')) || isOwnCompanyName(row.client_name)) return null;
   const sourceUrl = outlookLink(row.source_url);
   const date = cleanText(row.source_date, 40);
   let sender;
@@ -51,6 +51,7 @@ export function validateLead(row) {
     source_sender: sender[0], source_url: sourceUrl,
     evidence_scope: cleanText(row.evidence_scope, 400) || 'Email subject and preview only. Confirm against the source.',
     confirmed_new_client: false,
+    proposal: row.proposal === true,
     orders: (Array.isArray(row.orders) ? row.orders : []).slice(0,10).map(validateOrder).filter(order => order && !(order.kind === 'software_order' && order.additional_licenses)),
   };
   return result.client_name && result.source_subject && result.reason ? result : null;
@@ -59,7 +60,7 @@ export function readReview(value) {
   if (!value || value.schema_version !== 1 || !Array.isArray(value.candidates) || value.candidates.length > 100) {
     throw new Error('Use a Client Monitor review file with schema_version 1 and up to 100 candidates.');
   }
-  const rows = value.candidates.filter(row => !isIgnoredProposal(row?.source_subject) && !isIgnoredLicenseChange([row?.source_subject, row?.classification, row?.reason].join(' '))).map(validateLead);
+  const rows = value.candidates.filter(row => !isIgnoredLicenseChange([row?.source_subject, row?.classification, row?.reason].join(' '))).map(validateLead);
   if (rows.some(x => !x)) throw new Error('The file contains an invalid candidate or a non-Outlook source link. Nothing was imported.');
   return rows;
 }
@@ -74,7 +75,7 @@ export function mergeLeads(current, incoming) {
 }
 export function candidateFromOrders(message, orders, allowedSenders) {
   const sender = String(message.from?.emailAddress?.address || '').toLowerCase();
-  if (!allowedSenders.includes(sender) || isIgnoredProposal(message.subject) || isIgnoredLicenseChange(cleanText(message.subject) + ' ' + cleanText(message.bodyPreview))) return null;
+  if (!allowedSenders.includes(sender) || isIgnoredLicenseChange(cleanText(message.subject) + ' ' + cleanText(message.bodyPreview))) return null;
   const found = orders.filter(o => o.kind === 'software_order' && !o.additional_licenses && o.company_name && !isOwnCompanyName(o.company_name));
   if (!found.length) return null;
   const names = [...new Set(found.map(o => o.company_name).filter(Boolean))];
@@ -144,4 +145,21 @@ export function groupLeads(rows, clients) {
     g.newModules = g.existing ? g.modules.filter(m => !(g.existing.modules || []).some(current => normalName(current) === normalName(m))) : g.modules;
     return g;
   }).sort((a, b) => Date.parse(b.rows[0].source_date) - Date.parse(a.rows[0].source_date));
+}
+
+// A Software Proposal email (no order yet): shown separately so the team can follow it up.
+export function proposalFromMessage(message, allowedSenders) {
+  const sender = String(message.from?.emailAddress?.address || '').toLowerCase();
+  const subject = cleanText(message.subject, 400);
+  if (!allowedSenders.includes(sender) || !isIgnoredProposal(subject) || isIgnoredLicenseChange(subject + ' ' + cleanText(message.bodyPreview))) return null;
+  const name = subject.replace(/^(?:(?:re|fw|fwd)\s*:\s*)+/gi, '').replace(/software\s+proposal/i, '').replace(/^[\s\-–—:|]+|[\s\-–—:|]+$/g, '').trim() || subject;
+  if (isOwnCompanyName(name)) return null;
+  return validateLead({
+    client_name: name, classification: 'Software Proposal', proposal: true,
+    reason: 'A Software Proposal was sent. No signed Software Order was found in this email yet.',
+    next_action: 'Follow up the proposal; add the client when the order is confirmed.',
+    source_subject: subject || '(No subject)', source_date: message.receivedDateTime,
+    source_sender: sender, source_url: message.webLink,
+    evidence_scope: 'Email subject only. The client name is taken from the subject — check it.',
+  });
 }

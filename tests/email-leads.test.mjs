@@ -35,10 +35,9 @@ test('live matches require exact sender and exclude upgrades and spam', () => {
   assert.equal(candidateFromMessage({...message,subject:'Software Order',bodyPreview:'Please increase user license to 15 users.'},[sample.source_sender]),null);
   assert.ok(candidateFromMessage({...message,subject:'Παραγγελία συστήματος'},[sample.source_sender]));
 });
-test('review imports silently ignore Software Proposal candidates', () => {
+test('review imports keep Software Proposal candidates', () => {
   const rows=readReview({schema_version:1,candidates:[sample,{...sample,source_subject:'RE: Software Proposal - Example Ltd'}]});
-  assert.equal(rows.length,1);
-  assert.equal(rows[0].source_subject,'Software Order');
+  assert.equal(rows.length,2);
 });
 test('client matching tolerates punctuation and case without fuzzy identity guesses', () => {
   assert.equal(normalName('Example, LTD.'), normalName('example ltd'));
@@ -69,4 +68,21 @@ test('existing clients are recognised by name or client number and only new modu
   const groups = groupLeads([{ client_name: 'Kyprou Pharma', source_date: '2026-10-05T10:00:00Z', source_subject: 'Order', source_sender: 'a@b.com', orders: [order] }], clients);
   assert.equal(groups[0].existing.id, 7);
   assert.deepEqual(groups[0].newModules, ['Stock']);
+});
+
+test('a Software Proposal email is kept when it carries a real Software Order PDF', async () => {
+  const { candidateFromOrders } = await import('../email-leads.mjs');
+  const msg = { from: { emailAddress: { address: 'sender@example.com' } }, subject: 'RE: Software Proposal - Example Ltd', receivedDateTime: '2026-10-21T09:00:00Z', webLink: 'https://outlook.office.com/mail/id/x', bodyPreview: 'Signed order attached' };
+  const order = { kind: 'software_order', attachment_name: 'order.pdf', company_name: 'Example Ltd', order_number: 'SO-9', products: [], fees: [], evidence: [], issues: [] };
+  assert.ok(candidateFromOrders(msg, [order], ['sender@example.com']));
+  assert.equal(candidateFromOrders(msg, [{ kind: 'not_order', attachment_name: 'proposal.pdf', issues: [] }], ['sender@example.com']), null);
+});
+
+test('a Software Proposal email without an order becomes a proposal suggestion named from the subject', async () => {
+  const { proposalFromMessage } = await import('../email-leads.mjs');
+  const msg = { from: { emailAddress: { address: 'sender@example.com' } }, subject: 'RE: Software Proposal - Kyprou Pharma Ltd', receivedDateTime: '2026-10-21T09:00:00Z', webLink: 'https://outlook.office.com/mail/id/y', bodyPreview: '' };
+  const p = proposalFromMessage(msg, ['sender@example.com']);
+  assert.equal(p.client_name, 'Kyprou Pharma Ltd');
+  assert.equal(p.proposal, true);
+  assert.equal(proposalFromMessage({ ...msg, subject: 'Software Order' }, ['sender@example.com']), null);
 });
