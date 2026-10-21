@@ -130,6 +130,7 @@
       '.ai-btn-primary{background:#1e3a6e;color:white;border-color:#1e3a6e}'+
       '.ai-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}'+
       '.ai-import{width:100%;box-sizing:border-box;min-height:95px;resize:vertical;border-radius:8px;border:1px solid var(--border-md);padding:10px;background:var(--surface);color:var(--text);font:12px monospace}'+
+      '.ai-rules>summary{cursor:pointer;list-style:none}.ai-rules>summary::-webkit-details-marker{display:none}.cm-badge{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:#dc2626;color:#fff;font:700 10px "DM Sans",sans-serif;margin-left:5px;line-height:1}.cm-badge:empty{display:none}'+
       '.ai-empty{padding:36px 12px;text-align:center;color:var(--text-2);font-size:13px}'+
       '@media(max-width:600px){.ai-diff{grid-template-columns:1fr}#'+PANEL_ID+'{padding:1rem 1rem 5rem}}';
     document.head.appendChild(style);
@@ -140,15 +141,15 @@
       '<p class="ai-muted">Suggested changes from Client Monitor data or manually imported analysis. Nothing changes without your approval.</p></div>'+
       '<button class="ai-btn" id="ai-back">← Back to Home</button></div>'+
       '<div id="ai-email-workspace"></div>'+
-      '<div class="ai-card"><b style="font-size:13px">Client record suggestions</b>'+
-      '<p class="ai-muted" style="margin:5px 0 0">The checks below use rules on existing client records. Imported analysis is labelled separately. Review each change against its source.</p></div>'+
+      '<details class="ai-card ai-rules" id="ai-rules"><summary><b style="font-size:13px">Client record checks</b> <span class="ai-pill" id="ai-rules-count">0</span>'+
+      '<span class="ai-muted" style="display:block;margin-top:4px">Rules on your existing clients, e.g. an overdue follow-up or a Completed client below 100%.</span></summary>'+
       '<div id="ai-items"></div>'+
       '<details class="ai-card"><summary style="font-size:13px;font-weight:700;cursor:pointer">Import suggestions (JSON)</summary>'+
       '<p class="ai-muted">Use a JSON array with exact client_name or client_id, field, value, and a short reason. Accepted fields: status, todo, nextFollowupDate, progress. Imported items are kept only in this browser session.</p>'+
       '<textarea id="ai-import-box" class="ai-import" spellcheck="false" placeholder=\'[{"client_name":"Example Ltd","field":"status","value":"Pending Follow-Up","reason":"Client reply needs follow-up"}]\'></textarea>'+
       '<div class="ai-actions"><button class="ai-btn ai-btn-primary" id="ai-import-action">Review imported suggestions</button>'+
       '<button class="ai-btn" id="ai-clear-import">Clear import</button><span class="ai-muted" id="ai-import-msg"></span></div></details>'+
-      '<div class="ai-actions"><button class="ai-btn" id="ai-reset-dismissed">Restore dismissed suggestions (this device)</button></div>';
+      '<div class="ai-actions"><button class="ai-btn" id="ai-reset-dismissed">Restore dismissed checks</button></div></details>';
     document.querySelector('main').appendChild(page);
     document.getElementById('ai-back').addEventListener('click',function(){goHome();});
     document.getElementById('ai-import-action').addEventListener('click',importJson);
@@ -171,7 +172,7 @@
     var ref=document.querySelector('#sidemenu button[onclick^="goHome"]');
     if(ref){
       var link=document.createElement('button');
-      link.className='smenu-item';link.type='button';
+      link.className='smenu-item';link.type='button';link.id='smenu-ai-link';
       link.innerHTML='<span aria-hidden="true" style="font-size:16px;width:16px">✦</span><span class="smenu-label">AI Suggestions</span>';
       link.addEventListener('click',function(){openWorkspace();closeSideMenuAfterAction();});
       ref.parentNode.insertBefore(link,ref.nextSibling);
@@ -183,12 +184,21 @@
     var toggle=document.querySelector('.view-toggle');
     if(toggle)toggle.appendChild(headerButton);
     var origHome=goHome,origSetView=setView,origClients=goClients,origClient=goToClient;
-    goHome=function(){closeWorkspace();return origHome.apply(this,arguments);};
+    goHome=function(){closeWorkspace();var r=origHome.apply(this,arguments);try{window.cmRuleSuggestionCount=allSuggestions().length;window.cmUpdateSuggestionBadge();}catch(e){}return r;};
     setView=function(){closeWorkspace();return origSetView.apply(this,arguments);};
     goClients=function(){closeWorkspace();return origClients.apply(this,arguments);};
     goToClient=function(){closeWorkspace();return origClient.apply(this,arguments);};
   }
   window.closeAiSuggestionsView=function(){closeWorkspace();};
+  window.cmUpdateSuggestionBadge=function(){
+    var n=(window.cmEmailSuggestionCount||0)+(window.cmRuleSuggestionCount||0);
+    var label=n?String(n>99?'99+':n):'';
+    ['vbtn-ai','smenu-ai-link','mnav-more-btn','mtile-suggestions'].forEach(function(id){
+      var el=document.getElementById(id);if(!el)return;
+      var b=el.querySelector('.cm-badge');if(!b){b=document.createElement('span');b.className='cm-badge';el.appendChild(b);}
+      b.textContent=label;
+    });
+  };
   function closeWorkspace() {
     var page=document.getElementById(PANEL_ID);
     if(page)page.classList.remove('active');
@@ -215,6 +225,8 @@
   }
   function showItems() {
     var items=allSuggestions();currentItems=items;
+    var rc=document.getElementById('ai-rules-count');if(rc)rc.textContent=items.length;
+    window.cmRuleSuggestionCount=items.length;if(window.cmUpdateSuggestionBadge)window.cmUpdateSuggestionBadge();
     var el=document.getElementById('ai-items');
     if(!el)return;
     if(!items.length){

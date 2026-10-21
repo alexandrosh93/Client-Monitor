@@ -908,6 +908,8 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
   #mnav button.on svg{transform:translateY(-1px) scale(1.08)}
   #mnav button:active svg{transform:scale(.86)}
   #mnav button span{white-space:nowrap}
+  #mnav .cm-badge{position:absolute;top:2px;right:calc(50% - 22px)}
+  .mtile{position:relative}.mtile .cm-badge{position:absolute;top:8px;right:10px}
   header .view-toggle,header .hdr-menu-btn,#sidemenu,#sidemenu-overlay{display:none!important}
   body.sidemenu-pinned main,body main{margin-left:0!important}
   header{padding-left:.8rem!important}
@@ -950,14 +952,14 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
   <button data-mnav="mine" onclick="mnavGo('mine',()=>goMyClients())"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>My Clients</span></button>
   <button data-mnav="list" onclick="mnavGo('list',()=>goClients({}))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>All Clients</span></button>
   <button data-mnav="tasks" onclick="mnavGo('tasks',()=>openTasksView({}))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Tasks</span></button>
-  <button data-mnav="more" onclick="openMoreSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>More</span></button>
+  <button data-mnav="more" id="mnav-more-btn" onclick="openMoreSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>More</span></button>
 </nav>
 <div id="msheet-bg" class="no-print" onclick="closeMoreSheet()"></div>
 <div id="msheet" class="no-print" role="dialog" aria-label="More">
   <div class="msheet-grip"></div>
   <div class="msheet-user"><span class="msheet-av" id="msheet-av"></span><span id="msheet-user"></span><button onclick="closeMoreSheet();openChangePassword()">Change password</button></div>
   <div class="mtiles">
-  <button class="mtile" onclick="closeMoreSheet();document.getElementById('vbtn-ai')&&document.getElementById('vbtn-ai').click()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg><span>Suggestions</span></button>
+  <button class="mtile" id="mtile-suggestions" onclick="closeMoreSheet();document.getElementById('vbtn-ai')&&document.getElementById('vbtn-ai').click()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg><span>Suggestions</span></button>
   <button class="mtile" onclick="closeMoreSheet();setView('dash')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard</span></button>
   <button class="mtile" onclick="closeMoreSheet();openVatReport()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg><span>VAT</span></button>
   <button class="mtile" onclick="closeMoreSheet();openStkReport()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><span>Stock take</span></button>
@@ -4293,9 +4295,9 @@ const _isRecoveryLink=/type=recovery/.test(location.hash)||/[?&]code=/.test(loca
   document.getElementById('login-user').focus();
 })();
 </script>
-<script src="ai-suggestions.js?v=restore-20261019" defer></script>
+<script src="ai-suggestions.js?v=final-20261021" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
-<script src="email-suggestions.js?v=proposal-pdf-20261021" defer></script>
+<script src="email-suggestions.js?v=final-20261021" defer></script>
 <script src="tasks.js?v=23" defer></script>
 <script type="module" src="erp-discovery.js?v=app-theme-20261020"></script>
 </body>

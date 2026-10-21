@@ -5,7 +5,19 @@
   var orderHelpers;
   var outlook;
   var rows = [], ignored = new Set(), owner = '', mailbox = '', busy = false, abort;
-  var skipped = []; // emails from the senders that were searched but did not become a suggestion, with the reason
+  var skipped = [], lastSearch = 0, pendingFromSuggestion = null;
+  if (typeof window.saveNew === 'function') {
+    var originalSaveNew = window.saveNew;
+    window.saveNew = async function () {
+      try { return await originalSaveNew.apply(this, arguments); }
+      finally {
+        var p = pendingFromSuggestion;
+        if (p && clients.some(c => c.name.trim().toLowerCase() === p.name.trim().toLowerCase())) {
+          p.keys.forEach(k => ignored.add(k)); pendingFromSuggestion = null; save(); render();
+        }
+      }
+    };
+  } // emails from the senders that were searched but did not become a suggestion, with the reason
   var root = document.getElementById('ai-email-workspace');
   if (!root) return;
   function esc(v) { return String(v || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -17,7 +29,8 @@
     el.textContent = text; el.style.color = error ? '#b42318' : '';
   }
   function save() {
-    try { sessionStorage.setItem(key(), JSON.stringify({ rows: rows, ignored: [...ignored] })); }
+    var slim = rows.slice(0, 60).map(r => ({ ...r, orders: (r.orders || []).map(o => ({ ...o, evidence: [] })) }));
+    try { sessionStorage.setItem(key(), JSON.stringify({ rows: slim, ignored: [...ignored].slice(-300) })); }
     catch { message('Suggestions remain visible, but this browser could not save the session. Export a copy before leaving.', true); }
   }
   function config() { return { clientId: document.getElementById('email-client-id').value.trim(), tenantId: document.getElementById('email-tenant-id').value.trim() }; }
@@ -50,28 +63,25 @@
       '<p class="ai-muted">' + esc(order.signature_status) + '. ' + esc((order.issues || []).join(' ')) + '</p>' +
       '<details><summary>PDF evidence · ' + esc(order.extraction) + '</summary>' + (order.evidence || []).map(e => '<p class="email-evidence">Page ' + e.page + ':<br>' + esc(e.text) + '</p>').join('') + '</details></div>';
   }
-  root.innerHTML = '<div class="ai-card"><div class="ai-row-top"><b>Email · Clients & module purchases</b><span class="ai-pill" id="email-connection"></span></div>' +
-    '<p class="ai-muted" style="margin-top:8px">Search messages from Andreas Kyriacou and Vakis Theodosiou. Review Software Order PDFs to add a new client or record a new purchase for an existing client.</p>' +
-    '<div class="ai-actions"><button class="ai-btn ai-btn-primary" id="email-connect">Connect Outlook</button><button class="ai-btn" id="email-disconnect">Disconnect</button></div>' +
+  root.innerHTML = '<div class="ai-card email-head"><div class="ai-row-top"><b>New clients & purchases from email</b><span class="ai-pill" id="email-connection"></span></div>' +
+    '<div class="ai-actions"><button class="ai-btn ai-btn-primary" id="email-connect">Connect Outlook</button><button class="ai-btn ai-btn-primary" id="email-search">Search Outlook</button><button class="ai-btn" id="email-cancel" disabled>Cancel</button><button class="ai-btn" id="email-disconnect">Disconnect</button></div>' +
+    '<p class="ai-muted" id="ai-email-message" role="status" aria-live="polite" style="margin-top:8px"></p>' +
+    '<details class="email-advanced"><summary>Advanced</summary>' +
+    '<label class="email-label">Sender email addresses<input id="email-senders" class="email-input" placeholder="Separate sender addresses with commas" autocomplete="off"></label>' +
+    '<label class="email-label">Search from<input type="date" id="email-since" class="email-input"></label>' +
     '<details style="margin-top:12px" id="email-settings"><summary>Connection settings</summary>' +
     '<p class="ai-muted">A Microsoft app registration is required once. Use its public IDs below. No password or client secret is needed.</p>' +
     '<label class="email-label">Application (client) ID<input id="email-client-id" class="email-input" autocomplete="off"></label>' +
     '<label class="email-label">Directory (tenant) ID<input id="email-tenant-id" class="email-input" autocomplete="off"></label>' +
     '<p class="ai-muted">Register this exact Single-page application redirect URI: <code id="email-redirect"></code>. The connection requests delegated Mail.Read; it cannot send, edit, or delete mail.</p></details>' +
-    '<label class="email-label">Sender email addresses<input id="email-senders" class="email-input" placeholder="Separate sender addresses with commas" autocomplete="off"></label>' +
-    '<label class="email-label">Search from<input type="date" id="email-since" class="email-input"></label>' +
-    '<p class="ai-muted" style="margin-top:12px">Software Order PDF attachments are always read, including scanned pages. The client name is taken from the PDF Licensee field.</p>' +
-    '<div class="ai-actions"><button class="ai-btn ai-btn-primary" id="email-search">Search Outlook</button><button class="ai-btn" id="email-cancel" disabled>Cancel search</button></div>' +
-    '<p class="ai-muted" id="ai-email-message" role="status" aria-live="polite" style="margin-top:10px"></p>' +
-    '<p class="ai-muted">Reviews stay in this browser tab for this signed-in user. Export to keep a copy. Disconnect clears mailbox tokens and email reviews from this tab.</p>' +
-    '<details style="margin-top:12px"><summary>Import AI-reviewed email findings</summary>' +
-    '<p class="ai-muted">Choose the JSON review file provided by Codex, or paste its contents. Review each proposal before adding a client or saving a purchase to an existing client.</p>' +
+    '<details style="margin-top:12px"><summary>Import / export reviewed findings (JSON)</summary>' +
     '<label class="email-label">Review file<input type="file" id="email-review-file" accept=".json,application/json"></label>' +
     '<label class="email-label">Review JSON<textarea class="ai-import" id="email-review-json" spellcheck="false"></textarea></label>' +
-    '<div class="ai-actions"><button class="ai-btn" id="email-import">Import reviewed findings</button><button class="ai-btn" id="email-export">Export findings</button></div></details></div>' +
+    '<div class="ai-actions"><button class="ai-btn" id="email-import">Import reviewed findings</button><button class="ai-btn" id="email-export">Export findings</button></div></details>' +
+    '<p class="ai-muted" style="margin-top:10px">Nothing is stored on the server: suggestions live only in this browser tab and are cleared when you disconnect or close it.</p></details></div>' +
     '<div id="email-candidates"></div>';
   var style = document.createElement('style');
-  style.textContent = '.email-label{display:block;font-size:12px;font-weight:600;margin-top:12px}.email-input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid var(--border-md);border-radius:7px;background:var(--surface);color:var(--text)}#ai-email-workspace code{overflow-wrap:anywhere}#ai-email-workspace button:disabled{opacity:.5;cursor:default}.email-source{font-size:12px;overflow-wrap:anywhere;margin:8px 0}.email-review-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(140px,.7fr) minmax(190px,1fr);gap:10px;align-items:end}.email-candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}.email-candidate{padding:0!important;overflow:hidden;margin:0!important}.email-candidate[open]{grid-column:1/-1}.email-candidate-summary{list-style:none;display:grid;grid-template-columns:minmax(150px,1fr) auto 20px;gap:9px;align-items:center;padding:12px 13px;cursor:pointer}.email-candidate-summary::-webkit-details-marker{display:none}.email-candidate-summary:hover{background:var(--surface2)}.email-candidate-title{min-width:0}.email-candidate-title b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-title small{display:block;margin-top:3px;color:var(--text-3);font-size:10px;font-weight:500}.email-candidate-contact{grid-column:1/3;font-size:10px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-chevron{grid-column:3;grid-row:1/3;font-size:21px;color:var(--text-3);transform:rotate(90deg);transition:transform .15s ease}.email-candidate[open] .email-candidate-chevron{transform:rotate(-90deg)}.email-candidate-details{border-top:1px solid var(--border-md);padding:13px 15px 15px;background:linear-gradient(180deg,var(--surface2),var(--surface))}.email-order{border-top:1px solid var(--border-md);padding-top:12px;margin-top:12px;font-size:13px;overflow-wrap:anywhere}.email-order-table{width:100%;font-size:12px;border-collapse:collapse}.email-order-table th,.email-order-table td{padding:6px;text-align:left;border-bottom:1px solid var(--border-md)}.email-evidence{white-space:pre-wrap;font-size:12px}.email-pdf-input{display:block;margin:8px 0;max-width:100%}.email-group-title{font-size:14px;font-weight:700;margin:18px 0 6px}.email-mods{font-size:13px;margin:0 0 10px;padding:8px 10px;background:var(--surface2);border-radius:8px}.email-sources{margin:0 0 8px;padding-left:18px;font-size:12px}.email-sources li{margin:3px 0}.email-skipped{margin-top:14px}.email-skipped summary{cursor:pointer}.email-skip-row{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border);font-size:13px}.email-skip-why{font-size:12px;color:#8a5a1a;margin-top:3px}.email-count{background:#fff3cd;color:#856404;justify-self:start;grid-column:2;grid-row:2}@media(max-width:1050px){.email-candidate-grid{grid-template-columns:1fr}.email-candidate[open]{grid-column:auto}}@media(max-width:720px){.email-review-fields{grid-template-columns:1fr}.email-candidate-summary{grid-template-columns:minmax(0,1fr) 20px}.email-candidate-summary>.ai-pill,.email-candidate-contact{grid-column:1;justify-self:start}.email-candidate-chevron{grid-column:2;grid-row:1/4}}';
+  style.textContent = '.email-label{display:block;font-size:12px;font-weight:600;margin-top:12px}.email-input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid var(--border-md);border-radius:7px;background:var(--surface);color:var(--text)}#ai-email-workspace code{overflow-wrap:anywhere}#ai-email-workspace button:disabled{opacity:.5;cursor:default}.email-source{font-size:12px;overflow-wrap:anywhere;margin:8px 0}.email-review-fields{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(140px,.7fr) minmax(190px,1fr);gap:10px;align-items:end}.email-candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}.email-candidate{padding:0!important;overflow:hidden;margin:0!important}.email-candidate[open]{grid-column:1/-1}.email-candidate-summary{list-style:none;display:grid;grid-template-columns:minmax(150px,1fr) auto 20px;gap:9px;align-items:center;padding:12px 13px;cursor:pointer}.email-candidate-summary::-webkit-details-marker{display:none}.email-candidate-summary:hover{background:var(--surface2)}.email-candidate-title{min-width:0}.email-candidate-title b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-title small{display:block;margin-top:3px;color:var(--text-3);font-size:10px;font-weight:500}.email-candidate-contact{grid-column:1/3;font-size:10px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.email-candidate-chevron{grid-column:3;grid-row:1/3;font-size:21px;color:var(--text-3);transform:rotate(90deg);transition:transform .15s ease}.email-candidate[open] .email-candidate-chevron{transform:rotate(-90deg)}.email-candidate-details{border-top:1px solid var(--border-md);padding:13px 15px 15px;background:linear-gradient(180deg,var(--surface2),var(--surface))}.email-order{border-top:1px solid var(--border-md);padding-top:12px;margin-top:12px;font-size:13px;overflow-wrap:anywhere}.email-order-table{width:100%;font-size:12px;border-collapse:collapse}.email-order-table th,.email-order-table td{padding:6px;text-align:left;border-bottom:1px solid var(--border-md)}.email-evidence{white-space:pre-wrap;font-size:12px}.email-pdf-input{display:block;margin:8px 0;max-width:100%}.email-group-title{font-size:14px;font-weight:700;margin:18px 0 6px}.email-mods{font-size:13px;margin:0 0 10px;padding:8px 10px;background:var(--surface2);border-radius:8px}.email-sources{margin:0 0 8px;padding-left:18px;font-size:12px}.email-sources li{margin:3px 0}.email-head .ai-actions{margin-top:10px}.email-advanced{margin-top:6px;font-size:13px}.email-advanced>summary{cursor:pointer;color:var(--text-2);font-weight:600}.email-skipped{margin-top:14px}.email-skipped summary{cursor:pointer}.email-skip-row{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border);font-size:13px}.email-skip-why{font-size:12px;color:#8a5a1a;margin-top:3px}.email-count{background:#fff3cd;color:#856404;justify-self:start;grid-column:2;grid-row:2}@media(max-width:1050px){.email-candidate-grid{grid-template-columns:1fr}.email-candidate[open]{grid-column:auto}}@media(max-width:720px){.email-review-fields{grid-template-columns:1fr}.email-candidate-summary{grid-template-columns:minmax(0,1fr) 20px}.email-candidate-summary>.ai-pill,.email-candidate-contact{grid-column:1;justify-self:start}.email-candidate-chevron{grid-column:2;grid-row:1/4}}';
   document.head.appendChild(style);
   var date = new Date(); date.setDate(date.getDate() - 90);
   document.getElementById('email-since').value = date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
@@ -131,6 +141,8 @@
         if (skipped.length) parts.push('<details class="ai-card email-skipped"><summary><b>Emails not shown (' + skipped.length + ')</b> <span class="ai-muted">— why each email from these senders did not become a suggestion</span></summary>' + skipped.map(x => '<div class="email-skip-row"><div><b>' + esc(x.subject) + '</b><div class="ai-muted">' + esc(x.sender) + ' · ' + esc(new Date(x.date).toLocaleDateString('en-GB')) + '</div><div class="email-skip-why">' + esc(x.why) + '</div></div>' + (h.outlookLink(x.url) ? '<a class="ai-btn" href="' + esc(h.outlookLink(x.url)) + '" target="_blank" rel="noopener noreferrer">Open ↗</a>' : '') + '</div>').join('') + '</details>');
         return parts.join('');
       })();
+    window.cmEmailSuggestionCount = groups.length + proposalGroups.length;
+    if (window.cmUpdateSuggestionBadge) window.cmUpdateSuggestionBadge();
     setBusy(busy);
   }
   window.addEventListener('cm-ai-open', async function () {
@@ -151,6 +163,7 @@
       document.getElementById('email-senders').value = settings.senders || defaults.senders || '';
     }
     connectionText(); await render();
+    if (mailbox && !busy && Date.now() - lastSearch > 10 * 60 * 1000) document.getElementById('email-search').click();
   });
   document.getElementById('email-connect').onclick = async function () {
     if (!signedIn() || busy) return;
@@ -160,7 +173,8 @@
       outlook = await import('./outlook-client.mjs?v=proposal-pdf-20261021');
       await outlook.initialize(config());
       mailbox = await outlook.connect();
-      saveSettings(); connectionText(); message('Connected. Choose the senders and date, then search Outlook.');
+      saveSettings(); connectionText(); message('Connected. Searching…');
+      setTimeout(() => document.getElementById('email-search').click(), 0);
     } catch (e) { if (outlook) await outlook.disconnect(); mailbox = ''; connectionText(); message(e.message || 'Could not connect to Outlook.', true); document.getElementById('email-settings').open = true; }
     finally { setBusy(false); }
   };
@@ -177,7 +191,7 @@
   document.getElementById('email-cancel').onclick = function () { if (abort) abort.abort(); };
   document.getElementById('email-search').onclick = async function () {
     if (!signedIn() || busy || !mailbox) return;
-    setBusy(true); abort = new AbortController(); message('Searching Outlook…');
+    setBusy(true); abort = new AbortController(); message('Searching Outlook…'); lastSearch = Date.now();
     try {
       var result = await outlook.searchMail({ senders: document.getElementById('email-senders').value,
         since: document.getElementById('email-since').value, signal: abort.signal,
@@ -290,6 +304,8 @@
     var matchedGroup = [...groupsByKey.values()].find(group => group.rows.includes(row));
     var existing = matchedGroup?.existing || clients.find(c => h.normalName(c.name) === h.normalName(name));
     if (existing) { goToClient(existing.id); return; }
+    var g0 = [...groupsByKey.values()].find(g => g.rows.includes(row));
+    pendingFromSuggestion = { name: name, keys: (g0 ? g0.rows : [row]).map(r => h.leadKey(r)) };
     openAdd();
     document.getElementById('m-name').value = name;
     document.getElementById('m-mgr').value = h.managerFromSender(row.source_sender);
