@@ -22,7 +22,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="erp-discovery.css?v=workspace-20261020">
-<link rel="stylesheet" href="tasks.css?v=13">
+<link rel="stylesheet" href="tasks.css?v=17">
 <style>
 :root{
   --bg:#f4f6fb;
@@ -3014,7 +3014,7 @@ async function saveNew(){
   if(error){console.error('Insert error:',error);toast('Warning: save to Supabase failed.');}
   else setSyncStatus('ok','Supabase ✓');
 }
-function closeModal(id){hidePasswords(document.getElementById(id));document.getElementById(id).classList.remove('open');}
+function closeModal(id){const m=document.getElementById(id);if(!m)return;hidePasswords(m);m.classList.remove('open');}
 let _bgDown=null;
 document.addEventListener('mousedown',e=>{_bgDown=e.target;},true);
 /* close only when the press AND the release both happen on the backdrop,
@@ -4298,7 +4298,7 @@ const _isRecoveryLink=/type=recovery/.test(location.hash)||/[?&]code=/.test(loca
 <script src="ai-suggestions.js?v=final-20261021" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
 <script src="email-suggestions.js?v=final-20261021" defer></script>
-<script src="tasks.js?v=23" defer></script>
+<script src="tasks.js?v=26" defer></script>
 <script type="module" src="erp-discovery.js?v=app-theme-20261020"></script>
 </body>
 </html>
