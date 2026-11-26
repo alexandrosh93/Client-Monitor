@@ -3453,6 +3453,10 @@ function renderHomeDashboard(){
   const stkOverdue=scope.filter(c=>!c.stkDone&&c.stkDate&&c.stkDate<todayISO).length;
   const followupsDue=scope.filter(c=>c.nextFollowupDate&&c.nextFollowupDate<=todayISO)
     .sort((a,b)=>a.nextFollowupDate.localeCompare(b.nextFollowupDate));
+  const _wk=localISO(new Date(Date.now()+7*864e5));
+  const followupsSoon=scope.filter(c=>c.nextFollowupDate&&c.nextFollowupDate>todayISO&&c.nextFollowupDate<=_wk&&c.status!=='Completed')
+    .sort((a,b)=>a.nextFollowupDate.localeCompare(b.nextFollowupDate));
+  const followupsAll=[...followupsDue,...followupsSoon];
 
   // status data for chart
   const statusDef=[
@@ -3566,21 +3570,22 @@ function renderHomeDashboard(){
   </div>
 
   <div id="hv-mytasks"></div>
-  ${followupsDue.length?`
+  ${true?`
   <div class="hv-card" style="margin-bottom:1.25rem">
     <div class="hv-card-hdr">
       <div>
-        <div class="hv-card-title">📞 Follow-ups Due</div>
+        <div class="hv-card-title">📞 Follow-ups</div>
         <div style="font-size:10px;color:var(--text-3);margin-top:2px">Click a client to open it</div>
       </div>
-      <span style="font-size:11px;font-weight:700;color:#a32d2d">${followupsDue.length} client${followupsDue.length!==1?'s':''}</span>
+      <span style="font-size:11px;font-weight:700;color:${followupsDue.length?'#a32d2d':'var(--text-3)'}">${followupsDue.length} due${followupsSoon.length?` · ${followupsSoon.length} this week`:''}</span>
     </div>
     <div class="hv-upcoming-list">
-      ${followupsDue.slice(0,10).map(c=>{
-        const isOverdue=c.nextFollowupDate<todayISO;
+      ${!followupsAll.length?'<div style="font-size:13px;color:var(--text-3);padding:.5rem">No follow-ups due or scheduled for the next 7 days ✓ — set a “Next Follow-up” date on a client to see it here.</div>':''}
+      ${followupsAll.slice(0,10).map(c=>{
+        const isOverdue=c.nextFollowupDate<todayISO;const isSoon=c.nextFollowupDate>todayISO;
         return `<div class="hv-event" onclick="goToClient(${c.id})">
-          <div class="hv-event-date" style="color:${isOverdue?'#a32d2d':'#856404'};font-weight:800">${isOverdue?'Overdue':'Today'}</div>
-          <div class="hv-event-badge" style="background:${isOverdue?'#fde2e2':'#fff3cd'};color:${isOverdue?'#a32d2d':'#856404'}">📞 Follow-up</div>
+          <div class="hv-event-date" style="color:${isOverdue?'#a32d2d':isSoon?'var(--text-2)':'#856404'};font-weight:800">${isOverdue?'Overdue':isSoon?c.nextFollowupDate.slice(8)+'/'+c.nextFollowupDate.slice(5,7):'Today'}</div>
+          <div class="hv-event-badge" style="background:${isOverdue?'#fde2e2':isSoon?'#eef1f6':'#fff3cd'};color:${isOverdue?'#a32d2d':isSoon?'var(--text-2)':'#856404'}">📞 Follow-up</div>
           <div class="hv-event-client">${esc(c.name)}</div>
           <div class="hv-event-impl">${esc(c.implementor||'—')}</div>
           <div class="hv-fu-act" onclick="event.stopPropagation()">
@@ -3589,7 +3594,7 @@ function renderHomeDashboard(){
             <button onclick="followupAct(${c.id},'week')" title="Postpone 1 week">+1w</button>
           </div>
         </div>`;
-      }).join('')+(followupsDue.length>10?`<div style="font-size:12px;color:var(--text-3);padding:.4rem .5rem">+${followupsDue.length-10} more…</div>`:'')}
+      }).join('')+(followupsAll.length>10?`<div style="font-size:12px;color:var(--text-3);padding:.4rem .5rem">+${followupsAll.length-10} more…</div>`:'')}
     </div>
   </div>`:''}
 
