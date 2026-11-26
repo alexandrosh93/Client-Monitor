@@ -1451,7 +1451,7 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
     <div class="mf"><label class="lbl">Main contact person</label><input id="m-contact" type="text" placeholder="Full name"></div>
     <div class="mf"><label class="lbl">Client email</label><input id="m-email" type="email" placeholder="client@company.com"></div>
     <div class="mf"><label class="lbl">City</label><select id="m-city"><option>Limassol</option><option>Paphos</option></select></div>
-    <div class="mf"><label class="lbl">Live Date <span style="font-weight:400;color:var(--text-3)">(planned go-live)</span></label><input id="m-livedate" type="date"></div>
+    <div class="mf"><label class="lbl">Live Date <span style="font-weight:400;color:var(--text-3)">(planned go-live)</span></label><input id="m-livedate" type="date" min="2000-01-01" max="2099-12-31"></div>
     <div class="mf"><label class="lbl">Manager</label><select id="m-mgr"><option value="">— Select —</option><option>VT</option><option>AK</option></select></div>
     <div class="mf"><label class="lbl">Implementor</label><select id="m-impl"><option value="">— None —</option></select></div>
     <div class="mf"><label class="lbl">Status</label>
@@ -2335,7 +2335,7 @@ function buildRow(c){
     <div class="vat-cell">
       <div class="xlbl">VAT Reminder</div>
       <div style="display:flex;align-items:center;gap:3px;margin-bottom:4px">
-        <input type="date" class="xdate" value="${c.vatDate||''}" onchange="fld(${c.id},'vatDate',this.value)" >
+        <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.vatDate||''}" onchange="fld(${c.id},'vatDate',this.value)" >
         <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'vat')" title="Clear date &amp; reset">×</button>
       </div>
       <label class="inline-check" style="color:#1d4ed8">
@@ -2350,7 +2350,7 @@ function buildRow(c){
     <div class="stk-cell">
       <div class="xlbl">Stock Take Reminder</div>
       <div style="display:flex;align-items:center;gap:3px;margin-bottom:5px">
-        <input type="date" class="xdate" value="${c.stkDate||''}" onchange="fld(${c.id},'stkDate',this.value)" >
+        <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.stkDate||''}" onchange="fld(${c.id},'stkDate',this.value)" >
         <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'stk')" title="Clear date &amp; reset">×</button>
       </div>
       <label class="inline-check" style="color:#7a6500">
@@ -2451,12 +2451,12 @@ function buildRow(c){
             <input type="checkbox" id="ldc-${c.id}" ${c.liveDate?'checked':''} onchange="tLiveDate(${c.id},this.checked)">
             Date set
           </label>
-          <input type="date" class="xdate" id="ld-${c.id}" value="${c.liveDate||''}" ${!c.liveDate?'disabled':''} onchange="fld(${c.id},'liveDate',this.value)">
+          <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" id="ld-${c.id}" value="${c.liveDate||''}" ${!c.liveDate?'disabled':''} onchange="fld(${c.id},'liveDate',this.value)">
         </div>
         <div class="vat-cell date-card">
           <div class="xlbl">VAT Reminder</div>
           <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
-            <input type="date" class="xdate" value="${c.vatDate||''}" onchange="fld(${c.id},'vatDate',this.value)" >
+            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.vatDate||''}" onchange="fld(${c.id},'vatDate',this.value)" >
             <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'vat')" title="Clear date &amp; reset">×</button>
           </div>
           <label class="inline-check">
@@ -2468,7 +2468,7 @@ function buildRow(c){
         <div class="stk-cell date-card">
           <div class="xlbl">Stock Take Reminder</div>
           <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
-            <input type="date" class="xdate" value="${c.stkDate||''}" onchange="fld(${c.id},'stkDate',this.value)" >
+            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.stkDate||''}" onchange="fld(${c.id},'stkDate',this.value)" >
             <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'stk')" title="Clear date &amp; reset">×</button>
           </div>
           <label class="inline-check">
@@ -2480,7 +2480,7 @@ function buildRow(c){
         <div class="followup-cell date-card">
           <div class="xlbl">Next Follow-up</div>
           <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
-            <input type="date" class="xdate" value="${c.nextFollowupDate||''}" onchange="fld(${c.id},'nextFollowupDate',this.value)" >
+            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.nextFollowupDate||''}" onchange="fld(${c.id},'nextFollowupDate',this.value)" >
             <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'followup')" title="Clear date">×</button>
           </div>
         </div>
@@ -2541,6 +2541,10 @@ function toggle(id){
 /* ── FIELD UPDATES ── */
 function fld(id,k,v){
   const c=clients.find(x=>x.id===id);if(!c)return;
+  if(/Date$/.test(k)&&v&&!/^(20\d\d)-\d\d-\d\d$/.test(v)){
+    toast('Invalid date (year must be 2000–2099)');
+    render();return;
+  }
   const old=c[k];
   c[k]=v;
   // audit readable field names
