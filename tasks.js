@@ -373,7 +373,7 @@
   let drawer = null, drawerBg = null;
   function ensureDrawer() {
     if (drawer) return drawer;
-    document.body.insertAdjacentHTML('beforeend', '<div id="tk-drawer-bg" class="no-print"></div><aside id="tk-drawer" class="no-print" role="dialog" aria-label="Task details"></aside>');
+    document.getElementById('protected-app').insertAdjacentHTML('beforeend', '<div id="tk-drawer-bg" class="no-print"></div><aside id="tk-drawer" class="no-print" role="dialog" aria-label="Task details"></aside>');
     drawer = document.getElementById('tk-drawer'); drawerBg = document.getElementById('tk-drawer-bg');
     drawerBg.addEventListener('click', closeDrawer);
     drawer.addEventListener('click', onDrawerClick);
@@ -464,7 +464,7 @@
 
   /* ── page open / close ── */
   async function open(opts = {}) {
-    const el = root(); if (!el) return;
+    const el = root(); if (!el || !window.clientMonitorApi.setProtectedRoute('tasks')) return;
     window.closeClientWorkspaceView && window.closeClientWorkspaceView();
     window.closeAiSuggestionsView && window.closeAiSuggestionsView();
     document.getElementById('home-view')?.classList.remove('active');

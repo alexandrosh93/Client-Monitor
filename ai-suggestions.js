@@ -206,8 +206,7 @@
     if(button)button.classList.remove('active');
   }
   function openWorkspace() {
-    if(document.getElementById('login-screen') &&
-       !document.getElementById('login-screen').classList.contains('hidden'))return;
+    if(!window.clientMonitorApi.setProtectedRoute('suggestions'))return;
     if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();
     if(window.closeTasksView)window.closeTasksView();
     document.getElementById('home-view').classList.remove('active');
