@@ -2335,7 +2335,7 @@ function buildRow(c){
     <div class="vat-cell">
       <div class="xlbl">VAT Reminder</div>
       <div style="display:flex;align-items:center;gap:3px;margin-bottom:4px">
-        <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.vatDate||''}" onchange="fld(${c.id},'vatDate',this.value)" >
+        <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.vatDate||''}" onchange="fldDate(${c.id},'vatDate',this)" onblur="fldDate(${c.id},'vatDate',this,1)" >
         <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'vat')" title="Clear date &amp; reset">×</button>
       </div>
       <label class="inline-check" style="color:#1d4ed8">
@@ -2350,7 +2350,7 @@ function buildRow(c){
     <div class="stk-cell">
       <div class="xlbl">Stock Take Reminder</div>
       <div style="display:flex;align-items:center;gap:3px;margin-bottom:5px">
-        <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.stkDate||''}" onchange="fld(${c.id},'stkDate',this.value)" >
+        <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.stkDate||''}" onchange="fldDate(${c.id},'stkDate',this)" onblur="fldDate(${c.id},'stkDate',this,1)" >
         <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'stk')" title="Clear date &amp; reset">×</button>
       </div>
       <label class="inline-check" style="color:#7a6500">
@@ -2451,12 +2451,12 @@ function buildRow(c){
             <input type="checkbox" id="ldc-${c.id}" ${c.liveDate?'checked':''} onchange="tLiveDate(${c.id},this.checked)">
             Date set
           </label>
-          <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" id="ld-${c.id}" value="${c.liveDate||''}" ${!c.liveDate?'disabled':''} onchange="fld(${c.id},'liveDate',this.value)">
+          <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" id="ld-${c.id}" value="${c.liveDate||''}" ${!c.liveDate?'disabled':''} onchange="fldDate(${c.id},'liveDate',this)" onblur="fldDate(${c.id},'liveDate',this,1)">
         </div>
         <div class="vat-cell date-card">
           <div class="xlbl">VAT Reminder</div>
           <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
-            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.vatDate||''}" onchange="fld(${c.id},'vatDate',this.value)" >
+            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.vatDate||''}" onchange="fldDate(${c.id},'vatDate',this)" onblur="fldDate(${c.id},'vatDate',this,1)" >
             <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'vat')" title="Clear date &amp; reset">×</button>
           </div>
           <label class="inline-check">
@@ -2468,7 +2468,7 @@ function buildRow(c){
         <div class="stk-cell date-card">
           <div class="xlbl">Stock Take Reminder</div>
           <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
-            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.stkDate||''}" onchange="fld(${c.id},'stkDate',this.value)" >
+            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.stkDate||''}" onchange="fldDate(${c.id},'stkDate',this)" onblur="fldDate(${c.id},'stkDate',this,1)" >
             <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'stk')" title="Clear date &amp; reset">×</button>
           </div>
           <label class="inline-check">
@@ -2480,7 +2480,7 @@ function buildRow(c){
         <div class="followup-cell date-card">
           <div class="xlbl">Next Follow-up</div>
           <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
-            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.nextFollowupDate||''}" onchange="fld(${c.id},'nextFollowupDate',this.value)" >
+            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.nextFollowupDate||''}" onchange="fldDate(${c.id},'nextFollowupDate',this)" onblur="fldDate(${c.id},'nextFollowupDate',this,1)" >
             <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'followup')" title="Clear date">×</button>
           </div>
         </div>
@@ -2539,6 +2539,19 @@ function toggle(id){
 }
 
 /* ── FIELD UPDATES ── */
+let _fldDateT={};
+function fldDate(id,k,el,now){
+  // Typing fires change per digit and fld() re-renders (focus lost) -> commit only when typing pauses / field is left.
+  const key=id+'|'+k;clearTimeout(_fldDateT[key]);
+  const commit=()=>{
+    if(el.value===''){if(el.validity.badInput)return;}
+    else if(!el.checkValidity())return;
+    const c=clients.find(x=>x.id===id);
+    if(c&&(c[k]||'')===el.value)return;
+    fld(id,k,el.value);
+  };
+  if(now)commit();else _fldDateT[key]=setTimeout(commit,1500);
+}
 function fld(id,k,v){
   const c=clients.find(x=>x.id===id);if(!c)return;
   if(/Date$/.test(k)&&v&&!/^(20\d\d)-\d\d-\d\d$/.test(v)){
