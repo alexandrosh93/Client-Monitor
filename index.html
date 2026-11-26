@@ -377,6 +377,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-wl-name{font-size:12px;font-weight:600;color:var(--text);min-width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hv-wl-track{flex:1;height:18px;border-radius:5px;overflow:hidden;background:var(--surface2);display:flex}
 .hv-wl-count{font-size:13px;font-weight:800;color:var(--text);min-width:22px;text-align:right;line-height:1}
+.hv-wl-fu{font-size:9px;font-weight:700;color:#856404;background:#fff3cd;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
 .hv-wl-od{font-size:9px;font-weight:700;color:#a32d2d;background:#feecec;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
 .clog{display:flex;flex-direction:column;gap:4px;max-height:150px;overflow-y:auto;margin-top:5px}
 .clog-entry{background:var(--bg);border:1px solid var(--border-sm);border-radius:7px;padding:5px 9px}
@@ -3484,7 +3485,8 @@ function renderHomeDashboard(){
     const completed=clients.filter(c=>c.implementor===im.name&&c.status==='Completed').length;
     const bySt={};
     mine.forEach(c=>{bySt[c.status]=(bySt[c.status]||0)+1;});
-    return {...im,color,bySt,active:mine.length,completed};
+    const fu=mine.filter(c=>c.nextFollowupDate&&c.nextFollowupDate<=localISO()).length;
+    return {...im,color,bySt,active:mine.length,completed,fu};
   });
   const maxWl=Math.max(...implWl.map(im=>im.active),unassigned,1);
 
@@ -3593,7 +3595,7 @@ function renderHomeDashboard(){
     <div class="hv-card-hdr">
       <div>
         <div class="hv-card-title">Implementor Workload</div>
-        <div style="font-size:10px;color:var(--text-3);margin-top:2px">Click a row to see all clients of that implementor</div>
+        <div style="font-size:10px;color:var(--text-3);margin-top:2px">Click a row to see all clients of that implementor · 📞 = follow-ups due</div>
       </div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         ${wlOrder.map(s=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:var(--text-3)"><span style="width:8px;height:8px;border-radius:2px;background:${wlColors[s]};display:inline-block"></span>${s}</span>`).join('')}
@@ -3615,6 +3617,7 @@ function renderHomeDashboard(){
           <div class="hv-wl-name">${esc(displayName)}${im.isMe?'<span class="hv-pc-you" style="margin-left:4px">you</span>':''}</div>
           <div class="hv-wl-track" style="animation-delay:${idx*0.07}s">${segs}</div>
           <div class="hv-wl-count">${im.active}</div>
+          ${im.fu?`<div class="hv-wl-fu" title="${im.fu} follow-up${im.fu!==1?'s':''} due">📞 ${im.fu}</div>`:''}
           ${im.overdue?`<div class="hv-wl-od">⚠ ${im.overdue}</div>`:''}
           ${im.completed?`<div class="hv-wl-done">✓ ${im.completed}</div>`:''}
           <div class="hv-wl-arrow">→</div>
