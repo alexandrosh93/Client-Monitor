@@ -265,7 +265,6 @@
       var update=await sb.from('clients').update({[dbField]:s.value}).eq('id',c.id).select('id').single();
       if(update.error)throw update.error;
       c[s.field]=s.value;
-      audit('Approve suggestion',c.name,FIELDS[s.field]+': "'+readable(s.expected)+'" → "'+readable(s.value)+'"');
       if(s.field==='status')_pushSystemLog(c,'Status: "'+readable(s.expected)+'" → "'+readable(s.value)+'" (approved suggestion)');
       markDismissed(s);imported=imported.filter(function(x){return x!==s;});
       render();buildVatBanner();buildStkBanner();

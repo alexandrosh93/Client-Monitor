@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js 'sha256-lUHne+dU0ratl477SnGZ+Ilf7ZTFRW3znS92CRSb0+8=' 'wasm-unsafe-eval'; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://gdyibhbznfywnilqpjvo.supabase.co https://login.microsoftonline.com https://graph.microsoft.com; worker-src 'self' blob:; manifest-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'">
   <!-- PWA Icons & Manifest -->
   <link rel="icon" type="image/png" sizes="32x32" href="pwa-icon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="pwa-icon-16.png">
@@ -19,11 +20,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Client Monitor — A.V.PremierSoft</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="erp-discovery.css?v=workspace-20261020">
 <link rel="stylesheet" href="tasks.css?v=17">
 <style>
+[data-admin-only][hidden]{display:none!important}
 :root{
   --bg:#f4f6fb;
   --surface:#fff;
@@ -969,12 +971,12 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
   <button class="mtile" onclick="closeMoreSheet();setView('dash')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard</span></button>
   <button class="mtile" onclick="closeMoreSheet();openVatReport()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg><span>VAT</span></button>
   <button class="mtile" onclick="closeMoreSheet();openStkReport()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><span>Stock take</span></button>
-  <button class="mtile" onclick="closeMoreSheet();openImplMgr()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg><span>Implementors</span></button>
-  <button class="mtile" onclick="closeMoreSheet();openModsMgr()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Modules</span></button>
+  <button hidden data-admin-only class="mtile" onclick="closeMoreSheet();openImplMgr()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg><span>Implementors</span></button>
+  <button hidden data-admin-only class="mtile" onclick="closeMoreSheet();openModsMgr()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Modules</span></button>
   <button class="mtile" onclick="closeMoreSheet();exportPDF()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Export PDF</span></button>
   <button class="mtile" onclick="closeMoreSheet();exportExcel()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Export Excel</span></button>
   <button class="mtile" id="msheet-users" style="display:none" onclick="closeMoreSheet();openUsersPanel()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/><path d="M19 8v6M22 11h-6"/></svg><span>Users</span></button>
-  <button class="mtile" onclick="closeMoreSheet();openAuditTrail()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg><span>Audit trail</span></button>
+  <button hidden data-admin-only class="mtile" onclick="closeMoreSheet();openAuditTrail()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg><span>Audit trail</span></button>
   <button class="mtile" onclick="closeMoreSheet();openSettings()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg><span>Sync &amp; backup</span></button>
   </div>
   <button class="msheet-out" onclick="closeMoreSheet();doLogout()">Log out</button>
@@ -988,13 +990,13 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
   <button onclick="closeMoreSheet();openVatReport()">VAT reminders</button>
   <button onclick="closeMoreSheet();openStkReport()">Stock take</button>
   <div class="msheet-h">Options</div>
-  <button onclick="closeMoreSheet();openImplMgr()">Implementors</button>
-  <button onclick="closeMoreSheet();openModsMgr()">Modules</button>
+  <button hidden data-admin-only onclick="closeMoreSheet();openImplMgr()">Implementors</button>
+  <button hidden data-admin-only onclick="closeMoreSheet();openModsMgr()">Modules</button>
   <button onclick="closeMoreSheet();exportPDF()">Export PDF</button>
   <button onclick="closeMoreSheet();exportExcel()">Export Excel</button>
   <div class="msheet-h">Settings</div>
   <button id="msheet-users" onclick="closeMoreSheet();openUsersPanel()" style="display:none">Users</button>
-  <button onclick="closeMoreSheet();openAuditTrail()">Audit trail</button>
+  <button hidden data-admin-only onclick="closeMoreSheet();openAuditTrail()">Audit trail</button>
   <button onclick="closeMoreSheet();openSettings()">Sync &amp; backup</button>
   <button class="msheet-out" onclick="closeMoreSheet();doLogout()">Log out</button>
 </div>
@@ -1072,12 +1074,12 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
   </button>
   <div id="smenu-opt" class="smenu-sub" hidden>
 
-  <button class="smenu-item" onclick="openImplMgr();closeSideMenuAfterAction()">
+  <button hidden data-admin-only class="smenu-item" onclick="openImplMgr();closeSideMenuAfterAction()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     <span class="smenu-label">Implementors</span>
   </button>
 
-  <button class="smenu-item" onclick="openModsMgr();closeSideMenuAfterAction()">
+  <button hidden data-admin-only class="smenu-item" onclick="openModsMgr();closeSideMenuAfterAction()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
     <span class="smenu-label">Modules</span>
   </button>
@@ -1111,7 +1113,7 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
     <span class="smenu-label">Users</span>
   </button>
 
-  <button class="smenu-item" onclick="openAuditTrail();closeSideMenuAfterAction()">
+  <button hidden data-admin-only class="smenu-item" onclick="openAuditTrail();closeSideMenuAfterAction()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
     <span class="smenu-label">Audit Trail</span>
   </button>
@@ -1172,7 +1174,7 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
     <div id="login-panel" style="padding:0 2rem">
       <div class="login-field">
         <label>Username or Email</label>
-        <input id="login-user" type="text" placeholder="Username or email" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+        <input id="login-user" type="text" placeholder="Internal username or full email" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
       </div>
       <div class="login-field">
         <label>Password</label>
@@ -1219,7 +1221,7 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
       <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:.85rem">New User</div>
       <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Username <span style="font-weight:400;color:var(--text-3)">(used to login)</span></label><input id="um-add-username" type="text" placeholder="e.g. jsmith"></div>
       <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Full Name</label><input id="um-add-fullname" type="text" placeholder="e.g. John Smith"></div>
-      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Password</label><input id="um-add-pass" type="password" placeholder="Minimum 6 characters"></div>
+      <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Password</label><input id="um-add-pass" type="password" placeholder="Minimum 12 characters"></div>
       <div class="mf" style="margin-bottom:.6rem"><label class="lbl">Role</label><select id="um-add-role"><option value="user">User</option><option value="admin">Admin</option></select></div>
       <div id="um-add-err" style="font-size:12px;color:#a32d2d;min-height:16px;margin:.3rem 0 .6rem"></div>
       <div class="modal-btns">
@@ -1283,7 +1285,6 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
       </select>
       <input id="audit-f-search" type="text" placeholder="Search…" oninput="renderAuditTable()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;flex:1;min-width:120px">
       <button class="btn-outline" style="font-size:11px;padding:4px 10px" onclick="exportAuditCSV()">⬇ CSV</button>
-      <button class="btn-outline" style="font-size:11px;padding:4px 10px;color:#a32d2d;border-color:#f7c1c1" onclick="resetAuditTrail()">🗑 Reset</button>
     </div>
     <div id="audit-table" style="max-height:420px;overflow-y:auto"></div>
     <div class="modal-btns"><button class="btn-cancel" onclick="closeModal('audit-modal')">Close</button></div>
@@ -1546,7 +1547,7 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
       <!-- DOWNLOAD BACKUP -->
       <div style="border:1px solid var(--border-md);border-radius:var(--radius);padding:.85rem 1rem">
         <div style="font-size:13px;font-weight:600;margin-bottom:3px">&#x2B07; Download backup</div>
-        <div style="font-size:12px;color:var(--text-2);margin-bottom:.65rem;line-height:1.5">Downloads a <strong>.json</strong> file with all your clients, modules, implementors and audit log. Save it to iCloud, OneDrive or Google Drive.</div>
+        <div style="font-size:12px;color:var(--text-2);margin-bottom:.65rem;line-height:1.5">Downloads a <strong>.json</strong> file with all your clients, modules and implementors. Save it to iCloud, OneDrive or Google Drive.</div>
         <button class="btn-sync" onclick="exportJSON()">&#x2B07; Download backup file</button>
       </div>
 
@@ -1634,16 +1635,6 @@ function getLoggedInImplementor(){
 }
 
 /* ── USERS handled by Supabase Auth ── */
-
-/* ── AUDIT ── */
-function audit(action,target,detail){
-  if(!currentUser)return;
-  const entry={ts:new Date().toISOString(),user:currentUser,action,target:target||'',detail:detail||''};
-  auditLog.unshift(entry);
-  if(auditLog.length>500)auditLog=auditLog.slice(0,500);
-  sb.from('audit_log').insert({ts:entry.ts,user:entry.user,action:entry.action,target:entry.target,detail:entry.detail})
-    .then(({error})=>{if(error)console.error('Audit error:',error);});
-}
 
 /* ── SIDE MENU ── */
 function isMobileMenu(){
@@ -1834,7 +1825,7 @@ function stampBackup(type){
 }
 
 function exportJSON(){
-  const data=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS,audit:auditLog},null,2);
+  const data=JSON.stringify({c:clients,n:nextId,impl:implementors,mods:ALL_MODS},null,2);
   const blob=new Blob([data],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -1842,7 +1833,6 @@ function exportJSON(){
   a.click();
   URL.revokeObjectURL(a.href);
   stampBackup('file');
-  audit('Backup','System','Manual backup file downloaded');
   setSyncMsg('✓ Backup file downloaded.','#1e3a6e');
   toast('Backup downloaded.');
 }
@@ -1854,16 +1844,15 @@ function importJSON(input){
   reader.onload=e=>{
     try{
       const data=JSON.parse(e.target.result);
-      if(!Array.isArray(data.c))throw new Error('Invalid format');
+      if(!Array.isArray(data.c)||!data.c.every(c=>c&&Number.isSafeInteger(c.id)&&c.id>0)
+        ||(data.n!=null&&(!Number.isSafeInteger(data.n)||data.n<=0)))throw new Error('Invalid format');
       if(!confirm('Restore '+data.c.length+' clients from backup?\n\nThis will replace ALL current data. This cannot be undone.'))return;
       clients=data.c;
       nextId=data.n||clients.length+1;
       implementors=data.impl||[];
       if(data.mods&&data.mods.length)ALL_MODS=data.mods;
-      if(data.audit)auditLog=data.audit;
       save();render();buildVatBanner();buildStkBanner();
       stampBackup('file');
-      audit('Restore','System','Data restored from backup file: '+file.name);
       closeModal('settings-modal');
       toast('Data restored from backup.');
     }catch(e){setSyncMsg('Invalid backup file — could not restore.','#a32d2d');}
@@ -1876,11 +1865,10 @@ function importJSON(input){
 async function load(){
   setSyncStatus('spin','Loading…');
   try{
-    const [cRes,iRes,mRes,aRes,dnRes]=await Promise.all([
+    const [cRes,iRes,mRes,dnRes]=await Promise.all([
       sb.from('clients').select('*').order('id'),
       sb.from('implementors').select('*').order('name'),
       sb.from('modules').select('name'),
-      sb.from('audit_log').select('*').order('ts',{ascending:false}).limit(500),
       sb.rpc('get_display_names')
     ]);
     if(cRes.error)throw cRes.error;
@@ -1897,13 +1885,12 @@ async function load(){
       if(derived.length){
         implementors=derived;
         // If the table loaded fine but was simply empty, persist the recovered names
-        if(!iRes.error){
+        if(!iRes.error&&isAdminUser){
           sb.from('implementors').insert(derived.map(name=>({name}))).then(({error})=>{if(error)console.error('Seed implementors error:',error);});
         }
       }
     }
-    if(mRes.data&&mRes.data.length)ALL_MODS=mRes.data.map(r=>r.name);
-    if(aRes.data)auditLog=aRes.data.map(r=>({ts:r.ts,user:r.user,action:r.action,target:r.target||'',detail:r.detail||''}));
+    if(mRes.data)ALL_MODS=mRes.data.map(r=>r.name);
     if(dnRes.data){implDisplayNames={};dnRes.data.forEach(r=>{if(r.full_name)implDisplayNames[r.username.toLowerCase()]=r.full_name;});}
     setSyncStatus('ok','Supabase ✓');
   }catch(e){
@@ -2085,7 +2072,7 @@ function fmToggle(e,val){
 function updateFMUI(){
   const sorted=[...ALL_MODS].sort((a,b)=>a.localeCompare(b));
   const itemsEl=document.getElementById('fm-items');
-  if(itemsEl){itemsEl.innerHTML=sorted.map(m=>`<div class="dd-item" data-val="${m}" onclick="fmToggle(event,'${m}')"><div class="dd-check" id="fmdc-${m}">${selMods.has(m)?'✓':''}</div> ${m}</div>`).join('');}
+  if(itemsEl){itemsEl.innerHTML=sorted.map(m=>`<div class="dd-item" data-val="${esc(m)}" onclick="fmToggle(event,this.dataset.val)"><div class="dd-check" id="fmdc-${esc(m)}">${selMods.has(m)?'✓':''}</div> ${esc(m)}</div>`).join('');}
   const none=selMods.size===0;
   const allEl=document.getElementById('fmdc-all');
   if(allEl){allEl.textContent=none?'✓':'';document.querySelector('#fm-panel [data-val=""]')?.classList.toggle('checked',none);}
@@ -2101,27 +2088,27 @@ function populateImplFilter(){
   const sorted=[...implementors].sort((a,b)=>a.localeCompare(b));
   const el=document.getElementById('fi-items');
   if(!el)return;
-  el.innerHTML=sorted.map(i=>`<div class="dd-item" data-val="${i}" onclick="fiToggle(event,'${i}')"><div class="dd-check">${selImpls.has(i)?'✓':''}</div> ${i}</div>`).join('');
+  el.innerHTML=sorted.map(i=>`<div class="dd-item" data-val="${esc(i)}" onclick="fiToggle(event,this.dataset.val)"><div class="dd-check">${selImpls.has(i)?'✓':''}</div> ${esc(i)}</div>`).join('');
   // also keep legacy f-impl if it exists
   const sel=document.getElementById('f-impl');
   if(sel){
     const cur=sel.value;
-    sel.innerHTML=`<option value="">All implementors</option>`+sorted.map(i=>`<option${i===cur?' selected':''}>${i}</option>`).join('');
+    sel.innerHTML=`<option value="">All implementors</option>`+sorted.map(i=>`<option${i===cur?' selected':''}>${esc(i)}</option>`).join('');
   }
   // populate manager and city filters from client data
   const mgrs=[...new Set(clients.map(c=>c.mgr).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
   const mgrItemsEl=document.getElementById('fmgr-items');
-  if(mgrItemsEl)mgrItemsEl.innerHTML=mgrs.map(m=>`<div class="dd-item" data-val="${m}" onclick="fmgrSet(event,'${m}')"><div class="dd-check">${selMgr===m?'✓':''}</div> ${m}</div>`).join('');
+  if(mgrItemsEl)mgrItemsEl.innerHTML=mgrs.map(m=>`<div class="dd-item" data-val="${esc(m)}" onclick="fmgrSet(event,this.dataset.val)"><div class="dd-check">${selMgr===m?'✓':''}</div> ${esc(m)}</div>`).join('');
   updateFMGRUI();
   const cities=[...new Set(clients.map(c=>c.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
   const cityItemsEl=document.getElementById('fcity-items');
-  if(cityItemsEl)cityItemsEl.innerHTML=cities.map(c=>`<div class="dd-item" data-val="${c}" onclick="fcitySet(event,'${c}')"><div class="dd-check">${selCity===c?'✓':''}</div> ${c}</div>`).join('');
+  if(cityItemsEl)cityItemsEl.innerHTML=cities.map(c=>`<div class="dd-item" data-val="${esc(c)}" onclick="fcitySet(event,this.dataset.val)"><div class="dd-check">${selCity===c?'✓':''}</div> ${esc(c)}</div>`).join('');
   updateFCITYUI();
   // keep module filter items in sync (sorted)
   const fmItemsEl=document.getElementById('fm-items');
   if(fmItemsEl){
     const sorted=[...ALL_MODS].sort((a,b)=>a.localeCompare(b));
-    fmItemsEl.innerHTML=sorted.map(m=>`<div class="dd-item" data-val="${m}" onclick="fmToggle(event,'${m}')"><div class="dd-check" id="fmdc-${m}">${selMods.has(m)?'✓':''}</div> ${m}</div>`).join('');
+    fmItemsEl.innerHTML=sorted.map(m=>`<div class="dd-item" data-val="${esc(m)}" onclick="fmToggle(event,this.dataset.val)"><div class="dd-check" id="fmdc-${esc(m)}">${selMods.has(m)?'✓':''}</div> ${esc(m)}</div>`).join('');
   }
 }
 
@@ -2271,7 +2258,7 @@ function render(){
   let html='';
   if(sortMode==='status'){
     // group by status
-    const groups={};S_ORDER.forEach(s=>groups[s]=[]);
+    const groups=Object.create(null);S_ORDER.forEach(s=>groups[s]=[]);
     list.forEach(c=>{if(groups[c.status])groups[c.status].push(c);});
     S_ORDER.forEach(st=>{
       const g=groups[st];if(!g.length)return;
@@ -2283,7 +2270,7 @@ function render(){
     const mgrs=[...new Set(list.map(c=>c.mgr))].sort();
     mgrs.forEach(mg=>{
       const g=list.filter(c=>c.mgr===mg).sort((a,b)=>S_ORDER.indexOf(a.status)-S_ORDER.indexOf(b.status)||a.name.localeCompare(b.name));
-      html+=`<div class="group-label">Manager: ${mg} <span style="font-weight:400;color:var(--text-3)">(${g.length})</span></div>`;
+      html+=`<div class="group-label">Manager: ${esc(mg)} <span style="font-weight:400;color:var(--text-3)">(${g.length})</span></div>`;
       g.forEach(c=>{html+=buildRow(c);});
     });
   } else if(sortMode==='impl'){
@@ -2291,7 +2278,7 @@ function render(){
     const impls=[...new Set(list.map(c=>c.implementor||'—'))].sort();
     impls.forEach(imp=>{
       const g=list.filter(c=>(c.implementor||'—')===imp);
-      html+=`<div class="group-label">Implementor: ${imp} <span style="font-weight:400;color:var(--text-3)">(${g.length})</span></div>`;
+      html+=`<div class="group-label">Implementor: ${esc(imp)} <span style="font-weight:400;color:var(--text-3)">(${g.length})</span></div>`;
       g.forEach(c=>{html+=buildRow(c);});
     });
   } else {
@@ -2320,9 +2307,9 @@ function clientProgress(c){
 }
 
 function buildRow(c){
-  const sc='s-'+c.status.replace(/ /g,'-');
-  const mods=ALL_MODS.filter(m=>c.modules.includes(m)).map(m=>`<span class="mod on">${m}</span>`).join('');
-  const contactLine=c.contact?`<span class="rh-contact">👤 ${c.contact}</span>`:'';
+  const sc='s-'+esc(c.status.replace(/ /g,'-'));
+  const mods=ALL_MODS.filter(m=>c.modules.includes(m)).map(m=>`<span class="mod on">${esc(m)}</span>`).join('');
+  const contactLine=c.contact?`<span class="rh-contact">👤 ${esc(c.contact)}</span>`:'';
   const gradeOnRow=`<div class="rh-grade">${starsHtml(c.grade||0,12)}</div>`;
 
   // progress
@@ -2337,7 +2324,7 @@ function buildRow(c){
     <div class="vat-cell">
       <div class="xlbl">VAT Reminder</div>
       <div style="display:flex;align-items:center;gap:3px;margin-bottom:4px">
-        <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.vatDate||''}" onchange="fldDate(${c.id},'vatDate',this)" onblur="fldDate(${c.id},'vatDate',this,1)" >
+        <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${esc(c.vatDate||'')}" onchange="fldDate(${c.id},'vatDate',this)" onblur="fldDate(${c.id},'vatDate',this,1)" >
         <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'vat')" title="Clear date &amp; reset">×</button>
       </div>
       <label class="inline-check" style="color:#1d4ed8">
@@ -2352,7 +2339,7 @@ function buildRow(c){
     <div class="stk-cell">
       <div class="xlbl">Stock Take Reminder</div>
       <div style="display:flex;align-items:center;gap:3px;margin-bottom:5px">
-        <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.stkDate||''}" onchange="fldDate(${c.id},'stkDate',this)" onblur="fldDate(${c.id},'stkDate',this,1)" >
+        <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${esc(c.stkDate||'')}" onchange="fldDate(${c.id},'stkDate',this)" onblur="fldDate(${c.id},'stkDate',this,1)" >
         <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'stk')" title="Clear date &amp; reset">×</button>
       </div>
       <label class="inline-check" style="color:#7a6500">
@@ -2365,28 +2352,28 @@ function buildRow(c){
   // notes shown only in PDF
   const notesForPdf=(c.comment||c.todo)?`
     <div class="pdf-notes">
-      ${c.comment?`<div class="pdf-notes-lbl">Notes</div><div>${c.comment}</div>`:''}
-      ${c.todo?`<div class="pdf-notes-lbl" style="margin-top:3px">Notes</div><div>${c.todo}</div>`:''}
+      ${c.comment?`<div class="pdf-notes-lbl">Notes</div><div>${esc(c.comment)}</div>`:''}
+      ${c.todo?`<div class="pdf-notes-lbl" style="margin-top:3px">Notes</div><div>${esc(c.todo)}</div>`:''}
     </div>`:'';
 
   // modules: view = active pills only; edit = all toggles
   const activeModsDisplay=c.modules.length
-    ?c.modules.map(m=>`<span class="mod on">${m}</span>`).join('')
+    ?c.modules.map(m=>`<span class="mod on">${esc(m)}</span>`).join('')
     :`<span style="font-size:11px;color:var(--text-3)">None</span>`;
-  const allModToggles=ALL_MODS.map(m=>`<label class="mod-toggle${c.modules.includes(m)?' on':''}" data-mod="${m}"><input type="checkbox"${c.modules.includes(m)?' checked':''} onchange="tModFld(${c.id},'${m}',this.checked)">${m}</label>`).join('');
+  const allModToggles=ALL_MODS.map(m=>`<label class="mod-toggle${c.modules.includes(m)?' on':''}" data-mod="${esc(m)}"><input type="checkbox"${c.modules.includes(m)?' checked':''} onchange="tModFld(${c.id},this.parentElement.dataset.mod,this.checked)">${esc(m)}</label>`).join('');
 
-  return `<div class="client-row" data-id="${c.id}" data-status="${c.status}">
+  return `<div class="client-row" data-id="${c.id}" data-status="${esc(c.status)}">
     <div class="row-header" onclick="toggle(${c.id})">
       <div class="rh-left">
-        <div class="rh-name" title="${c.comment||''}">${c.name}${contactLine?`<span class="rh-contact" style="font-size:11px;font-weight:400;color:var(--text-3);margin-left:8px">👤 ${c.contact}</span>`:''}${c.comment?`<span class="rh-note">· ${c.comment}</span>`:''}</div>
+        <div class="rh-name" title="${esc(c.comment||'')}">${esc(c.name)}${contactLine?`<span class="rh-contact" style="font-size:11px;font-weight:400;color:var(--text-3);margin-left:8px">👤 ${esc(c.contact)}</span>`:''}${c.comment?`<span class="rh-note">· ${esc(c.comment)}</span>`:''}</div>
         <div class="rh-sub-bar">${gradeOnRow}${progressBar}</div>
       </div>
       ${gradeOnRow}
       ${progressBar}
       <div class="rh-modules">${mods}</div>
-      <span class="rh-mgr">${c.mgr}</span>
-      ${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:''}
-      <span class="rh-status ${sc}">${c.status}</span>
+      <span class="rh-mgr">${esc(c.mgr)}</span>
+      ${c.implementor?`<span class="rh-impl">${esc(c.implementor)}</span>`:''}
+      <span class="rh-status ${sc}">${esc(c.status)}</span>
       <span class="chevron">▼</span>
     </div>
     ${notesForPdf}
@@ -2394,7 +2381,7 @@ function buildRow(c){
       <div class="xgrid">
         <div>
           <div class="xlbl">Company name</div>
-          <input type="text" class="xinput" value="${c.name.replace(/"/g,'&quot;')}" placeholder="Company Ltd" onchange="fld(${c.id},'name',this.value)">
+          <input type="text" class="xinput" value="${esc(c.name)}" placeholder="Company Ltd" onchange="fld(${c.id},'name',this.value)">
         </div>
         <div>
           <div class="xlbl">Client ID</div>
@@ -2408,7 +2395,7 @@ function buildRow(c){
         </div>
         <div>
           <div class="xlbl">Main contact</div>
-          <input type="text" class="xinput" value="${(c.contact||'').replace(/"/g,'&quot;')}" placeholder="Full name" onchange="fld(${c.id},'contact',this.value)">
+          <input type="text" class="xinput" value="${esc(c.contact||'')}" placeholder="Full name" onchange="fld(${c.id},'contact',this.value)">
         </div>
         <div>
           <div class="xlbl">Client email</div>
@@ -2440,7 +2427,7 @@ function buildRow(c){
             <div class="star-edit" id="se-${c.id}">
               ${[1,2,3,4,5].map(v=>`<span class="${(c.grade||0)>=v?'lit':''}" onmouseenter="previewGrade(${c.id},${v})" onmouseleave="unpreviewGrade(${c.id})" onclick="setGrd(${c.id},${v})">★</span>`).join('')}
             </div>
-            <span class="grade-val">${c.grade?c.grade+'/5':'—'}</span>
+            <span class="grade-val">${c.grade?esc(c.grade)+'/5':'—'}</span>
           </div>
         </div>
       </div>
@@ -2453,12 +2440,12 @@ function buildRow(c){
             <input type="checkbox" id="ldc-${c.id}" ${c.liveDate?'checked':''} onchange="tLiveDate(${c.id},this.checked)">
             Date set
           </label>
-          <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" id="ld-${c.id}" value="${c.liveDate||''}" ${!c.liveDate?'disabled':''} onchange="fldDate(${c.id},'liveDate',this)" onblur="fldDate(${c.id},'liveDate',this,1)">
+          <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" id="ld-${c.id}" value="${esc(c.liveDate||'')}" ${!c.liveDate?'disabled':''} onchange="fldDate(${c.id},'liveDate',this)" onblur="fldDate(${c.id},'liveDate',this,1)">
         </div>
         <div class="vat-cell date-card">
           <div class="xlbl">VAT Reminder</div>
           <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
-            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.vatDate||''}" onchange="fldDate(${c.id},'vatDate',this)" onblur="fldDate(${c.id},'vatDate',this,1)" >
+            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${esc(c.vatDate||'')}" onchange="fldDate(${c.id},'vatDate',this)" onblur="fldDate(${c.id},'vatDate',this,1)" >
             <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'vat')" title="Clear date &amp; reset">×</button>
           </div>
           <label class="inline-check">
@@ -2470,7 +2457,7 @@ function buildRow(c){
         <div class="stk-cell date-card">
           <div class="xlbl">Stock Take Reminder</div>
           <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
-            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.stkDate||''}" onchange="fldDate(${c.id},'stkDate',this)" onblur="fldDate(${c.id},'stkDate',this,1)" >
+            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${esc(c.stkDate||'')}" onchange="fldDate(${c.id},'stkDate',this)" onblur="fldDate(${c.id},'stkDate',this,1)" >
             <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'stk')" title="Clear date &amp; reset">×</button>
           </div>
           <label class="inline-check">
@@ -2482,7 +2469,7 @@ function buildRow(c){
         <div class="followup-cell date-card">
           <div class="xlbl">Next Follow-up</div>
           <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
-            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${c.nextFollowupDate||''}" onchange="fldDate(${c.id},'nextFollowupDate',this)" onblur="fldDate(${c.id},'nextFollowupDate',this,1)" >
+            <input type="date" min="2000-01-01" max="2099-12-31" class="xdate" value="${esc(c.nextFollowupDate||'')}" onchange="fldDate(${c.id},'nextFollowupDate',this)" onblur="fldDate(${c.id},'nextFollowupDate',this,1)" >
             <button class="reminder-clear no-print" onclick="clearReminder(${c.id},'followup')" title="Clear date">×</button>
           </div>
         </div>
@@ -2516,7 +2503,7 @@ function buildRow(c){
       <div class="xactions no-print" style="justify-content:space-between;align-items:center">
         <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
           <span style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Progress</span>
-          <input type="range" min="0" max="100" step="5" value="${c.progress||0}"
+          <input type="range" min="0" max="100" step="5" value="${esc(c.progress||0)}"
             style="flex:1;min-width:80px;max-width:220px;accent-color:${prog.color};cursor:pointer"
             oninput="updateProgress(${c.id},this.value,this)"
             onchange="auditProgress(${c.id},this.value)"
@@ -2525,7 +2512,7 @@ function buildRow(c){
         </div>
         <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
           <button class="btn-primary" onclick="event.stopPropagation();openClientWorkspace(${c.id})">Open Client Workspace</button>
-          <button class="btn-del-sm" onclick="delClient(${c.id})">Delete client</button>
+          ${isAdminUser?`<button class="btn-del-sm" onclick="delClient(${c.id})">Delete client</button>`:''}
         </div>
       </div>
     </div>
@@ -2571,7 +2558,6 @@ function fld(id,k,v){
   const fmt=val=>val===true?'Yes':val===false?'No':val||'(empty)';
   const oldFmt=fmt(old);
   const newFmt=fmt(v);
-  audit('Edit',c.name,label+': "'+oldFmt+'" → "'+newFmt+'"');
   if(old!==v&&(k==='status'||k==='mgr'||k==='implementor')){
     _pushSystemLog(c,label+': "'+oldFmt+'" → "'+newFmt+'"');
   }
@@ -2643,7 +2629,6 @@ function addComment(id){
   c.commentLog=[{text,ts:new Date().toISOString(),user:currentUser},...(c.commentLog||[])];
   c.comment=text;
   input.value='';
-  audit('Edit',c.name,'Comment added: "'+text+'"');
   _saveCommentLog(c);_rerender(id);
 }
 function clogToggle(id){
@@ -2668,9 +2653,7 @@ function saveCommentEdit(id,idx){
 }
 function deleteComment(id,idx){
   const c=clients.find(x=>x.id===id);if(!c)return;
-  const pwd=prompt('Enter password to delete this comment:');
-  if(pwd===null)return;
-  if(pwd!=='0000'){toast('Incorrect password.');return;}
+  if(!confirm('Delete this comment?'))return;
   c.commentLog.splice(idx,1);
   c.comment=c.commentLog.length?c.commentLog[0].text:'';
   delete clogEdit[id+'-'+idx];
@@ -2680,16 +2663,11 @@ function deleteComment(id,idx){
 function clearReminder(id,type){
   const c=clients.find(x=>x.id===id);if(!c)return;
   if(type==='vat'){
-    if(c.vatDate)audit('Edit',c.name,'VAT date: "'+c.vatDate+'" → "(empty)"');
-    if(c.vatDone)audit('Edit',c.name,'VAT done: "Yes" → "No"');
     c.vatDate='';c.vatDone=false;
   }else if(type==='stk'){
-    if(c.stkDate)audit('Edit',c.name,'Stock Take date: "'+c.stkDate+'" → "(empty)"');
-    if(c.stkDone)audit('Edit',c.name,'Stock Take done: "Yes" → "No"');
     c.stkDate='';c.stkDone=false;
   }else if(type==='followup'){
     if(c.nextFollowupDate){
-      audit('Edit',c.name,'Next Follow-up: "'+c.nextFollowupDate+'" → "(empty)"');
       _pushSystemLog(c,'Next Follow-up: "'+c.nextFollowupDate+'" → "(empty)"');
     }
     c.nextFollowupDate='';
@@ -2715,9 +2693,7 @@ function unpreviewGrade(id){
 }
 function setGrd(id,v){
   const c=clients.find(x=>x.id===id);if(!c)return;
-  const old=c.grade||0;
   c.grade=v;
-  audit('Edit',c.name,'Grade: "'+old+'" → "'+v+'"');
   save();
   // re-render so both row header stars AND expand panel stars update
   const was=expanded.has(id);render();if(was)expanded.add(id);
@@ -2728,18 +2704,17 @@ function tModFld(id,m,on){
   const c=clients.find(x=>x.id===id);if(!c)return;
   if(on&&!c.modules.includes(m))c.modules.push(m);
   else c.modules=c.modules.filter(x=>x!==m);
-  audit('Edit',c.name,'Modules: '+(on?'added':'removed')+' "'+m+'"');
   _pushSystemLog(c,'Modules: '+(on?'added':'removed')+' "'+m+'"');
   save();
   // update the mod-toggle visual without full re-render
-  const lbl=document.querySelector(`#mod-edit-${id} .mod-toggle[data-mod="${m}"]`);
+  const lbl=[...document.querySelectorAll(`#mod-edit-${id} .mod-toggle`)].find(el=>el.dataset.mod===m);
   if(lbl)lbl.classList.toggle('on',on);
   // update the row header module pills quietly
   const rhMods=document.querySelector(`.client-row[data-id="${id}"] .rh-modules`);
-  if(rhMods)rhMods.innerHTML=ALL_MODS.filter(x=>c.modules.includes(x)).map(x=>`<span class="mod on">${x}</span>`).join('');
+  if(rhMods)rhMods.innerHTML=ALL_MODS.filter(x=>c.modules.includes(x)).map(x=>`<span class="mod on">${esc(x)}</span>`).join('');
   // update mod-view (collapsed view)
   const mv=document.getElementById('mod-view-'+id);
-  if(mv)mv.innerHTML=c.modules.length?c.modules.map(x=>`<span class="mod on">${x}</span>`).join(''):`<span style="font-size:11px;color:var(--text-3)">None</span>`;
+  if(mv)mv.innerHTML=c.modules.length?c.modules.map(x=>`<span class="mod on">${esc(x)}</span>`).join(''):`<span style="font-size:11px;color:var(--text-3)">None</span>`;
 }
 function tMtg(id,on){
   const c=clients.find(x=>x.id===id);if(!c)return;
@@ -2750,7 +2725,6 @@ function tMtg(id,on){
 function tLiveDate(id,on){
   const c=clients.find(x=>x.id===id);if(!c)return;
   if(!on){
-    audit('Edit',c.name,'Live Date: "'+( c.liveDate||'(empty)')+'" → "(empty)"');
     c.liveDate='';save();
   }
   const di=document.getElementById('ld-'+id);
@@ -2785,20 +2759,16 @@ function updateProgress(id,val,slider){
 }
 function auditProgress(id,val){
   const c=clients.find(x=>x.id===id);if(!c)return;
-  audit('Edit',c.name,'Progress: "'+val+'%"');
   sb.from('clients').update({progress:parseInt(val)}).eq('id',id).then(({error})=>{if(error)console.error('Progress error:',error);else setSyncStatus('ok','Supabase ✓');});
 }
 
 async function delClient(id){
   const c=clients.find(x=>x.id===id);
-  const pwd=prompt(`Enter password to delete "${c.name}":`);
-  if(pwd===null)return;
-  if(pwd!=='0000'){toast('Incorrect password.');return;}
-  audit('Delete',c.name,'Client deleted');
+  if(!isAdminUser||!c||!confirm(`Delete "${c.name}" and its associated workspace and tasks?`))return;
+  const {data,error}=await sb.from('clients').delete().eq('id',id).select('id').maybeSingle();
+  if(error||!data){toast('Client could not be deleted.');return;}
   clients=clients.filter(x=>x.id!==id);expanded.delete(id);render();toast('Client deleted.');
-  const {error}=await sb.from('clients').delete().eq('id',id);
-  if(error){console.error('Delete error:',error);setSyncStatus('err','Delete failed');}
-  else setSyncStatus('ok','Supabase ✓');
+  setSyncStatus('ok','Supabase ✓');
 }
 
 /* ── VAT REPORT ── */
@@ -2833,7 +2803,7 @@ function openVatReport(){
     implFilter?`⚑ VAT Report — ${implFilter.join(', ')}`:'⚑ VAT Training Report';
 
   function nameCell(c){
-    return `<td><input type="text" value="${c.name.replace(/"/g,'&quot;')}"
+    return `<td><input type="text" value="${esc(c.name)}"
       style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;border:none;border-bottom:1px solid transparent;background:transparent;outline:none;width:100%;color:var(--text);padding:0"
       onmouseover="this.style.borderBottomColor='var(--border-md)'"
       onmouseout="this.style.borderBottomColor='transparent'"
@@ -2851,14 +2821,14 @@ function openVatReport(){
       <tbody>${list.map(c=>{
         const isToday=c.vatDate===todayISO;
         const dateCell=showDate?`<td style="font-weight:500;color:${c.vatDate<todayISO?'#a32d2d':'#1d4ed8'}">${isToday?'<strong>TODAY</strong>':fmt(c.vatDate)}</td>`:'';
-        const implCell=showImpl?`<td>${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:'—'}</td>`:'';
-        return `<tr>${nameCell(c)}<td>${c.contact||'—'}</td><td><span class="rh-mgr">${c.mgr}</span></td>${implCell}<td>${c.city}</td><td><span class="rh-status s-${c.status.replace(/ /g,'-')}">${c.status}</span></td>${dateCell}</tr>`;
+        const implCell=showImpl?`<td>${c.implementor?`<span class="rh-impl">${esc(c.implementor)}</span>`:'—'}</td>`:'';
+        return `<tr>${nameCell(c)}<td>${esc(c.contact||'—')}</td><td><span class="rh-mgr">${esc(c.mgr)}</span></td>${implCell}<td>${esc(c.city)}</td><td><span class="rh-status s-${esc(c.status.replace(/ /g,'-'))}">${esc(c.status)}</span></td>${dateCell}</tr>`;
       }).join('')}</tbody>
     </table>`;
   }
 
   let html=`<div class="vat-summary">`;
-  if(implFilter) html+=`<span class="vat-pill" style="background:#fff0e6;color:#92400e;border:1px solid #fbbf8a">👤 ${implFilter.join(', ')}</span>`;
+  if(implFilter) html+=`<span class="vat-pill" style="background:#fff0e6;color:#92400e;border:1px solid #fbbf8a">👤 ${esc(implFilter.join(', '))}</span>`;
   html+=`<span class="vat-pill" style="background:#fff3cd;color:#856404">${thisWeek.length} this week</span>
     <span class="vat-pill vp-pending">${previous.length} overdue</span>
     <span class="vat-pill" style="background:#e8f0fe;color:#1d4ed8">${next.length} upcoming</span>
@@ -2873,8 +2843,8 @@ function openVatReport(){
     <table class="vat-report-table">
       <thead><tr><th>Client</th><th>Contact</th><th>Manager</th>${showImpl?'<th>Implementor</th>':''}<th>City</th><th>Call date</th></tr></thead>
       <tbody>${done.map(c=>{
-        const implCell=showImpl?`<td>${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:'—'}</td>`:'';
-        return `<tr>${nameCell(c)}<td>${c.contact||'—'}</td><td><span class="rh-mgr">${c.mgr}</span></td>${implCell}<td>${c.city}</td><td class="vr-done">✓ ${fmt(c.vatDate)||'—'}</td></tr>`;
+        const implCell=showImpl?`<td>${c.implementor?`<span class="rh-impl">${esc(c.implementor)}</span>`:'—'}</td>`:'';
+        return `<tr>${nameCell(c)}<td>${esc(c.contact||'—')}</td><td><span class="rh-mgr">${esc(c.mgr)}</span></td>${implCell}<td>${esc(c.city)}</td><td class="vr-done">✓ ${fmt(c.vatDate)||'—'}</td></tr>`;
       }).join('')}</tbody>
     </table>`;
   }
@@ -2888,7 +2858,8 @@ function openVatReport(){
 function printVatReport(){
   const body=document.getElementById('vat-report-body').innerHTML;
   const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>VAT Training Report</title>
+  w.document.write(`<!DOCTYPE html><html><head>
+<title>VAT Training Report</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
@@ -2914,14 +2885,14 @@ function printVatReport(){
   <h1>A.V.PremierSoft — VAT Training Report</h1>
   <div class="sub">Generated: ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})}</div>
   ${body}
-  <script>setTimeout(()=>window.print(),300)<\/script>
   </body></html>`);
   w.document.close();
+  w.setTimeout(()=>w.print(),300);
 }
 
 /* ── IMPLEMENTORS ── */
 function implOptions(selected){
-  return `<option value="">— None —</option>`+[...implementors].sort((a,b)=>a.localeCompare(b)).map(i=>`<option${i===selected?' selected':''}>${i}</option>`).join('');
+  return `<option value="">— None —</option>`+[...implementors].sort((a,b)=>a.localeCompare(b)).map(i=>`<option${i===selected?' selected':''}>${esc(i)}</option>`).join('');
 }
 function populateImplSelects(){
   document.querySelectorAll('select.impl-sel').forEach(s=>{
@@ -2933,6 +2904,7 @@ function populateImplSelects(){
   if(mImpl){const cur=mImpl.value;mImpl.innerHTML=implOptions(cur);mImpl.value=cur;}
 }
 function openImplMgr(){
+  if(!isAdminUser)return;
   renderImplList();
   document.getElementById('impl-input').value='';
   document.getElementById('impl-add-err').textContent='';
@@ -2956,6 +2928,7 @@ function renderImplList(){
   }).join('');
 }
 async function addImpl(){
+  if(!isAdminUser)return;
   const name=document.getElementById('impl-input').value.trim();
   const err=document.getElementById('impl-add-err');
   if(!name){err.textContent='Enter a display name.';return;}
@@ -2971,6 +2944,7 @@ async function addImpl(){
   toast('Implementor added.');
 }
 async function removeImpl(i){
+  if(!isAdminUser)return;
   const name=implementors[i];
   if(!name)return;
   const assigned=clients.filter(c=>c.implementor===name).length;
@@ -2978,14 +2952,9 @@ async function removeImpl(i){
     ? `Remove implementor "${name}"?\n\n${assigned} client${assigned!==1?'s':''} ${assigned!==1?'are':'is'} assigned to them and will be left with no implementor.\n\nThis cannot be undone.`
     : `Remove implementor "${name}"?\n\nThis cannot be undone.`;
   if(!confirm(msg))return;
-  const pwd=prompt('Enter the delete password to confirm:');
-  if(pwd===null)return;
-  if(pwd!=='0000'){toast('Wrong password — implementor not removed.');return;}
-  const {error}=await sb.from('implementors').delete().eq('name',name);
-  if(error){toast('Error: '+error.message);return;}
-  implementors.splice(i,1);
-  clients.forEach(c=>{if(c.implementor===name)c.implementor='';});
-  saveNow();render();renderImplList();populateImplFilter();
+  const {data,error}=await sb.from('implementors').delete().eq('name',name).select('name').maybeSingle();
+  if(error||!data){toast('Implementor could not be removed.');return;}
+  await load();renderImplList();
   toast(`"${name}" removed.`);
 }
 
@@ -3002,7 +2971,7 @@ function openAdd(){
   if(mImpl)mImpl.innerHTML=implOptions(defImpl);
   // populate module checkboxes dynamically
   const mc=document.getElementById('mods-check');
-  if(mc){mc.innerHTML=ALL_MODS.map(m=>`<label onclick="tMod(this)"><input type="checkbox" value="${m}"> ${m}</label>`).join('');}
+  if(mc){mc.innerHTML=ALL_MODS.map(m=>`<label onclick="tMod(this)"><input type="checkbox" value="${esc(m)}"> ${esc(m)}</label>`).join('');}
   document.querySelectorAll('.mods-check label').forEach(l=>{l.classList.remove('checked');});
   setMG(0);
   document.getElementById('add-modal').classList.add('open');
@@ -3032,7 +3001,6 @@ async function saveNew(){
   newC.comment=initComment;
   clients.push(newC);
   closeModal('add-modal');render();
-  audit('Create',newC.name,'New client added');
   toast('Client added.');
   const {error}=await sb.from('clients').insert(clientToDb(newC));
   if(error){console.error('Insert error:',error);toast('Warning: save to Supabase failed.');}
@@ -3114,9 +3082,9 @@ function buildStkBanner(){
     const dayName=d.toLocaleDateString('en-GB',{weekday:'short'});
     const dateShort=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
     const label=isToday?'TODAY':isOverdue?'OVERDUE · '+dateShort:dayName+' '+dateShort;
-    const implTag=c.implementor?`<span style="font-size:10px;opacity:.75"> · ${c.implementor}</span>`:'';
+    const implTag=c.implementor?`<span style="font-size:10px;opacity:.75"> · ${esc(c.implementor)}</span>`:'';
     return `<span class="stk-chip${isToday?' today':isOverdue?' overdue':''}" onclick="scrollToClient(${c.id})" title="Click to jump to client">
-      <span class="vc-name">${c.name}${implTag}</span>
+      <span class="vc-name">${esc(c.name)}${implTag}</span>
       <span class="vc-date">${label}</span>
     </span>`;
   }).join('');
@@ -3172,7 +3140,7 @@ function openStkReport(){
     implFilter?`📦 Stock Take Report — ${implFilter.join(', ')}`:'📦 Stock Take Report';
 
   function nameCell(c){
-    return `<td><input type="text" value="${c.name.replace(/"/g,'&quot;')}"
+    return `<td><input type="text" value="${esc(c.name)}"
       style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;border:none;border-bottom:1px solid transparent;background:transparent;outline:none;width:100%;color:var(--text);padding:0"
       onmouseover="this.style.borderBottomColor='var(--border-md)'"
       onmouseout="this.style.borderBottomColor='transparent'"
@@ -3185,20 +3153,20 @@ function openStkReport(){
   function section(title,color,bg,list,showDate=true){
     if(!list.length)return'';
     const implCol=showImpl?'<th>Implementor</th>':'';
-    const implColData=c=>showImpl?`<td>${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:'—'}</td>`:'';
+    const implColData=c=>showImpl?`<td>${c.implementor?`<span class="rh-impl">${esc(c.implementor)}</span>`:'—'}</td>`:'';
     return `<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:${color};background:${bg};border-radius:6px;padding:4px 10px;margin:.85rem 0 .4rem;display:inline-block">${title} (${list.length})</div>
     <table class="vat-report-table">
       <thead><tr><th>Client</th><th>Contact</th><th>Manager</th>${implCol}<th>City</th><th>Status</th>${showDate?'<th>Reminder date</th>':''}</tr></thead>
       <tbody>${list.map(c=>{
         const isToday=c.stkDate===todayISO;
         const dateCell=showDate?`<td style="font-weight:500;color:${c.stkDate<todayISO?'#7a6500':'#1d4ed8'}">${isToday?'<strong>TODAY</strong>':fmt(c.stkDate)}</td>`:'';
-        return `<tr>${nameCell(c)}<td>${c.contact||'—'}</td><td><span class="rh-mgr">${c.mgr}</span></td>${implColData(c)}<td>${c.city}</td><td><span class="rh-status s-${c.status.replace(/ /g,'-')}">${c.status}</span></td>${dateCell}</tr>`;
+        return `<tr>${nameCell(c)}<td>${esc(c.contact||'—')}</td><td><span class="rh-mgr">${esc(c.mgr)}</span></td>${implColData(c)}<td>${esc(c.city)}</td><td><span class="rh-status s-${esc(c.status.replace(/ /g,'-'))}">${esc(c.status)}</span></td>${dateCell}</tr>`;
       }).join('')}</tbody>
     </table>`;
   }
 
   let html=`<div class="vat-summary">`;
-  if(implFilter) html+=`<span class="vat-pill" style="background:#fff0e6;color:#92400e;border:1px solid #fbbf8a">👤 ${implFilter.join(', ')}</span>`;
+  if(implFilter) html+=`<span class="vat-pill" style="background:#fff0e6;color:#92400e;border:1px solid #fbbf8a">👤 ${esc(implFilter.join(', '))}</span>`;
   html+=`<span class="vat-pill" style="background:#fef9c3;color:#7a6500">${thisWeek.length} this week</span>
     <span class="vat-pill" style="background:#fef3c7;color:#92400e">${previous.length} overdue</span>
     <span class="vat-pill" style="background:#e8f0fe;color:#1d4ed8">${next.length} upcoming</span>
@@ -3210,13 +3178,13 @@ function openStkReport(){
   html+=section('Upcoming','#1d4ed8','#e8f0fe',next);
   if(done.length){
     const implCol=showImpl?'<th>Implementor</th>':'';
-    const implColData=c=>showImpl?`<td>${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:'—'}</td>`:'';
+    const implColData=c=>showImpl?`<td>${c.implementor?`<span class="rh-impl">${esc(c.implementor)}</span>`:'—'}</td>`:'';
     html+=`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#1e3a6e;background:#e8eef8;border-radius:6px;padding:4px 10px;margin:.85rem 0 .4rem;display:inline-block">Completed (${done.length})</div>
     <table class="vat-report-table">
       <thead><tr><th>Client</th><th>Contact</th><th>Manager</th>${implCol}<th>City</th><th>Date</th></tr></thead>
       <tbody>${done.map(c=>{
-        const implColDataRow=showImpl?`<td>${c.implementor?`<span class="rh-impl">${c.implementor}</span>`:'—'}</td>`:'';
-        return `<tr>${nameCell(c)}<td>${c.contact||'—'}</td><td><span class="rh-mgr">${c.mgr}</span></td>${implColDataRow}<td>${c.city}</td><td class="vr-done">✓ ${fmt(c.stkDate)||'—'}</td></tr>`;
+        const implColDataRow=showImpl?`<td>${c.implementor?`<span class="rh-impl">${esc(c.implementor)}</span>`:'—'}</td>`:'';
+        return `<tr>${nameCell(c)}<td>${esc(c.contact||'—')}</td><td><span class="rh-mgr">${esc(c.mgr)}</span></td>${implColDataRow}<td>${esc(c.city)}</td><td class="vr-done">✓ ${fmt(c.stkDate)||'—'}</td></tr>`;
       }).join('')}</tbody>
     </table>`;
   }
@@ -3231,7 +3199,8 @@ function printStkReport(){
   const body=document.getElementById('stk-report-body').innerHTML;
   const title=document.getElementById('stk-modal-title').textContent;
   const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>${title}</title>
+  w.document.write(`<!DOCTYPE html><html><head>
+<title>${esc(title)}</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -3253,12 +3222,12 @@ function printStkReport(){
     .s-Active{background:linear-gradient(135deg,#e0eaff,#eef1f8);color:#1e3a6e;border:1px solid rgba(30,58,110,.15)}.s-Dormant{background:linear-gradient(135deg,#fef3c7,#fdf0db);color:#92400e;border:1px solid rgba(146,64,14,.15)}.s-Pending{background:#dbeeff;color:#1d4ed8}.s-Pending-Follow-Up{background:linear-gradient(135deg,#ede9fe,#f5f3ff);color:#5b21b6;border:1px solid rgba(91,33,182,.15)}.s-Completed{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#065f46;border:1px solid rgba(6,95,70,.15)}.s-Not-started{background:#f1f5f9;color:#64748b;border:1px solid rgba(100,116,139,.15)}
     @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
   </style></head><body>
-  <h1>${title}</h1>
+  <h1>${esc(title)}</h1>
   <div class="sub">Generated: ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})}</div>
   ${body}
-  <script>setTimeout(()=>window.print(),300)<\/script>
   </body></html>`);
   w.document.close();
+  w.setTimeout(()=>w.print(),300);
 }
 
 /* ── VAT WEEK BANNER ── */
@@ -3301,9 +3270,9 @@ function buildVatBanner(){
     const dayName=d.toLocaleDateString('en-GB',{weekday:'short'});
     const dateShort=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
     const label=isToday?'TODAY':isOverdue?'OVERDUE · '+dateShort:dayName+' '+dateShort;
-    const implTag=c.implementor?`<span style="font-size:10px;opacity:.75"> · ${c.implementor}</span>`:'';
+    const implTag=c.implementor?`<span style="font-size:10px;opacity:.75"> · ${esc(c.implementor)}</span>`:'';
     return `<span class="vat-chip${isToday?' today':isOverdue?' overdue':''}" onclick="scrollToClient(${c.id})" title="Click to jump to client">
-      <span class="vc-name">${c.name}${implTag}</span>
+      <span class="vc-name">${esc(c.name)}${implTag}</span>
       <span class="vc-date">${label}</span>
     </span>`;
   }).join('');
@@ -3520,7 +3489,7 @@ function renderHomeDashboard(){
     <div class="hv-card-hdr"><div><div class="hv-card-title">My Clients</div>
       <div style="font-size:10px;color:var(--text-3);margin-top:2px">${myImpl?'Click a status to see those clients':'No implementor is linked to your account yet.'}</div></div>
       ${myImpl?`<button class="hv-card-link" onclick="goMyClients()">View all →</button>`:''}</div>
-    ${myStatus.length?myStatus.map(x=>`<div class="hv-wl-row" onclick="goClients({impl:'${esc(myImpl)}',status:'${x.st}'})">
+    ${myStatus.length?myStatus.map(x=>`<div class="hv-wl-row" data-filter-value="${esc(myImpl)}" onclick="goClients({impl:this.dataset.filterValue,status:'${x.st}'})">
       <div class="hv-wl-av" style="background:${wlColors[x.st]}">${x.n}</div><div class="hv-wl-name" style="min-width:130px">${x.st}</div>
       <div class="hv-wl-track"><div class="hv-wl-seg" style="width:${x.n/Math.max(...myStatus.map(y=>y.n))*100}%;background:${wlColors[x.st]}"></div></div>
       <div class="hv-wl-arrow">→</div></div>`).join('')+(myDone?`<div style="font-size:11px;color:#1e3a6e;font-weight:600;padding:.4rem 0 0">✓ ${myDone} completed</div>`:''):(myImpl?'<div style="font-size:13px;color:var(--text-3);padding:.25rem 0">No clients assigned to you yet.</div>':'')}
@@ -3557,7 +3526,7 @@ function renderHomeDashboard(){
 
   el.innerHTML=`
   <div class="hv-banner">
-    <div class="hv-avatar">${initials||'?'}</div>
+    <div class="hv-avatar">${esc(initials||'?')}</div>
     <div class="hv-banner-text">
       <div class="hv-greeting">${greeting}, ${esc(currentFullName)}</div>
       <div class="hv-date">${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}</div>
@@ -3584,7 +3553,7 @@ function renderHomeDashboard(){
       ${followupsAll.slice(0,10).map(c=>{
         const isOverdue=c.nextFollowupDate<todayISO;const isSoon=c.nextFollowupDate>todayISO;
         return `<div class="hv-event" onclick="goToClient(${c.id})">
-          <div class="hv-event-date" style="color:${isOverdue?'#a32d2d':isSoon?'var(--text-2)':'#856404'};font-weight:800">${isOverdue?'Overdue':isSoon?c.nextFollowupDate.slice(8)+'/'+c.nextFollowupDate.slice(5,7):'Today'}</div>
+          <div class="hv-event-date" style="color:${isOverdue?'#a32d2d':isSoon?'var(--text-2)':'#856404'};font-weight:800">${isOverdue?'Overdue':isSoon?esc(c.nextFollowupDate.slice(8)+'/'+c.nextFollowupDate.slice(5,7)):'Today'}</div>
           <div class="hv-event-badge" style="background:${isOverdue?'#fde2e2':isSoon?'#eef1f6':'#fff3cd'};color:${isOverdue?'#a32d2d':isSoon?'var(--text-2)':'#856404'}">📞 Follow-up</div>
           <div class="hv-event-client">${esc(c.name)}</div>
           <div class="hv-event-impl">${esc(c.implementor||'—')}</div>
@@ -3618,14 +3587,14 @@ function renderHomeDashboard(){
           const tip=`${s}: ${n} client${n!==1?'s':''}`;
           return`<div class="hv-wl-seg" style="width:${n/maxWl*100}%;background:${wlColors[s]}"
             onmouseenter="wlTipShow('${tip}',event)" onmousemove="wlTipMove(event)" onmouseleave="wlTipHide()"
-            onclick="event.stopPropagation();wlTipHide();goClients({impl:'${esc(im.name)}',status:'${s}'})"></div>`;
+            data-filter-value="${esc(im.name)}" onclick="event.stopPropagation();wlTipHide();goClients({impl:this.dataset.filterValue,status:'${s}'})"></div>`;
         }).join('');
-        return`<div class="hv-wl-row" onclick="goClients({impl:'${esc(im.name)}'})">
-          <div class="hv-wl-av" style="background:${im.color}">${im.name.slice(0,2).toUpperCase()}</div>
+        return`<div class="hv-wl-row" data-filter-value="${esc(im.name)}" onclick="goClients({impl:this.dataset.filterValue})">
+          <div class="hv-wl-av" style="background:${im.color}">${esc(im.name.slice(0,2).toUpperCase())}</div>
           <div class="hv-wl-name">${esc(displayName)}${im.isMe?'<span class="hv-pc-you" style="margin-left:4px">you</span>':''}</div>
           <div class="hv-wl-track" style="animation-delay:${idx*0.07}s">${segs}</div>
           <div class="hv-wl-count">${im.active}</div>
-          ${im.fu?`<div class="hv-wl-fu" onclick="event.stopPropagation();goClients({impl:'${esc(im.name)}',fu:true})" title="${im.fu} follow-up${im.fu!==1?'s':''} due">📞 ${im.fu}</div>`:''}
+          ${im.fu?`<div class="hv-wl-fu" data-filter-value="${esc(im.name)}" onclick="event.stopPropagation();goClients({impl:this.dataset.filterValue,fu:true})" title="${im.fu} follow-up${im.fu!==1?'s':''} due">📞 ${im.fu}</div>`:''}
           ${im.overdue?`<div class="hv-wl-od">⚠ ${im.overdue}</div>`:''}
           ${im.completed?`<div class="hv-wl-done">✓ ${im.completed}</div>`:''}
           <div class="hv-wl-arrow">→</div>
@@ -3660,14 +3629,14 @@ function renderHomeDashboard(){
           const tip=`${s}: ${n} client${n!==1?'s':''}`;
           return`<div class="hv-wl-seg" style="width:${n/maxWl2*100}%;background:${wlColors[s]}"
             onmouseenter="wlTipShow('${tip}',event)" onmousemove="wlTipMove(event)" onmouseleave="wlTipHide()"
-            onclick="event.stopPropagation();wlTipHide();goClients({mgr:'${esc(mg.m)}',status:'${s}'})"></div>`;
+            data-filter-value="${esc(mg.m)}" onclick="event.stopPropagation();wlTipHide();goClients({mgr:this.dataset.filterValue,status:'${s}'})"></div>`;
         }).join('');
-        return`<div class="hv-wl-row" onclick="goClients({mgr:'${esc(mg.m)}'})">
+        return`<div class="hv-wl-row" data-filter-value="${esc(mg.m)}" onclick="goClients({mgr:this.dataset.filterValue})">
           <div class="hv-wl-av" style="background:${mg.color}">${esc(mg.m)}</div>
           <div class="hv-wl-name">${esc(mg.m)}</div>
           <div class="hv-wl-track" style="animation-delay:${idx*0.07}s">${segs}</div>
           <div class="hv-wl-count">${mg.active}</div>
-          ${mg.fu?`<div class="hv-wl-fu" onclick="event.stopPropagation();goClients({mgr:'${esc(mg.m)}',fu:true})" title="${mg.fu} follow-up${mg.fu!==1?'s':''} due">📞 ${mg.fu}</div>`:''}
+          ${mg.fu?`<div class="hv-wl-fu" data-filter-value="${esc(mg.m)}" onclick="event.stopPropagation();goClients({mgr:this.dataset.filterValue,fu:true})" title="${mg.fu} follow-up${mg.fu!==1?'s':''} due">📞 ${mg.fu}</div>`:''}
           ${mg.overdue?`<div class="hv-wl-od">⚠ ${mg.overdue}</div>`:''}
           ${mg.completed?`<div class="hv-wl-done">✓ ${mg.completed}</div>`:''}
           <div class="hv-wl-arrow">→</div>
@@ -3684,7 +3653,7 @@ function renderHomeDashboard(){
     </div>
     <div class="hv-upcoming-list">
       ${events.length?events.slice(0,10).map(ev=>`
-        <div class="hv-event" onclick="goClients({impl:'${esc(ev.impl)}'})">
+        <div class="hv-event" data-filter-value="${esc(ev.impl)}" onclick="goClients({impl:this.dataset.filterValue})">
           <div class="hv-event-date">${fmtD(ev.date)}</div>
           <div class="hv-event-badge" style="background:${evBadge[ev.type].bg};color:${evBadge[ev.type].color}">${evBadge[ev.type].lbl}</div>
           <div class="hv-event-client">${esc(ev.client)}</div>
@@ -3743,14 +3712,14 @@ function renderDashboard(){
   if(selImpls.size>0) activeFilters.push('Implementor: '+[...selImpls].join(', '));
   if(selMods.size>0) activeFilters.push('Module: '+[...selMods].join(', '));
   const filterNote=activeFilters.length>0
-    ? '<div style="font-size:11px;color:var(--text-2);margin-bottom:.85rem;padding:.45rem .75rem;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border-md)">🔍 Showing <strong>'+total+'</strong> of <strong>'+clients.length+'</strong> clients · '+activeFilters.join(' · ')+'</div>'
+    ? '<div style="font-size:11px;color:var(--text-2);margin-bottom:.85rem;padding:.45rem .75rem;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border-md)">🔍 Showing <strong>'+total+'</strong> of <strong>'+clients.length+'</strong> clients · '+esc(activeFilters.join(' · '))+'</div>'
     : '';
 
   function bar(label,val,max,color){
     color=color||'var(--accent)';
     const pct=max>0?Math.round(val/max*100):0;
     return '<div class="dash-bar-row">'
-      +'<div class="dash-bar-label" title="'+label+'">'+label+'</div>'
+      +'<div class="dash-bar-label" title="'+esc(label)+'">'+esc(label)+'</div>'
       +'<div class="dash-bar-track"><div class="dash-bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div>'
       +'<div class="dash-bar-val">'+val+'</div></div>';
   }
@@ -3809,9 +3778,9 @@ function renderDashboard(){
       +'</tr></thead><tbody>';
     goingLive.forEach(function(c){
       html+='<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="setView(\'list\');scrollToClient('+c.id+')">'
-        +'<td style="padding:6px 8px;font-weight:500">'+c.name+'</td>'
-        +'<td style="padding:6px 8px"><span class="rh-status s-'+c.status.replace(/ /g,'-')+'">'+c.status+'</span></td>'
-        +'<td style="padding:6px 8px;color:var(--text-2)">'+(c.implementor||'—')+'</td>'
+        +'<td style="padding:6px 8px;font-weight:500">'+esc(c.name)+'</td>'
+        +'<td style="padding:6px 8px"><span class="rh-status s-'+esc(c.status.replace(/ /g,'-'))+'">'+esc(c.status)+'</span></td>'
+        +'<td style="padding:6px 8px;color:var(--text-2)">'+esc(c.implementor||'—')+'</td>'
         +'<td style="padding:6px 8px;font-weight:500;color:#1d4ed8">📅 '+fmt(c.liveDate)+'</td>'
         +'</tr>';
     });
@@ -3875,7 +3844,8 @@ function exportExcel(){
     Exported ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})} \u00B7 ${clients.length} clients total
   </td></tr>`;
 
-  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8">
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head>
+<meta charset="UTF-8">
     <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Clients</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
   </head><body><table border="1">${hdr}${rows}</table></body></html>`;
 
@@ -3888,6 +3858,7 @@ function exportExcel(){
 }
 
 /* ── USERS PANEL ── */
+function validPassword(s){return s.length>=12&&new TextEncoder().encode(s).length<=72;}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 let _umUsers=[];
 async function umAdmin(action,payload={}){
@@ -3952,8 +3923,8 @@ function umRenderTable(){
       <td style="padding:8px 8px">${badge}</td>
       <td style="padding:8px 8px;font-size:11px;color:var(--text-3);white-space:nowrap">${added}</td>
       <td style="padding:8px 4px;text-align:right;white-space:nowrap">
-        <button onclick="umOpenEdit('${esc(u.id)}')" title="Edit" style="background:none;border:1px solid var(--border-md);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:12px;font-family:inherit;color:var(--text-2);margin-right:3px">✏️</button>
-        ${isMe?'':`<button onclick="umDelete('${esc(u.id)}','${esc(u.username)}')" title="Delete" style="background:none;border:1px solid #f7c1c1;border-radius:5px;padding:2px 7px;cursor:pointer;font-size:12px;font-family:inherit;color:#a32d2d">🗑</button>`}
+        <button data-user-id="${esc(u.id)}" onclick="umOpenEdit(this.dataset.userId)" title="Edit" style="background:none;border:1px solid var(--border-md);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:12px;font-family:inherit;color:var(--text-2);margin-right:3px">✏️</button>
+        ${isMe?'':`<button data-user-id="${esc(u.id)}" data-username="${esc(u.username)}" onclick="umDelete(this.dataset.userId,this.dataset.username)" title="Delete" style="background:none;border:1px solid #f7c1c1;border-radius:5px;padding:2px 7px;cursor:pointer;font-size:12px;font-family:inherit;color:#a32d2d">🗑</button>`}
       </td></tr>`;
   }
   h+='</tbody></table></div>';
@@ -3995,11 +3966,10 @@ async function umCreateUser(){
   const err=document.getElementById('um-add-err');
   if(!username||!fullname||!pass){err.textContent='All fields are required.';return;}
   if(!/^[a-zA-Z0-9._@-]+$/.test(username)){err.textContent='Username can only contain letters, numbers, . _ @ -';return;}
-  if(pass.length<6){err.textContent='Password must be at least 6 characters.';return;}
+  if(!validPassword(pass)){err.textContent='Password must be at least 12 characters and at most 72 bytes.';return;}
   err.textContent='Creating…';
   try{await umAdmin('create',{username,full_name:fullname,password:pass,role});}
   catch(error){err.textContent='Error: '+error.message;return;}
-  audit('Users',currentUser,'Created user: '+username);
   toast('User created.');
   umShowList();
   await umLoadUsers();
@@ -4017,10 +3987,9 @@ async function umSaveEdit(){
   // Email: use explicit value if given, otherwise auto-generate from username
   const newEmail=emailRaw?emailRaw.toLowerCase():username.toLowerCase()+'@avps.local';
   err.textContent='Saving…';
-  if(pass&&pass.length<6){err.textContent='Password must be at least 6 characters.';return;}
+  if(pass&&!validPassword(pass)){err.textContent='Password must be at least 12 characters and at most 72 bytes.';return;}
   try{await umAdmin('update',{user_id:id,username,full_name:fullname,email:newEmail,role,password:pass});}
   catch(error){err.textContent='Error: '+error.message;return;}
-  audit('Users',currentUser,'Updated user: '+username);
   toast('User updated.');
   umShowList();
   await umLoadUsers();
@@ -4029,7 +3998,6 @@ async function umDelete(userId,username){
   if(!confirm(`Delete user "${username}"? This cannot be undone.`))return;
   try{await umAdmin('delete',{user_id:userId});}
   catch(error){toast('Error: '+error.message);return;}
-  audit('Users',currentUser,'Deleted user: '+username);
   toast('User deleted.');
   await umLoadUsers();
 }
@@ -4044,22 +4012,25 @@ async function doChangePassword(){
   const np=document.getElementById('chpwd-new').value;
   const cp=document.getElementById('chpwd-confirm').value;
   const err=document.getElementById('chpwd-err');
-  if(np.length<6){err.textContent='Password must be at least 6 characters.';return;}
+  if(!validPassword(np)){err.textContent='Password must be at least 12 characters and at most 72 bytes.';return;}
   if(np!==cp){err.textContent='Passwords do not match.';return;}
   err.textContent='Saving…';
   const {error}=await sb.auth.updateUser({password:np});
   if(error){err.textContent='Error: '+error.message;return;}
-  audit('Password',currentUser,'Password changed');
   closeModal('chpwd-modal');
   toast('Password updated.');
 }
 
 /* ── AUDIT TRAIL ── */
-function openAuditTrail(){
+async function openAuditTrail(){
+  if(!isAdminUser)return;
+  const {data,error}=await sb.from('audit_log').select('ts,user,action,target,detail').order('ts',{ascending:false}).limit(500);
+  if(error){toast('Audit trail could not be loaded.');return;}
+  auditLog=data;
   // populate user filter
   const users=[...new Set(auditLog.map(e=>e.user))].sort();
   const sel=document.getElementById('audit-f-user');
-  sel.innerHTML='<option value="">All users</option>'+users.map(u=>'<option>'+u+'</option>').join('');
+  sel.innerHTML='<option value="">All users</option>'+users.map(u=>'<option>'+esc(u)+'</option>').join('');
   document.getElementById('audit-f-action').value='';
   document.getElementById('audit-f-search').value='';
   renderAuditTable();
@@ -4088,7 +4059,7 @@ function renderAuditTable(){
     +entries.map(e=>{
       const d=new Date(e.ts);
       const when=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-      const col=actionColor[e.action]||'var(--text-2)';
+      const col=Object.hasOwn(actionColor,e.action)?actionColor[e.action]:'#6b6960';
       // parse old/new from detail if Edit action with format: "Field: "old" → "new""
       let oldVal='',newVal='',detail=e.detail||'';
       if(e.action==='Edit'){
@@ -4101,27 +4072,24 @@ function renderAuditTable(){
       }
       return '<tr style="border-bottom:1px solid var(--border)">'
         +'<td style="padding:5px 8px;color:var(--text-3);white-space:nowrap">'+when+'</td>'
-        +'<td style="padding:5px 8px;font-weight:500">'+e.user+'</td>'
-        +'<td style="padding:5px 8px"><span style="font-size:10px;padding:2px 7px;border-radius:99px;background:'+col+'22;color:'+col+';font-weight:600">'+e.action+'</span>'+(detail&&e.action!=='Edit'?'<br><span style="font-size:11px;color:var(--text-2)">'+detail+'</span>':e.action==='Edit'?'<br><span style="font-size:11px;color:var(--text-2)">'+detail+'</span>':'')+'</td>'
-        +'<td style="padding:5px 8px">'+e.target+'</td>'
-        +'<td style="padding:5px 8px;color:#a32d2d;font-size:11px">'+oldVal+'</td>'
-        +'<td style="padding:5px 8px;color:#1e3a6e;font-size:11px">'+newVal+'</td>'
+        +'<td style="padding:5px 8px;font-weight:500">'+esc(e.user)+'</td>'
+        +'<td style="padding:5px 8px"><span style="font-size:10px;padding:2px 7px;border-radius:99px;background:'+col+'22;color:'+col+';font-weight:600">'+esc(e.action)+'</span>'+(detail&&e.action!=='Edit'?'<br><span style="font-size:11px;color:var(--text-2)">'+esc(detail)+'</span>':e.action==='Edit'?'<br><span style="font-size:11px;color:var(--text-2)">'+esc(detail)+'</span>':'')+'</td>'
+        +'<td style="padding:5px 8px">'+esc(e.target)+'</td>'
+        +'<td style="padding:5px 8px;color:#a32d2d;font-size:11px">'+esc(oldVal)+'</td>'
+        +'<td style="padding:5px 8px;color:#1e3a6e;font-size:11px">'+esc(newVal)+'</td>'
         +'</tr>';
     }).join('')
     +'</tbody></table>';
 }
-async function resetAuditTrail(){
-  if(!confirm('Reset the entire audit trail? This cannot be undone.'))return;
-  auditLog=[];
-  await sb.from('audit_log').delete().not('ts','is',null);
-  renderAuditTable();
-  toast('Audit trail cleared.');
-}
 function exportAuditCSV(){
   const cols=['When','User','Action','Client','Detail'];
   const rows=auditLog.map(e=>[new Date(e.ts).toLocaleString('en-GB'),e.user,e.action,e.target,e.detail]);
-  const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';
-  const csv='\uFEFF'+[cols,...rows].map(r=>r.map(esc).join(',')).join('\r\n');
+  const csvCell=value=>{
+    const text=String(value??'');
+    const safe=/^[\s\uFEFF]*[=+@-]|^[\t\r\n]/.test(text)?"'"+text:text;
+    return '"'+safe.replace(/"/g,'""')+'"';
+  };
+  const csv='\uFEFF'+[cols,...rows].map(r=>r.map(csvCell).join(',')).join('\r\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -4139,14 +4107,7 @@ async function doLogin(){
   if(!u||!p){err.textContent='Enter username and password.';return;}
   err.textContent='Signing in…';
   try{
-    let email;
-    if(u.includes('@')){
-      email=u.toLowerCase();
-    }else{
-      // Try to resolve username/display-name to the stored email
-      const {data:resolved}=await sb.rpc('get_login_email',{p_username:u});
-      email=resolved||u.toLowerCase()+AUTH_DOMAIN;
-    }
+    const email=u.toLowerCase()+(u.includes('@')?'':AUTH_DOMAIN);
     const {data,error}=await sb.auth.signInWithPassword({email,password:p});
     if(error||!data||!data.session){
       err.textContent='Incorrect username or password.';
@@ -4156,7 +4117,6 @@ async function doLogin(){
     }
     err.textContent='';
     await onAuthed(data.user);
-    audit('Login',currentUser,'Signed in');
   }catch(e){
     console.error('Login error:',e);
     err.textContent='Connection error. Try again.';
@@ -4165,8 +4125,14 @@ async function doLogin(){
 async function onAuthed(user){
   currentUser=(user.user_metadata&&user.user_metadata.username)||user.email.split('@')[0];
   currentFullName=(user.user_metadata&&user.user_metadata.full_name)||currentUser;
-  const role=(user.app_metadata&&user.app_metadata.role)||(user.user_metadata&&user.user_metadata.role)||'user';
+  const role=user.app_metadata?.role;
+  if(role!=='admin'&&role!=='user'){
+    await sb.auth.signOut();
+    document.getElementById('login-err').textContent='This account has not been granted Client Monitor access.';
+    return;
+  }
   isAdminUser=role==='admin';
+  document.querySelectorAll('[data-admin-only]').forEach(button=>{button.hidden=!isAdminUser;});
   document.getElementById('login-screen').classList.add('hidden');
   const sm=document.getElementById('sidemenu-user');
   document.getElementById('sidemenu-user-label').textContent='👤 '+currentUser;
@@ -4177,6 +4143,7 @@ async function onAuthed(user){
   }
   await load();
   goHome();
+  return true;
 }
 async function doLogout(){
   if(window.cmEmailDisconnect)await window.cmEmailDisconnect();
@@ -4216,6 +4183,7 @@ async function doForgotPassword(){
 
 /* ── MODULES MANAGEMENT ── */
 function openModsMgr(){
+  if(!isAdminUser)return;
   renderModsList();
   document.getElementById('mod-input').value='';
   document.getElementById('mods-modal').classList.add('open');
@@ -4225,33 +4193,29 @@ function renderModsList(){
   if(!ALL_MODS.length){el.innerHTML='<div style="font-size:13px;color:var(--text-3)">No modules.</div>';return;}
   el.innerHTML=ALL_MODS.map((m,i)=>`
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px;font-weight:500">${m}</span>
+      <span style="font-size:13px;font-weight:500">${esc(m)}</span>
       <button onclick="removeMod(${i})" style="font-size:11px;padding:2px 8px;border:1px solid #f7c1c1;border-radius:5px;background:transparent;color:#a32d2d;cursor:pointer;font-family:'DM Sans',sans-serif">Remove</button>
     </div>`).join('');
 }
 async function addMod(){
+  if(!isAdminUser)return;
   const val=document.getElementById('mod-input').value.trim();
   if(!val||ALL_MODS.includes(val))return;
+  const {error}=await sb.from('modules').insert({name:val});
+  if(error){toast('Module could not be added.');return;}
   ALL_MODS.push(val);ALL_MODS.sort((a,b)=>a.localeCompare(b));
   renderModsList();render();updateFMUI();
   document.getElementById('mod-input').value='';
   toast(`Module "${val}" added.`);
-  const {error}=await sb.from('modules').insert({name:val});
-  if(error)console.error('Module add error:',error);
 }
 async function removeMod(i){
   const name=ALL_MODS[i];
-  const pwd=prompt(`Enter password to remove module "${name}":`);
-  if(pwd===null)return;
-  if(pwd!=='0000'){toast('Incorrect password.');return;}
-  ALL_MODS.splice(i,1);
-  clients.forEach(c=>{c.modules=c.modules.filter(m=>m!==name);});
-  render();renderModsList();
+  if(!isAdminUser||!name||!confirm(`Remove module "${name}" from the catalog and all clients?`))return;
+  const {data,error}=await sb.from('modules').delete().eq('name',name).select('name').maybeSingle();
+  if(error||!data){toast('Module could not be removed.');return;}
+  await load();
+  renderModsList();
   toast(`Module "${name}" removed.`);
-  await Promise.all([
-    sb.from('modules').delete().eq('name',name),
-    sb.from('clients').upsert(clients.map(clientToDb),{onConflict:'id'})
-  ]);
 }
 
 /* ── INIT ── */
@@ -4326,17 +4290,16 @@ window.clientMonitorApi={
   getCurrentUser:()=>currentUser,
   goClients,
   goToClient,
-  toast,
-  audit
+  toast
 };
 // Handle password reset redirect (Supabase adds token to URL hash)
-sb.auth.onAuthStateChange(async(event,session)=>{
-  if(event==='PASSWORD_RECOVERY'&&session){
-    await onAuthed(session.user);
+sb.auth.onAuthStateChange((event,session)=>{
+  if(event!=='PASSWORD_RECOVERY'||!session)return;
+  setTimeout(async()=>{
+    if(!await onAuthed(session.user))return;
     document.getElementById('chpwd-modal').classList.add('open');
-    const e=document.getElementById('chpwd-err');
-    if(e)e.textContent='Enter your new password below.';
-  }
+    document.getElementById('chpwd-err').textContent='Enter your new password below.';
+  },0);
 });
 // Always require fresh login — sign out any lingering session on load
 // …except when arriving from a password-reset email link: keep that session so the
@@ -4351,7 +4314,7 @@ const _isRecoveryLink=/type=recovery/.test(location.hash)||/[?&]code=/.test(loca
 <script src="ai-suggestions.js?v=final-20261021" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
 <script src="email-suggestions.js?v=final-20261021" defer></script>
-<script src="tasks.js?v=26" defer></script>
+<script src="tasks.js?v=27" defer></script>
 <script type="module" src="erp-discovery.js?v=app-theme-20261020"></script>
 </body>
 </html>

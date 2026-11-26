@@ -724,8 +724,6 @@ async function createProject() {
     databaseReady = false; databaseError = error.message || 'Could not prepare this client workspace.'; renderShell(); return;
   }
   project = data; documentState = blankProjectDocument(); dirty = false; changeVersion = 0;
-  await api().getSupabase().from('client_project_history').insert({ project_id: data.id, action: 'Created', user_name: api().getCurrentUser(), detail: { source: 'Client Monitor' } });
-  api().audit('ERP Project', client.name, `Created ${data.name}`);
   renderShell();
 }
 

@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2.119.2';
 
 const allowedOrigin = 'https://alexandrosh93.github.io';
 const cors = (origin: string | null) => ({
@@ -6,10 +6,12 @@ const cors = (origin: string | null) => ({
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
+  'Cache-Control': 'no-store',
   'Vary': 'Origin',
 });
 const reply = (body: unknown, status = 200, origin: string | null = null) =>
   new Response(JSON.stringify(body), { status, headers: cors(origin) });
+const validPassword = (password: string) => password.length >= 12 && new TextEncoder().encode(password).length <= 72;
 const clean = (value: unknown, max: number) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 
 Deno.serve(async (req) => {
@@ -37,7 +39,8 @@ Deno.serve(async (req) => {
     if (caller.app_metadata?.role !== 'admin') return reply({ error: 'Administrator access is required.' }, 403, origin);
 
     const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-    const body = await req.json().catch(() => ({}));
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return reply({ error: 'Invalid request.' }, 400, origin);
     const action = clean(body.action, 40);
 
     if (action === 'list') {
@@ -59,7 +62,7 @@ Deno.serve(async (req) => {
       const password = typeof body.password === 'string' ? body.password : '';
       const role = body.role === 'admin' ? 'admin' : 'user';
       if (!username || !fullName || !/^[a-zA-Z0-9._@-]+$/.test(username)) return reply({ error: 'Enter a valid username and full name.' }, 400, origin);
-      if (password.length < 6) return reply({ error: 'Password must be at least 6 characters.' }, 400, origin);
+      if (!validPassword(password)) return reply({ error: 'Password must be at least 12 characters and at most 72 bytes.' }, 400, origin);
       const email = username.includes('@') ? username.toLowerCase() : username.toLowerCase() + '@avps.local';
       const { data, error } = await admin.auth.admin.createUser({
         email, password, email_confirm: true,
@@ -78,7 +81,7 @@ Deno.serve(async (req) => {
       const password = typeof body.password === 'string' ? body.password : '';
       const role = body.role === 'admin' ? 'admin' : 'user';
       if (!userId || !username || !fullName || !email) return reply({ error: 'Username, full name and email are required.' }, 400, origin);
-      if (password && password.length < 6) return reply({ error: 'Password must be at least 6 characters.' }, 400, origin);
+      if (password && !validPassword(password)) return reply({ error: 'Password must be at least 12 characters and at most 72 bytes.' }, 400, origin);
       if (userId === caller.id && role !== 'admin') return reply({ error: 'You cannot remove your own administrator access.' }, 400, origin);
       const attributes: Record<string, unknown> = {
         email, email_confirm: true,
@@ -102,7 +105,7 @@ Deno.serve(async (req) => {
 
     return reply({ error: 'Unknown user-management action.' }, 400, origin);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'User management failed.';
-    return reply({ error: message }, 400, origin);
+    console.error('User management failed', error instanceof Error ? error.name : 'Unknown error');
+    return reply({ error: 'User management failed.' }, 400, origin);
   }
 });

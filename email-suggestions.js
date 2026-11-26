@@ -291,7 +291,6 @@
       try {
         var result = await (await orderUpdates).saveOrderUpdate(sb, g, selected, currentUser);
         live.modules = result.modules; live.commentLog = result.commentLog; live.comment = result.commentLog[0]?.text || '';
-        if (result.count) audit('Approve purchase', live.name, 'Modules added: ' + (result.added.join(', ') || 'none') + '; orders recorded: ' + result.count);
         save(); await render();
         message(result.count ? 'Purchase saved to ' + live.name + (result.added.length ? ' · Added ' + result.added.join(', ') : '') + '.' : 'This purchase is already recorded.');
       } catch (e) { message(e.message || 'Could not save the purchase. Please try again.', true); }

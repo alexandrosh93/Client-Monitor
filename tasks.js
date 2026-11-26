@@ -65,7 +65,7 @@
       Object.assign(t, before); render(); refreshOthers(); if (openId === id) renderDrawer();
       console.error(error);
       api().toast(/description|checklist/i.test(String(error.message || '')) ? 'Run 13_tasks_details.sql in Supabase to save descriptions and checklists' : 'Save failed');
-    } else if ('status' in fields) api().audit('Edit', clientName(t.client_id), `Task "${t.title}": ${before.status} → ${fields.status}`);
+    }
   }
 
   async function insertTask(row) {
@@ -74,7 +74,6 @@
     const { data, error } = await sb().from('tasks').insert(full).select().single();
     if (error) { api().toast('Could not add task'); console.error(error); return null; }
     tasks.push(normalize(data)); render(); refreshOthers();
-    api().audit('Create', clientName(full.client_id), `Task added: "${full.title}"`);
     return data;
   }
 
@@ -411,7 +410,7 @@
         <label class="tkd-sec"><span class="tkd-lbl">Description</span><textarea data-d="description" rows="4" placeholder="Add more details…">${esc(t.description || '')}</textarea></label>
         <div class="tkd-sec"><span class="tkd-lbl">Checklist ${cl.length ? `<b>${done}/${cl.length}</b>` : ''}</span>
           ${cl.length ? `<div class="tkd-prog"><i style="width:${pct}%"></i></div>` : ''}
-          <ul class="tkd-list">${cl.map(i => `<li data-ci="${i.id}"><input type="checkbox" data-d="ci-toggle" ${i.done ? 'checked' : ''}><span class="${i.done ? 'done' : ''}">${esc(i.text)}</span><button type="button" data-d="ci-del" aria-label="Remove item">×</button></li>`).join('')}</ul>
+          <ul class="tkd-list">${cl.map(i => `<li data-ci="${esc(i.id)}"><input type="checkbox" data-d="ci-toggle" ${i.done ? 'checked' : ''}><span class="${i.done ? 'done' : ''}">${esc(i.text)}</span><button type="button" data-d="ci-del" aria-label="Remove item">×</button></li>`).join('')}</ul>
           <input class="tkd-ci-add" data-d="ci-add" placeholder="Add an item and press Enter" autocomplete="off">
         </div>
       </div>
