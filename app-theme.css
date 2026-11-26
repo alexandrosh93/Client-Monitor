@@ -23,7 +23,7 @@
     --shadow-lg:0 12px 36px rgba(20,40,65,.14);
   }
   body {background:var(--bg);background-image:none}
-  body>header {background:#fff;box-shadow:none;border-bottom:1px solid var(--border-md)}
+  #protected-app>header {background:#fff;box-shadow:none;border-bottom:1px solid var(--border-md)}
   /* Primary, secondary, and destructive actions use the same hierarchy. */
   body :is(.btn-primary,.login-btn,.fab,.hv-qbtn-primary,.tk-btn,.ai-btn-primary,.erp-btn.primary,.clog-add button,.clog-edit-acts .btn-save) {
     background:var(--accent);background-image:none;color:#fff;border:1px solid var(--accent);

@@ -19,9 +19,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Client Monitor — A.V.PremierSoft</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="erp-discovery.css?v=workspace-20261020">
+<link rel="stylesheet" href="erp-discovery.css?v=protected-routes">
 <link rel="stylesheet" href="tasks.css?v=17">
 <style>
 :root{
@@ -296,7 +296,8 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .view-btn .vb-lbl{max-width:0;opacity:0;margin-left:0;overflow:hidden;white-space:nowrap;transform:translateX(-4px);transition:max-width .32s cubic-bezier(.22,1,.36,1),opacity .22s ease,margin .32s cubic-bezier(.22,1,.36,1),transform .32s cubic-bezier(.22,1,.36,1)}
 .view-btn:hover .vb-lbl,.view-btn:focus-visible .vb-lbl,.view-btn.active .vb-lbl{max-width:110px;opacity:1;margin-left:6px;transform:none}
 #login-screen{display:flex;position:fixed;inset:0;z-index:1000;background:#f0f2f5;align-items:center;justify-content:center;padding:1.5rem}
-#login-screen.hidden{display:none}
+#login-screen.hidden,#protected-app[hidden]{display:none!important}
+#protected-app:not([hidden]){display:contents}
 /* FLOATING ACTION BUTTON */
 .fab{position:fixed;bottom:1.5rem;right:1.5rem;z-index:400;background:linear-gradient(135deg,var(--accent),var(--accent-light));color:#fff;border:none;border-radius:99px;padding:.75rem 1.4rem;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(30,58,110,.35);display:flex;align-items:center;gap:7px;transition:all .2s;white-space:nowrap}
 .fab:hover{opacity:.92;box-shadow:0 8px 28px rgba(30,58,110,.45);transform:translateY(-2px)}
@@ -947,10 +948,59 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
 .hv-fu-act button:hover{background:var(--bg,#f4f5f7)}
 @media(max-width:600px){.hv-event:has(.hv-fu-act){flex-wrap:wrap}.hv-fu-act{width:100%;margin-left:0;margin-top:4px}}
 </style>
-<link rel="stylesheet" href="app-theme.css?v=20261020b">
+<link rel="stylesheet" href="app-theme.css?v=protected-routes">
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div style="text-align:center;padding:2.25rem 2rem 1.5rem;border-bottom:1px solid #f0f2f5;margin-bottom:1.5rem">
+      <div style="font-size:16px;font-weight:800;color:#1a1d2e;letter-spacing:-.02em">A.V.PremierSoft</div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:3px;letter-spacing:.04em;text-transform:uppercase">Client Monitor</div>
+    </div>
+    <!-- Sign in panel -->
+    <form id="login-panel" style="padding:0 2rem" onsubmit="event.preventDefault();doLogin()">
+      <div class="login-field">
+        <label>Username or Email</label>
+        <input id="login-user" type="text" placeholder="Username or email" autocomplete="username">
+      </div>
+      <div class="login-field">
+        <label>Password</label>
+        <input id="login-pass" type="password" placeholder="Password" autocomplete="current-password">
+      </div>
+      <button id="login-submit" class="login-btn" type="submit" disabled>Sign in</button>
+      <div class="login-err" id="login-err" role="status" style="margin-top:.5rem">Checking your session…</div>
+      <div style="text-align:center;margin-top:.6rem">
+        <button type="button" onclick="showForgot()" style="background:none;border:none;font-family:'DM Sans',sans-serif;font-size:12px;color:#6b7280;cursor:pointer;text-decoration:underline;padding:0">Forgot password?</button>
+      </div>
+    </form>
+    <form id="recovery-panel" style="padding:0 2rem" hidden onsubmit="event.preventDefault();doRecoveryPassword()">
+      <div class="login-field"><label for="recovery-new">New password</label>
+        <input id="recovery-new" type="password" autocomplete="new-password" required minlength="6"></div>
+      <div class="login-field"><label for="recovery-confirm">Confirm password</label>
+        <input id="recovery-confirm" type="password" autocomplete="new-password" required minlength="6"></div>
+      <button id="recovery-save" class="login-btn" type="submit">Update password</button>
+      <div class="login-err" id="recovery-msg" role="status" style="margin-top:.5rem"></div>
+    </form>
+    <!-- Forgot password panel -->
+    <div id="forgot-panel" style="display:none;padding:0 2rem">
+      <div style="font-size:13px;font-weight:700;color:#1a1d2e;margin-bottom:.25rem">Reset Password</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:1rem;line-height:1.5">Enter your email address and we'll send you a reset link. Internal username accounts should contact an administrator.</div>
+      <div class="login-field">
+        <label>Email address</label>
+        <input id="forgot-email" type="email" placeholder="your@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')doForgotPassword()">
+      </div>
+      <button class="login-btn" onclick="doForgotPassword()">Send reset link</button>
+      <div id="forgot-msg" style="font-size:12px;min-height:18px;margin-top:.6rem;text-align:center"></div>
+      <div style="text-align:center;margin-top:.75rem">
+        <button type="button" onclick="hideForgot()" style="background:none;border:none;font-family:'DM Sans',sans-serif;font-size:12px;color:#6b7280;cursor:pointer;text-decoration:underline;padding:0">← Back to sign in</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="protected-app" hidden inert>
 <!-- MOBILE BOTTOM NAVIGATION (phones only) -->
 <nav id="mnav" class="no-print" aria-label="Main">
   <span class="mnav-ind" aria-hidden="true"></span>
@@ -1160,46 +1210,6 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   New Client
 </button>
-
-<!-- LOGIN SCREEN -->
-<div id="login-screen">
-  <div class="login-box">
-    <div style="text-align:center;padding:2.25rem 2rem 1.5rem;border-bottom:1px solid #f0f2f5;margin-bottom:1.5rem">
-      <div style="font-size:16px;font-weight:800;color:#1a1d2e;letter-spacing:-.02em">A.V.PremierSoft</div>
-      <div style="font-size:11px;color:#9ca3af;margin-top:3px;letter-spacing:.04em;text-transform:uppercase">Client Monitor</div>
-    </div>
-    <!-- Sign in panel -->
-    <div id="login-panel" style="padding:0 2rem">
-      <div class="login-field">
-        <label>Username or Email</label>
-        <input id="login-user" type="text" placeholder="Username or email" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <div class="login-field">
-        <label>Password</label>
-        <input id="login-pass" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <button class="login-btn" onclick="doLogin()">Sign in</button>
-      <div class="login-err" id="login-err" style="margin-top:.5rem"></div>
-      <div style="text-align:center;margin-top:.6rem">
-        <button type="button" onclick="showForgot()" style="background:none;border:none;font-family:'DM Sans',sans-serif;font-size:12px;color:#6b7280;cursor:pointer;text-decoration:underline;padding:0">Forgot password?</button>
-      </div>
-    </div>
-    <!-- Forgot password panel -->
-    <div id="forgot-panel" style="display:none;padding:0 2rem">
-      <div style="font-size:13px;font-weight:700;color:#1a1d2e;margin-bottom:.25rem">Reset Password</div>
-      <div style="font-size:12px;color:#6b7280;margin-bottom:1rem;line-height:1.5">Enter your email address and we'll send you a reset link. Internal username accounts should contact an administrator.</div>
-      <div class="login-field">
-        <label>Email address</label>
-        <input id="forgot-email" type="email" placeholder="your@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')doForgotPassword()">
-      </div>
-      <button class="login-btn" onclick="doForgotPassword()">Send reset link</button>
-      <div id="forgot-msg" style="font-size:12px;min-height:18px;margin-top:.6rem;text-align:center"></div>
-      <div style="text-align:center;margin-top:.75rem">
-        <button type="button" onclick="hideForgot()" style="background:none;border:none;font-family:'DM Sans',sans-serif;font-size:12px;color:#6b7280;cursor:pointer;text-decoration:underline;padding:0">← Back to sign in</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Users Modal -->
 <div class="modal-bg" id="users-modal" onclick="bgClick(event,'users-modal')">
@@ -1572,6 +1582,7 @@ body.sidemenu-expanded #sidemenu .sidemenu-brand-text{flex-direction:column!impo
 
 <div class="toast" id="toast"></div>
 <div id="wl-tip"></div>
+</div>
 
 <script>
 const KEY='avps_v6';
@@ -1581,7 +1592,8 @@ async function sha256(str){
 }
 const SUPA_URL='https://gdyibhbznfywnilqpjvo.supabase.co';
 const PASSWORD_RECOVERY_URL='https://alexandrosh93.github.io/Client-Monitor/';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkeWliaGJ6bmZ5d25pbHFwanZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzOTM0OTQsImV4cCI6MjA5NDk2OTQ5NH0.wiyx0PBb3dtaH-kTpGVj68NWzeZpyVKWrD8XhWxftGQ';
+const SUPA_KEY='sb_publishable_q3opYhSl4yl9Ds02_eePSQ_n8p2fffi';
+const openedRecoveryLink=new URLSearchParams(location.hash.slice(1)).get('type')==='recovery'||new URLSearchParams(location.search).has('code');
 const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 
 function dbToClient(r){return {id:r.id,name:r.name,clientCode:r.client_code||'',contact:r.contact||'',email:r.email||'',city:r.city||'',mgr:r.mgr||'',
@@ -3345,6 +3357,7 @@ function wlTipShow(text,e){const t=document.getElementById('wl-tip');if(!t)retur
 function wlTipMove(e){const t=document.getElementById('wl-tip');if(!t)return;t.style.left=(e.clientX+14)+'px';t.style.top=(e.clientY-36)+'px';}
 function wlTipHide(){const t=document.getElementById('wl-tip');if(t)t.classList.remove('show');}
 function setView(v){
+  if(!setProtectedRoute(v==='dash'?'dashboard':'clients'))return;
   if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();if(window.closeTasksView)window.closeTasksView();
   currentView=v;
   // leaving the home (login) dashboard
@@ -3366,6 +3379,7 @@ function setView(v){
 function toggleSmenuGroup(id){const g=document.getElementById(id),b=document.getElementById(id+'-btn');if(!g)return;g.hidden=!g.hidden;if(b)b.setAttribute('aria-expanded',String(!g.hidden));}
 function localISO(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function goHome(){
+  if(!setProtectedRoute('home'))return;
   if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();if(window.closeTasksView)window.closeTasksView();
   document.getElementById('home-view').classList.add('active');
   document.querySelector('.control-bar').style.display='none';
@@ -3377,6 +3391,7 @@ function goHome(){
   renderHomeDashboard();
 }
 function goClients(opts={}){
+  if(!isAppUnlocked())return;
   if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();if(window.closeTasksView)window.closeTasksView();
   document.getElementById('home-view').classList.remove('active');
   document.querySelector('.control-bar').style.display='';
@@ -3414,6 +3429,7 @@ function followupAct(id,act){
   if(hv&&hv.style.display!=='none')renderHomeDashboard();
 }
 function goToClient(id){
+  if(!isAppUnlocked())return;
   if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();if(window.closeTasksView)window.closeTasksView();
   const c=clients.find(x=>x.id===id);if(!c)return;
   document.getElementById('home-view').classList.remove('active');
@@ -3901,6 +3917,7 @@ async function umAdmin(action,payload={}){
   return data||{};
 }
 async function openUsersPanel(){
+  if(!isAppUnlocked()||!isAdminUser)return;
   document.getElementById('users-modal').classList.add('open');
   umShowList();
   await umLoadUsers();
@@ -4132,57 +4149,218 @@ function exportAuditCSV(){
 
 /* ── LOGIN ── */
 const AUTH_DOMAIN='@avps.local';
-async function doLogin(){
-  const u=document.getElementById('login-user').value.trim();
-  const p=document.getElementById('login-pass').value;
-  const err=document.getElementById('login-err');
-  if(!u||!p){err.textContent='Enter username and password.';return;}
-  err.textContent='Signing in…';
+const RECOVERY_USER_KEY='cm_password_recovery_user';
+const protectedApp=document.getElementById('protected-app');
+const loginScreen=document.getElementById('login-screen');
+const loginForm=document.getElementById('login-panel');
+const loginSubmit=document.getElementById('login-submit');
+const loginError=document.getElementById('login-err');
+const recoveryForm=document.getElementById('recovery-panel');
+let activeAuthUser=null;
+let recoveryEventUserId=null;
+let signingOut=false;
+let activeRoute='';
+let restoringRoute=false;
+
+function isAppUnlocked(){return !protectedApp.hidden;}
+function showProtectedApp(show){
+  protectedApp.hidden=!show;
+  protectedApp.inert=!show;
+  loginScreen.classList.toggle('hidden',show);
+}
+function setProtectedRoute(route){
+  if(!isAppUnlocked())return false;
+  activeRoute=route;
+  const hash='#'+route;
+  if(location.hash!==hash){
+    if(restoringRoute)history.replaceState(null,'',hash);
+    else history.pushState(null,'',hash);
+  }
+  return true;
+}
+function openRequestedRoute(){
+  const route=location.hash.slice(1);
+  if(!isAppUnlocked()||route===activeRoute)return;
+  restoringRoute=true;
   try{
-    let email;
-    if(u.includes('@')){
-      email=u.toLowerCase();
-    }else{
-      // Try to resolve username/display-name to the stored email
-      const {data:resolved}=await sb.rpc('get_login_email',{p_username:u});
-      email=resolved||u.toLowerCase()+AUTH_DOMAIN;
+    if(route==='clients')goClients();
+    else if(route==='dashboard')setView('dash');
+    else if(route==='tasks'&&window.openTasksView)window.openTasksView();
+    else if(route==='suggestions'&&document.getElementById('vbtn-ai'))document.getElementById('vbtn-ai').click();
+    else goHome();
+  }finally{restoringRoute=false;}
+}
+function isStaff(user){
+  const role=user?.app_metadata?.role;
+  return !user?.is_anonymous&&(role==='admin'||role==='user');
+}
+function allowLogin(message=''){
+  loginSubmit.disabled=false;
+  loginError.textContent=message;
+  document.getElementById('login-user').focus();
+}
+function showPasswordRecovery(user){
+  activeAuthUser=user;
+  sessionStorage.setItem(RECOVERY_USER_KEY,user.id);
+  const url=new URL(location.href);
+  url.searchParams.delete('code');
+  url.hash='';
+  history.replaceState(null,'',url);
+  loginForm.style.display='none';
+  document.getElementById('forgot-panel').style.display='none';
+  recoveryForm.hidden=false;
+  document.getElementById('recovery-new').focus();
+}
+async function doRecoveryPassword(){
+  const password=document.getElementById('recovery-new').value;
+  const confirmPassword=document.getElementById('recovery-confirm').value;
+  const button=document.getElementById('recovery-save');
+  const status=document.getElementById('recovery-msg');
+  if(button.disabled||recoveryForm.hidden)return;
+  if(password!==confirmPassword){status.textContent='Passwords do not match.';return;}
+  button.disabled=true;
+  status.textContent='Saving…';
+  try{
+    const {error}=await sb.auth.updateUser({password});
+    if(error)throw error;
+  }catch(error){
+    status.textContent=error.message||'Could not update your password. Try again.';
+    button.disabled=false;
+    return;
+  }
+  recoveryForm.reset();
+  status.textContent='Password updated. Signing out…';
+  await doLogout(true);
+}
+async function doLogin(){
+  if(loginSubmit.disabled||isAppUnlocked())return;
+  const userInput=document.getElementById('login-user');
+  const passInput=document.getElementById('login-pass');
+  const username=userInput.value.trim();
+  const password=passInput.value;
+  if(!username||!password){loginError.textContent='Enter username and password.';return;}
+  loginSubmit.disabled=true;
+  loginError.textContent='Signing in…';
+  try{
+    let email=username.toLowerCase();
+    if(!username.includes('@')){
+      const {data:resolved}=await sb.rpc('get_login_email',{p_username:username});
+      email=resolved||email+AUTH_DOMAIN;
     }
-    const {data,error}=await sb.auth.signInWithPassword({email,password:p});
-    if(error||!data||!data.session){
-      err.textContent='Incorrect username or password.';
-      document.getElementById('login-pass').value='';hidePasswords(document.getElementById('login-screen'));
-      document.getElementById('login-pass').focus();
+    const {data,error}=await sb.auth.signInWithPassword({email,password});
+    passInput.value='';
+    hidePasswords(loginScreen);
+    if(error||!data?.session){
+      loginError.textContent='Incorrect username or password.';
+      passInput.focus();
       return;
     }
-    err.textContent='';
-    await onAuthed(data.user);
-    audit('Login',currentUser,'Signed in');
-  }catch(e){
-    console.error('Login error:',e);
-    err.textContent='Connection error. Try again.';
-  }
+    if(!isStaff(data.user)){
+      await sb.auth.signOut({scope:'local'});
+      loginError.textContent='This account does not have access to Client Monitor.';
+      return;
+    }
+    await openAuthenticatedApp(data.user);
+    if(isAppUnlocked())audit('Login',currentUser,'Signed in');
+  }catch(error){
+    console.error('Login error:',error);
+    loginError.textContent='Could not sign in. Try again.';
+  }finally{loginSubmit.disabled=false;}
 }
-async function onAuthed(user){
-  currentUser=(user.user_metadata&&user.user_metadata.username)||user.email.split('@')[0];
-  currentFullName=(user.user_metadata&&user.user_metadata.full_name)||currentUser;
-  const role=(user.app_metadata&&user.app_metadata.role)||(user.user_metadata&&user.user_metadata.role)||'user';
-  isAdminUser=role==='admin';
-  document.getElementById('login-screen').classList.add('hidden');
-  const sm=document.getElementById('sidemenu-user');
+async function openAuthenticatedApp(user){
+  activeAuthUser=user;
+  currentUser=user.user_metadata?.username||user.email.split('@')[0];
+  currentFullName=user.user_metadata?.full_name||currentUser;
+  isAdminUser=user.app_metadata.role==='admin';
   document.getElementById('sidemenu-user-label').textContent='👤 '+currentUser;
-  sm.style.display='flex';
-  if(isAdminUser){
-    const btu=document.getElementById('btn-users');if(btu)btu.style.display='flex';
-    const btus=document.getElementById('btn-users-side');if(btus)btus.style.display='flex';
-  }
+  document.getElementById('sidemenu-user').style.display='flex';
+  ['btn-users','btn-users-side'].forEach(id=>{
+    const button=document.getElementById(id);
+    if(button)button.style.display=isAdminUser?'flex':'none';
+  });
+  loginError.textContent='Loading Client Monitor…';
   await load();
-  goHome();
+  if(activeAuthUser!==user)return;
+  showProtectedApp(true);
+  openRequestedRoute();
 }
-async function doLogout(){
-  if(window.cmEmailDisconnect)await window.cmEmailDisconnect();
-  try{await sb.auth.signOut();}catch(e){}
+function finishSignOut(message=''){
+  showProtectedApp(false);
+  activeAuthUser=null;
+  clearInterval(autoRefreshInterval);
+  clearTimeout(syncTimer);
+  sessionStorage.removeItem(RECOVERY_USER_KEY);
+  if(message)sessionStorage.setItem('cm_auth_notice',message);
   location.reload();
 }
+async function doLogout(afterRecovery=false){
+  if(signingOut||!activeAuthUser)return;
+  signingOut=true;
+  showProtectedApp(false);
+  loginSubmit.disabled=true;
+  loginError.textContent='Signing out…';
+  try{
+    const {error}=await sb.auth.signOut({scope:'local'});
+    if(error)throw error;
+  }catch(error){
+    signingOut=false;
+    if(afterRecovery){
+      document.getElementById('recovery-msg').textContent='Password updated. Use the button to retry sign-out.';
+      const button=document.getElementById('recovery-save');
+      button.type='button';
+      button.textContent='Sign out';
+      button.onclick=()=>doLogout(true);
+      button.disabled=false;
+    }else{
+      showProtectedApp(true);
+      toast('Could not sign out. Try again.');
+    }
+    return;
+  }
+  if(!afterRecovery){
+    try{await window.cmEmailDisconnect?.();}
+    catch(error){console.warn('Outlook disconnect failed:',error);}
+  }
+  finishSignOut(afterRecovery?'Password updated. Sign in with your new password.':'');
+}
+async function initializeAuth(){
+  try{
+    const notice=sessionStorage.getItem('cm_auth_notice')||'';
+    sessionStorage.removeItem('cm_auth_notice');
+    const {data,error}=await sb.auth.getUser();
+    const user=data?.user;
+    if(isStaff(user)&&(recoveryEventUserId===user.id||sessionStorage.getItem(RECOVERY_USER_KEY)===user.id)){
+      showPasswordRecovery(user);
+    }else if(openedRecoveryLink){
+      allowLogin('This password reset link is invalid or expired.');
+    }else if(isStaff(user)){
+      await openAuthenticatedApp(user);
+    }else if(user){
+      await sb.auth.signOut({scope:'local'});
+      allowLogin('This account does not have access to Client Monitor.');
+    }else{
+      allowLogin(error&&error.name!=='AuthSessionMissingError'&&!error.status?'Could not verify your session. Sign in to continue.':notice);
+    }
+  }catch(error){
+    console.error('Session initialization failed:',error);
+    allowLogin('Could not verify your session. Sign in to continue.');
+  }
+}
+sb.auth.onAuthStateChange((event,session)=>{
+  if(event==='PASSWORD_RECOVERY')recoveryEventUserId=session?.user.id;
+  if(!activeAuthUser||signingOut)return;
+  if(event==='SIGNED_OUT'||(session?.user&&(session.user.id!==activeAuthUser.id||
+     session.user.app_metadata?.role!==activeAuthUser.app_metadata.role))){
+    setTimeout(()=>finishSignOut(),0);
+  }
+});
+window.addEventListener('pagehide',event=>{
+  if(event.persisted)showProtectedApp(false);
+});
+window.addEventListener('pageshow',event=>{
+  if(event.persisted)location.reload();
+});
+
 function showForgot(){
   document.getElementById('login-panel').style.display='none';
   document.getElementById('forgot-panel').style.display='block';
@@ -4261,7 +4439,6 @@ async function removeMod(i){
 });
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeModal('add-modal');closeModal('vat-modal');closeModal('stk-modal');closeModal('settings-modal');closeModal('impl-modal');closeModal('mods-modal');closeModal('users-modal');closeModal('chpwd-modal');closeModal('audit-modal');closeModal('meetprep-modal');}
-  if(e.key==='Enter'&&!document.getElementById('login-screen').classList.contains('hidden'))doLogin();
 });
 updateSFUI();updateFIUI();updateFMUI();
 
@@ -4324,34 +4501,20 @@ window.clientMonitorApi={
   getClients:()=>clients,
   getImplementors:()=>implementors,
   getCurrentUser:()=>currentUser,
+  setProtectedRoute,
   goClients,
   goToClient,
   toast,
   audit
 };
-// Handle password reset redirect (Supabase adds token to URL hash)
-sb.auth.onAuthStateChange(async(event,session)=>{
-  if(event==='PASSWORD_RECOVERY'&&session){
-    await onAuthed(session.user);
-    document.getElementById('chpwd-modal').classList.add('open');
-    const e=document.getElementById('chpwd-err');
-    if(e)e.textContent='Enter your new password below.';
-  }
-});
-// Always require fresh login — sign out any lingering session on load
-// …except when arriving from a password-reset email link: keep that session so the
-// user can set a new password (signing out here would invalidate the reset link).
-const _isRecoveryLink=/type=recovery/.test(location.hash)||/[?&]code=/.test(location.search);
-(async()=>{
-  if(_isRecoveryLink)return;
-  try{await sb.auth.signOut();}catch(e){}
-  document.getElementById('login-user').focus();
-})();
+document.addEventListener('DOMContentLoaded',initializeAuth);
+window.addEventListener('popstate',openRequestedRoute);
+window.addEventListener('hashchange',openRequestedRoute);
 </script>
-<script src="ai-suggestions.js?v=final-20261021" defer></script>
+<script src="ai-suggestions.js?v=protected-routes" defer></script>
 <script src="outlook-config.js?v=orders-20261012" defer></script>
 <script src="email-suggestions.js?v=final-20261021" defer></script>
-<script src="tasks.js?v=26" defer></script>
-<script type="module" src="erp-discovery.js?v=app-theme-20261020"></script>
+<script src="tasks.js?v=protected-routes" defer></script>
+<script type="module" src="erp-discovery.js?v=protected-routes"></script>
 </body>
 </html>

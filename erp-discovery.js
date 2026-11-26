@@ -787,6 +787,7 @@ window.openClientWorkspace = async function openClientWorkspace(clientId) {
   jobReportNumber = ''; jobReportCustomerComment = ''; jobReportSatisfaction = '';
   const found = api()?.getClients().find(item => Number(item.id) === Number(clientId));
   if (!found) { api()?.toast('Client not found.'); return; }
+  if (api().setProtectedRoute && !api().setProtectedRoute('clients')) return;
   client = found; project = null; documentState = blankProjectDocument(); activeSection = 'overview'; expandedNavGroup = 'workspace'; moduleViewFilter = ''; workspaceActivityDate = localDate(); workspaceStatusFilter = ''; jobReportDate = localDate(); jobReportItems = new Set(); jobReportComments = new Map(); jobReportGeneralComment = ''; jobReportClientRepresentative = found.contact || ''; jobReportConsultant = found.implementor || ''; jobReportDraftId = crypto.randomUUID(); dirty = false; changeVersion = 0;
   hideStandardViews(); root.style.display = 'block'; root.classList.add('active'); root.innerHTML = '<div class="erp-empty">Loading client workspace…</div>'; window.scrollTo({ top: 0 });
   await loadProject();
