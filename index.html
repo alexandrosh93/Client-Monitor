@@ -377,7 +377,7 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem 1.1rem}
 .hv-wl-name{font-size:12px;font-weight:600;color:var(--text);min-width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hv-wl-track{flex:1;height:18px;border-radius:5px;overflow:hidden;background:var(--surface2);display:flex}
 .hv-wl-count{font-size:13px;font-weight:800;color:var(--text);min-width:22px;text-align:right;line-height:1}
-.hv-wl-fu{font-size:9px;font-weight:700;color:#856404;background:#fff3cd;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+.hv-wl-fu{cursor:pointer;font-size:9px;font-weight:700;color:#856404;background:#fff3cd;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
 .hv-wl-od{font-size:9px;font-weight:700;color:#a32d2d;background:#feecec;padding:1px 6px;border-radius:5px;white-space:nowrap;flex-shrink:0}
 .clog{display:flex;flex-direction:column;gap:4px;max-height:150px;overflow-y:auto;margin-top:5px}
 .clog-entry{background:var(--bg);border:1px solid var(--border-sm);border-radius:7px;padding:5px 9px}
@@ -2049,7 +2049,7 @@ function setSort(e,mode,label){
 let selImpls=new Set();
 let selMods=new Set();
 let selMgr='';
-let selCity='';
+let selCity='';let selFu=false;
 
 /* ── MULTI-IMPLEMENTOR FILTER ── */
 function fiToggle(e,val){
@@ -2181,6 +2181,7 @@ function getFiltered(){
     if(s&&!c.name.toLowerCase().includes(s)&&!(c.contact||'').toLowerCase().includes(s))return false;
     if(mg&&c.mgr!==mg)return false;
     if(ci&&c.city!==ci)return false;
+    if(selFu&&!(c.nextFollowupDate&&c.nextFollowupDate<=localISO()&&c.status!=='Completed'))return false;
     if(selStatuses.size>0&&!selStatuses.has(c.status))return false;
     if(selMods.size>0&&![...selMods].every(m=>c.modules.includes(m)))return false;
     if(selImpls.size>0&&!selImpls.has(c.implementor||''))return false;
@@ -3379,10 +3380,11 @@ function goClients(opts={}){
   if(window.closeClientWorkspaceView)window.closeClientWorkspaceView();if(window.closeTasksView)window.closeTasksView();
   document.getElementById('home-view').classList.remove('active');
   document.querySelector('.control-bar').style.display='';
-  selStatuses.clear(); selImpls.clear(); selMgr=''; selCity='';
+  selStatuses.clear(); selImpls.clear(); selMgr=''; selCity=''; selFu=false;
   if(opts.status) selStatuses.add(opts.status);
   if(opts.impl!==undefined) selImpls.add(opts.impl);
   if(opts.mgr)    selMgr=opts.mgr;
+  if(opts.fu){selFu=true;toast('Showing clients with follow-ups due');}
   updateSFUI(); updateFIUI();
   setView('list');
   render();
@@ -3416,7 +3418,7 @@ function goToClient(id){
   const c=clients.find(x=>x.id===id);if(!c)return;
   document.getElementById('home-view').classList.remove('active');
   document.querySelector('.control-bar').style.display='';
-  selStatuses.clear(); selImpls.clear(); selMgr=''; selCity='';
+  selStatuses.clear(); selImpls.clear(); selMgr=''; selCity=''; selFu=false;
   updateSFUI(); updateFIUI();
   setView('list');
   render();
@@ -3504,7 +3506,8 @@ function renderHomeDashboard(){
     const completed=clients.filter(c=>c.mgr===m&&c.status==='Completed').length;
     const bySt={};mine.forEach(c=>{bySt[c.status]=(bySt[c.status]||0)+1;});
     const overdue=mine.filter(c=>(!c.vatDone&&c.vatDate&&c.vatDate<todayISO)||(!c.stkDone&&c.stkDate&&c.stkDate<todayISO)).length;
-    return{m,color,bySt,active:mine.length,completed,overdue};
+    const fu=mine.filter(c=>c.nextFollowupDate&&c.nextFollowupDate<=todayISO).length;
+    return{m,color,bySt,active:mine.length,completed,overdue,fu};
   });
   const maxWl2=Math.max(...mgrWl2.map(x=>x.active),1);
   const myStatus=wlOrder.map(st=>({st,n:scope.filter(c=>c.status===st).length})).filter(x=>x.n);
@@ -3617,7 +3620,7 @@ function renderHomeDashboard(){
           <div class="hv-wl-name">${esc(displayName)}${im.isMe?'<span class="hv-pc-you" style="margin-left:4px">you</span>':''}</div>
           <div class="hv-wl-track" style="animation-delay:${idx*0.07}s">${segs}</div>
           <div class="hv-wl-count">${im.active}</div>
-          ${im.fu?`<div class="hv-wl-fu" title="${im.fu} follow-up${im.fu!==1?'s':''} due">📞 ${im.fu}</div>`:''}
+          ${im.fu?`<div class="hv-wl-fu" onclick="event.stopPropagation();goClients({impl:'${esc(im.name)}',fu:true})" title="${im.fu} follow-up${im.fu!==1?'s':''} due">📞 ${im.fu}</div>`:''}
           ${im.overdue?`<div class="hv-wl-od">⚠ ${im.overdue}</div>`:''}
           ${im.completed?`<div class="hv-wl-done">✓ ${im.completed}</div>`:''}
           <div class="hv-wl-arrow">→</div>
@@ -3659,6 +3662,7 @@ function renderHomeDashboard(){
           <div class="hv-wl-name">${esc(mg.m)}</div>
           <div class="hv-wl-track" style="animation-delay:${idx*0.07}s">${segs}</div>
           <div class="hv-wl-count">${mg.active}</div>
+          ${mg.fu?`<div class="hv-wl-fu" onclick="event.stopPropagation();goClients({mgr:'${esc(mg.m)}',fu:true})" title="${mg.fu} follow-up${mg.fu!==1?'s':''} due">📞 ${mg.fu}</div>`:''}
           ${mg.overdue?`<div class="hv-wl-od">⚠ ${mg.overdue}</div>`:''}
           ${mg.completed?`<div class="hv-wl-done">✓ ${mg.completed}</div>`:''}
           <div class="hv-wl-arrow">→</div>
